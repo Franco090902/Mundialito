@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mundialito — Mundial 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ════════════════════════════════════════════════
+       1. VARIABLES DE DISEÑO (colores, tipografía)
+       — Paleta oficial FIFA World Cup 2026
+    ════════════════════════════════════════════════ */
+    :root {
+      /* Colores primarios FIFA 2026 */
+      --navy:        #0A2A4A;    /* Fondo principal – azul medio */    /* Fondo principal – azul marino profundo */
+      --navy2:       #0D3560;   /* Fondo de tarjetas */   /* Fondo de tarjetas */
+      --navy3:       #114080;   /* Fondo de headers de sección */   /* Fondo de headers de sección */
+      --navy4:       #1A5AAA;   /* Bordes y separadores */   /* Bordes y separadores */
+      --red:         #00AA55;   /* Verde esmeralda – acento primario */   /* Rojo FIFA – acento primario */
+      --red2:        #00CC66;   /* Verde hover */   /* Rojo hover */
+      --red-dim:     #006633;   /* Verde oscuro / bordes activos */   /* Rojo oscuro / bordes activos */
+      --gold:        #FFD700;   /* Amarillo dorado brillante */   /* Dorado – premios / ranking */
+      --gold2:       #E6B800;
+      --white:       #FFFFFF;
+      --offwhite:    #E8F4FF;   /* Texto principal */   /* Texto principal */
+      --text2:       #90C4E8;   /* Texto secundario */   /* Texto secundario */
+      --text3:       #4A90C0;   /* Texto muted */   /* Texto muted */
+      --text4:       #2A6090;   /* Texto muy apagado */   /* Texto muy apagado */
+      --border:      #1A5AAA;
+      --border2:     #0D3560;
+      --live-red:    #FFD700;   /* Amarillo para indicadores en vivo */   /* Rojo para indicadores en vivo */
+      --silver:      #A8B8C8;
+      --bronze:      #CD7F32;
+
+      /* Tipografía */
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Barlow Condensed', sans-serif;
+      --font-body:    'Barlow', sans-serif;
+    }
+
+    /* ════════════════════════════════════════════════
+       2. RESET Y BASE
+    ════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--navy);
+      color: var(--offwhite);
+      min-height: 100vh;
+      letter-spacing: 0.02em;
+      /* Fondo con textura sutil de puntos */
+      background-image: radial-gradient(circle, #1A5AAA20 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--navy); }
+    ::-webkit-scrollbar-thumb { background: var(--red-dim); border-radius: 3px; }
+
+    /* ════════════════════════════════════════════════
+       3. ANIMACIONES GLOBALES
+    ════════════════════════════════════════════════ */
+    @keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes fadeUp    { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes ticker    { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    @keyframes flagWave  { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
+    @keyframes glowPulse { 0%,100%{box-shadow:0 0 8px #00AA5555} 50%{box-shadow:0 0 20px #00AA5599} }
+    @keyframes countUp   { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideRight{ from{width:0} to{width:var(--tw)} }
+
+    .pulse    { animation: pulse 1.6s ease-in-out infinite; }
+    .fade-up  { animation: fadeUp .4s ease forwards; }
+
+    /* ════════════════════════════════════════════════
+       4. HEADER
+    ════════════════════════════════════════════════ */
+    header {
+      position: sticky; top: 0; z-index: 200;
+      background: linear-gradient(180deg, #041228 0%, #0A2A4Aee 100%);
+      backdrop-filter: blur(16px);
+      border-bottom: 2px solid var(--red);
+      padding: 0 28px;
+    }
+    /* Franja decorativa tricolor arriba */
+    header::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, #00AA55 0%, #FFD700 50%, #1A5AAA 100%);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { font-size: 28px; animation: flagWave 3s ease-in-out infinite; display:inline-block; }
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 28px; letter-spacing: 2px;
+      color: var(--white);
+    }
+    .logo-text span { color: var(--red); }
+    .logo-badge {
+      background: var(--red); color: var(--white);
+      font-size: 10px; font-weight: 900; font-family: var(--font-ui);
+      padding: 3px 10px; border-radius: 2px; letter-spacing: 2px;
+      margin-left: 4px;
+    }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .live-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: #00AA5522; border: 1px solid #00AA5555;
+      padding: 5px 12px; border-radius: 20px;
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live-red); animation: pulse 1.2s ease-in-out infinite; }
+    .live-label { font-size: 11px; color: var(--live-red); font-weight: 700; letter-spacing: 3px; }
+
+    /* ════════════════════════════════════════════════
+       5. TICKER (banda de resultados animada)
+    ════════════════════════════════════════════════ */
+    .ticker-wrap {
+      background: var(--red);
+      overflow: hidden; white-space: nowrap;
+      position: relative;
+    }
+    .ticker-wrap::before, .ticker-wrap::after {
+      content: ''; position: absolute; top: 0; width: 50px; height: 100%; z-index: 2;
+    }
+    .ticker-wrap::before { left: 0; background: linear-gradient(90deg, var(--red), transparent); }
+    .ticker-wrap::after  { right: 0; background: linear-gradient(270deg, var(--red), transparent); }
+    .ticker-label {
+      display: inline-flex; align-items: center;
+      background: var(--navy); color: var(--red);
+      font-size: 10px; font-weight: 900; letter-spacing: 3px;
+      padding: 0 14px; height: 32px; margin-right: 2px;
+      flex-shrink: 0;
+    }
+    .ticker-track { display: inline-flex; animation: ticker 28s linear infinite; }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 0 20px; height: 32px; border-right: 1px solid #ffffff33;
+      flex-shrink: 0;
+    }
+    .t-dot   { width: 5px; height: 5px; border-radius: 50%; background: var(--white); animation: pulse 1s ease-in-out infinite; flex-shrink:0; }
+    .t-min   { font-size: 11px; color: #e0f5e0; font-weight: 700; min-width: 28px; }
+    .t-team  { font-size: 13px; color: var(--white); font-weight: 600; }
+    .t-score { font-size: 15px; font-weight: 900; color: var(--white); background: #ffffff22; padding: 1px 10px; border-radius: 2px; }
+    .t-grp   { font-size: 10px; color: #cceecc; letter-spacing: 1px; }
+    .t-info  { font-size: 11px; color: #ddeedd; font-weight: 700; letter-spacing: 1px; padding: 0 20px; }
+
+    /* ════════════════════════════════════════════════
+       6. LAYOUT PRINCIPAL
+    ════════════════════════════════════════════════ */
+    .main { max-width: 1200px; margin: 0 auto; padding: 0 28px 70px; }
+
+    /* ════════════════════════════════════════════════
+       7. BARRA DE NAVEGACIÓN / TABS
+    ════════════════════════════════════════════════ */
+    .tabs {
+      display: flex; gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin: 8px 0 30px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: none; border: none; cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--text3);
+      padding: 14px 20px;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover  { color: var(--text2); }
+    .tab-btn.active { color: var(--white); border-bottom-color: var(--red); }
+
+    /* ════════════════════════════════════════════════
+       8. PANELES
+    ════════════════════════════════════════════════ */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeUp .35s ease; }
+
+    /* Etiqueta de sección */
+    .section-label {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ════════════════════════════════════════════════
+       9. PANEL EN VIVO
+    ════════════════════════════════════════════════ */
+    .live-grid { display: grid; grid-template-columns: 1fr 330px; gap: 26px; }
+
+    .match-live {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--live-red);
+      border-radius: 6px; padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background .2s, transform .15s;
+    }
+    .match-live:hover { background: var(--navy3); transform: translateX(2px); }
+
+    .team-block { flex: 1; }
+    .team-block.home { text-align: right; }
+    .team-block.away { text-align: left; }
+    .team-name { font-size: 18px; font-weight: 700; color: var(--offwhite); }
+    .team-role { font-size: 10px; color: var(--text4); margin-top: 2px; }
+
+    .score-block { text-align: center; min-width: 120px; padding: 0 12px; }
+    .score-main { font-family: var(--font-display); font-size: 42px; color: var(--white); letter-spacing: 2px; line-height: 1; }
+    .score-sep  { color: var(--text4); margin: 0 4px; }
+    .min-badge  { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+                  background: #FFD70022; border: 1px solid #FFD70044; padding: 3px 10px; border-radius: 20px; }
+    .min-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--live-red); animation: pulse .9s ease-in-out infinite; }
+    .min-text { font-size: 11px; color: var(--live-red); font-weight: 700; }
+    .grp-tag {
+      background: var(--red); color: var(--white);
+      font-size: 10px; font-weight: 900;
+      padding: 3px 9px; border-radius: 2px; margin-left: 16px;
+    }
+
+    .match-next {
+      background: #071E3A; border: 1px solid var(--border2);
+      border-left: 3px solid var(--navy4);
+      border-radius: 6px; padding: 12px 20px; margin-bottom: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background .2s;
+    }
+    .match-next:hover { background: var(--navy2); border-left-color: var(--red); }
+    .next-teams { flex: 1; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .next-team { font-size: 14px; font-weight: 700; color: var(--text2); }
+    .next-vs   { font-size: 11px; font-weight: 900; color: var(--text4); letter-spacing: 1px; }
+    .next-time { font-size: 14px; color: var(--gold); font-weight: 700; min-width: 42px; text-align: right; }
+    .next-grp  { font-size: 10px; color: var(--text4); font-weight: 700; min-width: 36px; text-align: right; }
+
+    /* Sidebar */
+    .sidebar-card { background: var(--navy2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+    .sidebar-hdr {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--navy3); padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-hdr-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+    .sidebar-hdr-text { font-size: 10px; font-weight: 900; color: var(--text2); letter-spacing: 3px; text-transform: uppercase; }
+
+    .srow {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-bottom: 1px solid #071E3A;
+      transition: background .15s;
+    }
+    .srow:last-child { border-bottom: none; }
+    .srow:hover { background: var(--navy3); }
+    .srow-rank { font-size: 14px; font-weight: 900; min-width: 22px; }
+    .srow-flag { font-size: 18px; }
+    .srow-name { font-size: 13px; font-weight: 700; color: var(--text2); }
+    .srow-sub  { font-size: 10px; color: var(--text4); }
+    .srow-num  { font-family: var(--font-display); font-size: 24px; color: var(--red); text-align: right; margin-left: auto; }
+    .srow-unit { font-size: 9px; color: var(--text4); text-align: right; }
+
+    /* ════════════════════════════════════════════════
+       10. PANEL GRUPOS
+    ════════════════════════════════════════════════ */
+    .grp-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .grp-btn {
+      background: none; border: 1px solid var(--border);
+      cursor: pointer; font-family: var(--font-ui);
+      font-size: 13px; font-weight: 700; padding: 7px 18px;
+      border-radius: 3px; color: var(--text3);
+      transition: all .2s;
+    }
+    .grp-btn:hover { border-color: var(--red); color: var(--text2); }
+    .grp-btn.active { background: var(--red); border-color: var(--red); color: var(--white); }
+
+    .grp-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    /* Tabla de posiciones */
+    .tbl { background: var(--navy2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+    .tbl-head {
+      display: grid; grid-template-columns: 26px 1fr 34px 34px 34px 34px 40px 44px;
+      padding: 9px 16px; background: var(--navy3);
+      border-bottom: 1px solid var(--border);
+      font-size: 10px; color: var(--text4); font-weight: 700; letter-spacing: 1px;
+    }
+    .tbl-row {
+      display: grid; grid-template-columns: 26px 1fr 34px 34px 34px 34px 40px 44px;
+      padding: 11px 16px; border-bottom: 1px solid #071E3A;
+      font-size: 13px; align-items: center;
+      transition: background .15s;
+    }
+    .tbl-row:last-child { border-bottom: none; }
+    .tbl-row:hover { background: var(--navy3); }
+    .tbl-row.qualify { border-left: 3px solid var(--red); padding-left: 13px; }
+    .cc { text-align: center; }
+    .pts-big { font-family: var(--font-display); font-size: 22px; color: var(--white); text-align: center; }
+    .dg-pos { color: #00DD77; }
+    .dg-neg { color: #ff7788; }
+    .dg-zer { color: var(--text4); }
+
+    /* Partidos del grupo */
+    .gmatch {
+      background: var(--navy2); border: 1px solid var(--border2);
+      border-radius: 5px; padding: 9px 16px; margin-bottom: 7px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background .15s;
+    }
+    .gmatch:hover { background: var(--navy3); }
+    .gm-date { font-size: 10px; color: var(--text4); min-width: 52px; }
+    .gm-teams { flex: 1; display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .gm-home, .gm-away { font-size: 13px; font-weight: 600; color: var(--text2); min-width: 90px; }
+    .gm-home { text-align: right; }
+    .gm-away { text-align: left; }
+    .gm-score {
+      font-family: var(--font-display); font-size: 18px; color: var(--white);
+      background: var(--navy); padding: 2px 14px; border-radius: 3px;
+      border: 1px solid var(--border); min-width: 66px; text-align: center; letter-spacing: 2px;
+    }
+    .gm-ft { font-size: 9px; color: var(--text4); font-weight: 700; }
+
+    /* ════════════════════════════════════════════════
+       11. PANEL FIXTURE
+    ════════════════════════════════════════════════ */
+    .fixture-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .fix-card { background: var(--navy2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+    .fix-hdr {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--navy3); padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+    }
+    .fix-grp-name { font-size: 12px; font-weight: 900; color: var(--red); letter-spacing: 2px; }
+    .fix-grp-teams { font-size: 10px; color: var(--text4); }
+    .fix-match {
+      padding: 8px 16px; border-bottom: 1px solid #071E3A;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .fix-match:last-child { border-bottom: none; }
+    .fix-date { font-size: 10px; color: var(--text4); min-width: 46px; }
+    .fix-teams { flex: 1; display: flex; align-items: center; gap: 6px; justify-content: center; }
+    .fix-home, .fix-away { font-size: 12px; font-weight: 600; color: var(--text2); flex: 1; }
+    .fix-home { text-align: right; }
+    .fix-away { text-align: left; }
+    .fix-score { font-family: var(--font-display); font-size: 16px; color: var(--white); min-width: 50px; text-align: center; letter-spacing: 1px; }
+    .fix-ft { font-size: 9px; color: var(--text4); }
+
+    /* ════════════════════════════════════════════════
+       12. PANEL GOLEADORES
+    ════════════════════════════════════════════════ */
+    .sc-tbl { background: var(--navy2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+    .sc-hdr {
+      display: grid; grid-template-columns: 44px 36px 1fr 170px 90px 90px;
+      padding: 10px 20px; background: var(--navy3);
+      border-bottom: 1px solid var(--border);
+      font-size: 10px; color: var(--text4); font-weight: 700; letter-spacing: 1px;
+    }
+    .sc-row {
+      display: grid; grid-template-columns: 44px 36px 1fr 170px 90px 90px;
+      padding: 14px 20px; border-bottom: 1px solid #071E3A;
+      align-items: center; transition: background .15s;
+    }
+    .sc-row:last-child { border-bottom: none; }
+    .sc-row:hover { background: var(--navy3); }
+    .sc-rank { font-size: 16px; font-weight: 900; }
+    .sc-flag { font-size: 22px; }
+    .sc-name { font-size: 16px; font-weight: 700; color: var(--offwhite); }
+    .sc-team { font-size: 12px; color: var(--text3); }
+    .sc-goals-cell { text-align: center; }
+    .sc-goals-num { font-family: var(--font-display); font-size: 28px; color: var(--red); line-height: 1; }
+    .sc-bar-wrap { height: 3px; background: #071E3A; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+    .sc-bar { height: 3px; background: linear-gradient(90deg, #00AA55, #FFD700); border-radius: 2px; }
+    .sc-ast { font-family: var(--font-display); font-size: 22px; color: var(--text3); text-align: center; }
+
+    /* ════════════════════════════════════════════════
+       13. PANEL TARJETAS
+    ════════════════════════════════════════════════ */
+    .cd-tbl { background: var(--navy2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; max-width: 680px; }
+    .cd-hdr {
+      display: grid; grid-template-columns: 36px 36px 1fr 160px 110px 110px;
+      padding: 10px 20px; background: var(--navy3);
+      border-bottom: 1px solid var(--border);
+      font-size: 10px; color: var(--text4); font-weight: 700; letter-spacing: 1px;
+    }
+    .cd-row {
+      display: grid; grid-template-columns: 36px 36px 1fr 160px 110px 110px;
+      padding: 13px 20px; border-bottom: 1px solid #071E3A;
+      align-items: center; transition: background .15s;
+    }
+    .cd-row:last-child { border-bottom: none; }
+    .cd-row:hover { background: var(--navy3); }
+    .cd-rank  { font-size: 13px; font-weight: 900; color: var(--text4); }
+    .cd-flag  { font-size: 20px; }
+    .cd-name  { font-size: 15px; font-weight: 700; color: var(--offwhite); }
+    .cd-team  { font-size: 12px; color: var(--text3); }
+    .cd-cards { display: flex; align-items: center; gap: 4px; }
+    .cy { display: inline-block; width: 12px; height: 17px; background: #FFD700; border-radius: 2px; box-shadow: 0 2px 4px #00000055; }
+    .cr { display: inline-block; width: 12px; height: 17px; background: var(--red);    border-radius: 2px; box-shadow: 0 2px 4px #00000055; }
+    .c-none { color: var(--text4); font-size: 12px; }
+
+    /* ════════════════════════════════════════════════
+       14. PANEL EDICIONES PASADAS
+       — Sección histórica de Mundiales
+    ════════════════════════════════════════════════ */
+    .hist-hero {
+      background: linear-gradient(135deg, #0D3560 0%, #0a2a50 50%, #0D3560 100%);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 36px 40px; margin-bottom: 32px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 1px; overflow: hidden; position: relative;
+    }
+    .hist-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='%23C8102E' fill-opacity='0.08'/%3E%3C/svg%3E") center;
+      pointer-events: none;
+    }
+    .hist-stat {
+      text-align: center; padding: 24px 20px;
+      border-right: 1px solid var(--border);
+    }
+    .hist-stat:last-child { border-right: none; }
+    .hist-stat-num { font-family: var(--font-display); font-size: 56px; color: var(--white); line-height: 1; }
+    .hist-stat-num span { color: var(--red); }
+    .hist-stat-lbl { font-size: 11px; color: var(--text3); letter-spacing: 3px; margin-top: 6px; text-transform: uppercase; }
+
+    /* Selector de edición */
+    .edition-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .ed-btn {
+      background: none; border: 1px solid var(--border);
+      cursor: pointer; font-family: var(--font-ui);
+      font-size: 12px; font-weight: 700; padding: 6px 14px;
+      border-radius: 3px; color: var(--text4);
+      transition: all .2s;
+    }
+    .ed-btn:hover  { border-color: var(--red); color: var(--text2); }
+    .ed-btn.active { background: var(--red); border-color: var(--red); color: var(--white); }
+
+    /* Tarjeta de edición */
+    .ed-card {
+      display: none;
+      animation: fadeUp .3s ease;
+    }
+    .ed-card.active { display: block; }
+
+    .ed-header {
+      background: linear-gradient(135deg, var(--navy3), #0a2050);
+      border: 1px solid var(--border); border-radius: 8px 8px 0 0;
+      border-bottom: none; padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .ed-year { font-family: var(--font-display); font-size: 72px; color: var(--red); line-height: 1; }
+    .ed-info-main { flex: 1; padding-left: 32px; }
+    .ed-host { font-family: var(--font-display); font-size: 32px; color: var(--white); }
+    .ed-dates { font-size: 13px; color: var(--text3); margin-top: 4px; }
+    .ed-champion-block { text-align: right; }
+    .ed-champion-lbl { font-size: 10px; color: var(--text4); letter-spacing: 3px; text-transform: uppercase; }
+    .ed-champion-flag { font-size: 48px; display: block; margin: 6px 0; }
+    .ed-champion-name { font-family: var(--font-display); font-size: 24px; color: var(--gold); }
+
+    .ed-body {
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 0 0 8px 8px; padding: 28px 32px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+    }
+
+    .ed-section-title {
+      font-size: 10px; font-weight: 700; color: var(--text4);
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .ed-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* Tabla de goleadores históricos */
+    .hist-scorer-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #071E3A;
+    }
+    .hist-scorer-row:last-child { border-bottom: none; }
+    .hsr-pos   { font-size: 12px; font-weight: 900; min-width: 18px; color: var(--text4); }
+    .hsr-flag  { font-size: 16px; }
+    .hsr-name  { font-size: 13px; font-weight: 700; color: var(--text2); flex: 1; }
+    .hsr-goals { font-family: var(--font-display); font-size: 20px; color: var(--red); min-width: 26px; text-align: right; }
+
+    /* Tabla de finalistas */
+    .finalist-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; background: #071E3A; border-radius: 4px; margin-bottom: 6px;
+    }
+    .fn-pos    { font-size: 12px; font-weight: 900; color: var(--text4); min-width: 20px; }
+    .fn-flag   { font-size: 18px; }
+    .fn-team   { font-size: 13px; font-weight: 700; color: var(--text2); flex: 1; padding: 0 8px; }
+    .fn-titles { display: flex; gap: 4px; }
+    .fn-trophy { font-size: 14px; }
+
+    /* Records */
+    .record-item {
+      padding: 10px 14px; background: #071E3A; border-radius: 4px;
+      margin-bottom: 8px; border-left: 3px solid var(--red);
+      transition: transform .15s;
+    }
+    .record-item:hover { transform: translateX(3px); }
+    .record-cat   { font-size: 9px; color: var(--text4); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+    .record-val   { font-family: var(--font-display); font-size: 22px; color: var(--white); line-height: 1; }
+    .record-desc  { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+    /* Datos curiosos */
+    .fact-item {
+      padding: 10px 14px; background: #071E3A; border-radius: 4px;
+      margin-bottom: 8px; border-left: 3px solid var(--gold);
+    }
+    .fact-emoji { font-size: 16px; margin-bottom: 4px; display: block; }
+    .fact-text  { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+    /* Gráfico de eras / campeonatos por confederación */
+    .conf-bar-wrap { margin-bottom: 10px; }
+    .conf-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .conf-name  { font-size: 12px; font-weight: 700; color: var(--text2); }
+    .conf-count { font-size: 12px; font-weight: 900; color: var(--red); }
+    .conf-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .conf-fill  { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00AA55, #FFD700); }
+
+    /* ════════════════════════════════════════════════
+       15. FOOTER
+    ════════════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 28px; max-width: 1200px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .footer-brand { font-family: var(--font-display); font-size: 16px; color: var(--text4); letter-spacing: 3px; }
+    .footer-info  { display: flex; gap: 20px; }
+    .footer-tag   { font-size: 10px; color: var(--text4); letter-spacing: 2px; }
+
+    /* ════════════════════════════════════════════════
+       16. PANEL GUÍA DE CÓDIGO
+    ════════════════════════════════════════════════ */
+    .guide-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+
+    .guide-index { position: sticky; top: 80px; align-self: start; }
+    .guide-index-title {
+      font-size: 10px; font-weight: 700; color: var(--text4);
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .guide-index a {
+      display: block; padding: 8px 14px; border-radius: 4px;
+      font-size: 13px; font-weight: 600; color: var(--text3);
+      text-decoration: none; border-left: 2px solid transparent;
+      transition: all .15s; margin-bottom: 3px;
+    }
+    .guide-index a:hover { color: var(--text2); background: var(--navy2); border-left-color: var(--red); }
+
+    .guide-section {
+      background: var(--navy2); border: 1px solid var(--border2);
+      border-radius: 6px; padding: 28px 32px; margin-bottom: 20px;
+      scroll-margin-top: 80px;
+    }
+    .guide-section-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--red); color: var(--white);
+      font-size: 13px; font-weight: 900; margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .guide-section-title { font-family: var(--font-display); font-size: 22px; color: var(--white); margin-bottom: 12px; }
+    .guide-text { font-family: var(--font-body); font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+    .guide-text strong { color: var(--offwhite); font-weight: 600; }
+
+    .code-block {
+      background: #041228; border: 1px solid var(--border);
+      border-radius: 4px; padding: 16px 20px; margin: 12px 0;
+      font-family: 'Courier New', monospace; font-size: 12px;
+      line-height: 1.7; overflow-x: auto; white-space: pre;
+      color: #a8d8a8;
+    }
+    .code-block .kw  { color: #6699ff; }
+    .code-block .str { color: #ffcc66; }
+    .code-block .cmt { color: #556677; font-style: italic; }
+    .code-block .fn  { color: #ff9966; }
+    .code-block .num { color: #ff6688; }
+
+    .guide-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 3px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1px; margin: 0 2px;
+    }
+    .badge-html { background: #e34c2622; color: #e34c26; border: 1px solid #e34c2644; }
+    .badge-css  { background: #26499d22; color: #6699ff; border: 1px solid #26499d44; }
+    .badge-js   { background: #f7df1e22; color: #f7df1e; border: 1px solid #f7df1e44; }
+
+    .arch-diagram {
+      background: var(--navy); border: 1px solid var(--border); border-radius: 6px;
+      padding: 20px; margin: 14px 0; display: flex; flex-direction: column; gap: 8px;
+    }
+    .arch-row { display: flex; align-items: center; gap: 10px; }
+    .arch-box {
+      padding: 8px 16px; border-radius: 4px;
+      font-size: 12px; font-weight: 700; text-align: center;
+    }
+    .arch-arrow { color: var(--text4); font-size: 20px; }
+
+    /* ════════════════════════════════════════════════
+       17. RESPONSIVE
+    ════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .live-grid    { grid-template-columns: 1fr; }
+      .grp-layout   { grid-template-columns: 1fr; }
+      .fixture-grid { grid-template-columns: 1fr; }
+      .ed-body      { grid-template-columns: 1fr; }
+      .hist-hero    { grid-template-columns: 1fr 1fr; }
+      .guide-grid   { grid-template-columns: 1fr; }
+      .guide-index  { display: none; }
+      .ed-header    { flex-direction: column; gap: 16px; }
+      .ed-info-main { padding-left: 0; }
+    }
+    @media (max-width: 600px) {
+      .hist-hero { grid-template-columns: 1fr 1fr; }
+      .sc-hdr, .sc-row { grid-template-columns: 36px 30px 1fr 70px 60px; }
+      .sc-team { display: none; }
+      .tabs { overflow-x: auto; scrollbar-width: none; }
+      .main { padding: 0 14px 50px; }
+      header { padding: 0 14px; }
+    }
+
+    /* ════════════════════════════════════════════════
+       18. AUTH — Pantalla de login / overlay
+    ════════════════════════════════════════════════ */
+    #auth-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, #041228 0%, #0A2A4A 50%, #0D3560 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #auth-overlay.hidden { display: none; }
+
+    .auth-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      animation: fadeUp .4s ease;
+      position: relative;
+    }
+
+    .auth-logo {
+      text-align: center; margin-bottom: 32px;
+    }
+    .auth-logo-icon { font-size: 44px; display: block; margin-bottom: 10px; animation: flagWave 3s ease-in-out infinite; }
+    .auth-logo-title {
+      font-family: var(--font-display);
+      font-size: 36px; letter-spacing: 3px; color: var(--white);
+    }
+    .auth-logo-title span { color: var(--red); }
+    .auth-logo-sub {
+      font-size: 11px; color: var(--text3);
+      letter-spacing: 3px; text-transform: uppercase; margin-top: 4px;
+    }
+
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .auth-divider-text { font-size: 11px; color: var(--text4); letter-spacing: 2px; text-transform: uppercase; }
+
+    /* Botón Google OAuth */
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      background: #ffffff;
+      color: #1a1a2e;
+      border: none; border-radius: 6px;
+      padding: 13px 20px;
+      font-family: var(--font-ui);
+      font-size: 14px; font-weight: 700; letter-spacing: .5px;
+      cursor: pointer;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      box-shadow: 0 2px 8px #00000044;
+    }
+    .btn-google:hover  { background: #f0f0f0; transform: translateY(-1px); box-shadow: 0 4px 16px #00000055; }
+    .btn-google:active { transform: translateY(0); }
+    .btn-google svg    { flex-shrink: 0; }
+
+    /* Formulario token / email */
+    .auth-form { display: flex; flex-direction: column; gap: 14px; }
+
+    .auth-field { display: flex; flex-direction: column; gap: 6px; }
+    .auth-label {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .auth-input {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-family: var(--font-ui);
+      font-size: 14px; color: var(--offwhite);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .auth-input::placeholder { color: var(--text4); }
+    .auth-input:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px #00AA5522;
+    }
+
+    .btn-token {
+      width: 100%;
+      background: var(--red);
+      color: var(--white);
+      border: none; border-radius: 6px;
+      padding: 13px 20px;
+      font-family: var(--font-ui);
+      font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: 4px;
+    }
+    .btn-token:hover  { background: var(--red2); transform: translateY(-1px); }
+    .btn-token:active { transform: translateY(0); }
+
+    /* Mensajes de error / éxito */
+    .auth-msg {
+      font-size: 12px; text-align: center;
+      padding: 10px 14px; border-radius: 5px;
+      margin-top: 4px; display: none;
+    }
+    .auth-msg.error   { background: #D5001C22; color: #ff6680; border: 1px solid #D5001C44; display: block; }
+    .auth-msg.success { background: #00AA5522; color: #00DD77; border: 1px solid #00AA5544; display: block; }
+    .auth-msg.info    { background: #FFD70022; color: #FFD700; border: 1px solid #FFD70044; display: block; }
+
+    /* Toggle entre modos */
+    .auth-toggle {
+      text-align: center; margin-top: 16px;
+      font-size: 12px; color: var(--text3);
+    }
+    .auth-toggle a { color: var(--gold); cursor: pointer; text-decoration: none; font-weight: 700; }
+    .auth-toggle a:hover { color: var(--white); }
+
+    /* Loading spinner sobre el botón */
+    .btn-loading { opacity: .7; pointer-events: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #ffffff44;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+
+    /* Avatar + logout en el header */
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid var(--red);
+      object-fit: cover; cursor: pointer;
+    }
+    .user-avatar-fallback {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid var(--red);
+      background: var(--navy3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: var(--offwhite);
+      cursor: pointer; font-family: var(--font-ui);
+    }
+    .user-menu {
+      position: relative;
+    }
+    .user-dropdown {
+      position: absolute; right: 0; top: calc(100% + 10px);
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 0; min-width: 200px;
+      box-shadow: 0 8px 32px #00000077;
+      display: none; z-index: 300;
+      animation: fadeUp .2s ease;
+    }
+    .user-dropdown.open { display: block; }
+    .user-dropdown-name {
+      padding: 10px 18px 6px;
+      font-size: 13px; font-weight: 700; color: var(--offwhite);
+      border-bottom: 1px solid var(--border); margin-bottom: 6px;
+    }
+    .user-dropdown-email {
+      font-size: 11px; color: var(--text3); font-weight: 400; margin-top: 2px;
+    }
+    .user-dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 18px; font-size: 13px; font-weight: 600;
+      color: var(--text2); cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .user-dropdown-item:hover { background: var(--navy3); color: var(--offwhite); }
+    .user-dropdown-item.danger { color: #ff6680; }
+    .user-dropdown-item.danger:hover { background: #D5001C22; }
+
+    /* Ocultar app hasta que el auth esté listo */
+    #app-wrapper { display: none; }
+    #app-wrapper.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     AUTH OVERLAY — se oculta al loguearse
+══════════════════════════════════════ -->
+<div id="auth-overlay">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="auth-logo-icon">⚽</span>
+      <div class="auth-logo-title"><span>MUNDIALITO</span></div>
+      <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
+    </div>
+
+    <!-- Google OAuth -->
+    <button class="btn-google" id="btn-google-login">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuar con Google
+    </button>
+
+    <div class="auth-divider"><span class="auth-divider-text">o ingresá con token</span></div>
+
+    <!-- Token / Email form -->
+    <div class="auth-form" id="auth-form-token">
+      <!-- Solo visible en modo registro -->
+      <div class="auth-field" id="auth-username-field" style="display:none">
+        <label class="auth-label">Nombre de usuario</label>
+        <input class="auth-input" type="text" id="auth-username" placeholder="tu_nombre" autocomplete="username"/>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email"/>
+      </div>
+      <div class="auth-field" id="auth-password-field">
+        <label class="auth-label">Contraseña</label>
+        <input class="auth-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-token" id="btn-token-login">Ingresar</button>
+      <div class="auth-msg" id="auth-message"></div>
+    </div>
+
+    <div class="auth-toggle">
+      <a id="auth-mode-toggle">¿No tenés cuenta? Registrate</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP — se muestra solo si está autenticado
+══════════════════════════════════════ -->
+<div id="app-wrapper">
+
+<!-- ══════════════════════════════════════
+     HEADER
+══════════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">⚽</span>
+      <span class="logo-text"><span>MUNDIALITO</span></span>
+      <span class="logo-badge">MUNDIAL 2026</span>
+    </div>
+    <div class="header-right">
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        <span class="live-label">EN VIVO</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════
+     TICKER
+══════════════════════════════════════ -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CONTENIDO PRINCIPAL
+══════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TABS DE NAVEGACIÓN -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
+    <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
+    <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
+    <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
+    <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
+    <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+    <button class="tab-btn" onclick="switchTab('guide',this)">📖 Guía de Código</button>
+  </div>
+
+  <!-- ══ PANEL: EN VIVO ══ -->
+  <div id="panel-live" class="panel active">
+    <div class="live-grid">
+      <div>
+        <p class="section-label">Partidos en curso</p>
+
+        <div class="match-live">
+          <div class="team-block home">
+            <div class="team-name">España</div>
+            <div class="team-role">Local</div>
+          </div>
+          <div class="score-block">
+            <div class="score-main" id="live1-score">1<span class="score-sep">–</span>1</div>
+            <div class="min-badge">
+              <span class="min-dot"></span>
+              <span class="min-text" id="live1-min">67'</span>
+            </div>
+          </div>
+          <div class="team-block away">
+            <div class="team-name">Alemania</div>
+            <div class="team-role">Visitante</div>
+          </div>
+          <span class="grp-tag">GRP E</span>
+        </div>
+
+        <div class="match-live">
+          <div class="team-block home">
+            <div class="team-name">Brasil</div>
+            <div class="team-role">Local</div>
+          </div>
+          <div class="score-block">
+            <div class="score-main" id="live2-score">0<span class="score-sep">–</span>0</div>
+            <div class="min-badge">
+              <span class="min-dot"></span>
+              <span class="min-text" id="live2-min">23'</span>
+            </div>
+          </div>
+          <div class="team-block away">
+            <div class="team-name">Suiza</div>
+            <div class="team-role">Visitante</div>
+          </div>
+          <span class="grp-tag">GRP G</span>
+        </div>
+
+        <p class="section-label" style="margin-top:30px;">Próximos partidos hoy</p>
+
+        <div class="match-next">
+          <div class="next-teams">
+            <span class="next-team" style="text-align:right;flex:1">Croacia</span>
+            <span class="next-vs">vs</span>
+            <span class="next-team" style="text-align:left;flex:1">Marruecos</span>
+          </div>
+          <span class="next-time">20:00</span>
+          <span class="next-grp">GRP F</span>
+        </div>
+        <div class="match-next">
+          <div class="next-teams">
+            <span class="next-team" style="text-align:right;flex:1">Bélgica</span>
+            <span class="next-vs">vs</span>
+            <span class="next-team" style="text-align:left;flex:1">Canadá</span>
+          </div>
+          <span class="next-time">20:00</span>
+          <span class="next-grp">GRP F</span>
+        </div>
+        <div class="match-next">
+          <div class="next-teams">
+            <span class="next-team" style="text-align:right;flex:1">Portugal</span>
+            <span class="next-vs">vs</span>
+            <span class="next-team" style="text-align:left;flex:1">Uruguay</span>
+          </div>
+          <span class="next-time">23:00</span>
+          <span class="next-grp">GRP H</span>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div>
+        <div class="sidebar-card">
+          <div class="sidebar-hdr">
+            <span class="sidebar-hdr-dot"></span>
+            <span class="sidebar-hdr-text">Top Goleadores</span>
+          </div>
+          <div id="liveScorers"></div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-hdr">
+            <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
+            <span class="sidebar-hdr-text">Últimas Tarjetas</span>
+          </div>
+          <div class="srow">
+            <span class="srow-flag">🇲🇦</span>
+            <div style="flex:1"><div class="srow-name">Sofyan Amrabat</div><div class="srow-sub">Marruecos</div></div>
+            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cy"></span><span class="cy"></span></div>
+          </div>
+          <div class="srow">
+            <span class="srow-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <div style="flex:1"><div class="srow-name">Mason Mount</div><div class="srow-sub">Inglaterra</div></div>
+            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cy"></span></div>
+          </div>
+          <div class="srow">
+            <span class="srow-flag">🇸🇳</span>
+            <div style="flex:1"><div class="srow-name">Idrissa Gueye</div><div class="srow-sub">Senegal</div></div>
+            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cr"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: GRUPOS ══ -->
+  <div id="panel-groups" class="panel">
+    <div class="grp-selector" id="grpSelector"></div>
+    <div class="grp-layout" id="grpContent"></div>
+  </div>
+
+  <!-- ══ PANEL: FIXTURE ══ -->
+  <div id="panel-fixtures" class="panel">
+    <p class="section-label">Fixture completo — Todos los grupos</p>
+    <div class="fixture-grid" id="fixtureContent"></div>
+  </div>
+
+  <!-- ══ PANEL: GOLEADORES ══ -->
+  <div id="panel-scorers" class="panel">
+    <p class="section-label">Tabla de goleadores — Mundial 2026</p>
+    <div class="sc-tbl">
+      <div class="sc-hdr">
+        <span>#</span><span></span><span>JUGADOR</span>
+        <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
+      </div>
+      <div id="scorersBody"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: TARJETAS ══ -->
+  <div id="panel-cards" class="panel">
+    <p class="section-label">Disciplina — Tarjetas por jugador</p>
+    <div class="cd-tbl">
+      <div class="cd-hdr">
+        <span>#</span><span></span><span>JUGADOR</span>
+        <span>EQUIPO</span><span style="text-align:center">🟨 AMARILLAS</span><span style="text-align:center">🟥 ROJAS</span>
+      </div>
+      <div id="cardsBody"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: EDICIONES PASADAS ══ -->
+  <div id="panel-history" class="panel">
+
+    <!-- Estadísticas globales del torneo -->
+    <div class="hist-hero">
+      <div class="hist-stat">
+        <div class="hist-stat-num"><span>22</span></div>
+        <div class="hist-stat-lbl">Ediciones celebradas</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">8</div>
+        <div class="hist-stat-lbl">Campeones distintos</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">5</div>
+        <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">8<span>5</span></div>
+        <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
+      </div>
+    </div>
+
+    <!-- Campeonatos por confederación -->
+    <p class="section-label">Títulos por confederación (1930–2022)</p>
+    <div style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
+      <div class="conf-bar-wrap">
+        <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span class="conf-count">9</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:100%"></div></div>
+      </div>
+      <div class="conf-bar-wrap" style="margin-top:14px">
+        <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div></div>
+      </div>
+      <div class="conf-bar-wrap" style="margin-top:14px">
+        <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span class="conf-count">0</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:3%;background:var(--border)"></div></div>
+      </div>
+    </div>
+
+    <!-- Selector de edición -->
+    <p class="section-label">Explorar edición</p>
+    <div class="edition-selector" id="editionSelector"></div>
+    <div id="editionCards"></div>
+
+  </div>
+
+  <!-- ══ PANEL: GUÍA DE CÓDIGO ══ -->
+  <div id="panel-guide" class="panel">
+    <div class="guide-grid">
+
+      <!-- Índice sticky -->
+      <div class="guide-index">
+        <div class="guide-index-title">Contenido</div>
+        <a href="#g1">1. Estructura general</a>
+        <a href="#g2">2. Variables CSS (:root)</a>
+        <a href="#g3">3. Datos en JavaScript</a>
+        <a href="#g4">4. Sistema de tabs</a>
+        <a href="#g5">5. Render dinámico</a>
+        <a href="#g6">6. Ticker animado</a>
+        <a href="#g7">7. Tiempo real (minutos)</a>
+        <a href="#g8">8. Siguiente paso: APIs</a>
+      </div>
+
+      <!-- Secciones de guía -->
+      <div>
+
+        <div class="guide-section" id="g1">
+          <div class="guide-section-num">1</div>
+          <div class="guide-section-title">Estructura general del archivo</div>
+          <p class="guide-text">
+            Todo el proyecto vive en <strong>un solo archivo .html</strong>. Esto es ideal para una maqueta. El archivo tiene tres bloques grandes:
+          </p>
+          <div class="arch-diagram">
+            <div class="arch-row">
+              <div class="arch-box" style="background:#e34c2622;border:1px solid #e34c2644;color:#e34c26;width:120px">&lt;head&gt;</div>
+              <span class="arch-arrow">→</span>
+              <span style="font-size:13px;color:var(--text3)">Metadata, fuentes, y todo el <strong style="color:var(--text2)">CSS</strong> dentro de &lt;style&gt;</span>
+            </div>
+            <div class="arch-row">
+              <div class="arch-box" style="background:#e34c2622;border:1px solid #e34c2644;color:#e34c26;width:120px">&lt;body&gt;</div>
+              <span class="arch-arrow">→</span>
+              <span style="font-size:13px;color:var(--text3)">Todo el <strong style="color:var(--text2)">HTML visible</strong>: header, ticker, tabs, paneles, footer</span>
+            </div>
+            <div class="arch-row">
+              <div class="arch-box" style="background:#f7df1e22;border:1px solid #f7df1e44;color:#f7df1e;width:120px">&lt;script&gt;</div>
+              <span class="arch-arrow">→</span>
+              <span style="font-size:13px;color:var(--text3)">Los <strong style="color:var(--text2)">datos y funciones JS</strong> que construyen la UI dinámicamente</span>
+            </div>
+          </div>
+          <p class="guide-text">
+            Cuando el proyecto crezca, vas a <strong>separar</strong> esto en archivos distintos: <code style="color:var(--gold);font-size:12px">index.html</code>, <code style="color:var(--gold);font-size:12px">style.css</code> y <code style="color:var(--gold);font-size:12px">app.js</code>.
+          </p>
+        </div>
+
+        <div class="guide-section" id="g2">
+          <div class="guide-section-num">2</div>
+          <div class="guide-section-title">Variables CSS con :root</div>
+          <p class="guide-text">
+            Al inicio del CSS hay un bloque <span class="guide-badge badge-css">:root</span> con todas las variables de color y tipografía. Esto es lo que define la <strong>paleta del Mundial 2026</strong>. Si querés cambiar un color en toda la app, lo cambiás en un solo lugar.
+          </p>
+          <div class="code-block"><span class="cmt">/* Así se declaran las variables */</span>
+<span class="kw">:root</span> {
+  <span class="str">--navy</span>:  #0A2A4A;  <span class="cmt">/* azul marino principal */</span>
+  <span class="str">--red</span>:   #00AA55;  <span class="cmt">/* verde esmeralda */</span>
+  <span class="str">--gold</span>:  #FFD700;  <span class="cmt">/* dorado para rankings */</span>
+  <span class="str">--white</span>: #FFFFFF;
+}
+
+<span class="cmt">/* Así se usan en cualquier selector */</span>
+<span class="fn">.tab-btn.active</span> {
+  <span class="str">color</span>: <span class="fn">var</span>(--white);
+  <span class="str">border-bottom-color</span>: <span class="fn">var</span>(--red);
+}</div>
+          <p class="guide-text">
+            <strong>Ventaja enorme:</strong> si mañana querés probar con los colores de otro mundial, sólo editás las variables y toda la app cambia instantáneamente.
+          </p>
+        </div>
+
+        <div class="guide-section" id="g3">
+          <div class="guide-section-num">3</div>
+          <div class="guide-section-title">Los datos en JavaScript</div>
+          <p class="guide-text">
+            Los datos de los partidos, goleadores y tarjetas están guardados como <strong>objetos y arreglos de JavaScript</strong>. Esto simula lo que en el proyecto real vendría de una API REST.
+          </p>
+          <div class="code-block"><span class="cmt">/* Un grupo es un objeto con dos propiedades */</span>
+<span class="kw">const</span> GROUPS = {
+  <span class="str">A</span>: {
+    teams: [<span class="str">"Qatar"</span>, <span class="str">"Ecuador"</span>, ...],
+    matches: [
+      { home: <span class="str">"Qatar"</span>, away: <span class="str">"Ecuador"</span>, hs: <span class="num">0</span>, as: <span class="num">2</span>, date: <span class="str">"20 Nov"</span> },
+      <span class="cmt">// hs = home score, as = away score</span>
+    ]
+  }
+};
+
+<span class="cmt">/* Un goleador es un objeto simple */</span>
+<span class="kw">const</span> SCORERS = [
+  { name: <span class="str">"Kylian Mbappé"</span>, team: <span class="str">"Francia"</span>, goals: <span class="num">8</span>, assists: <span class="num">2</span>, flag: <span class="str">"🇫🇷"</span> }
+];</div>
+          <p class="guide-text">
+            Cuando conectes la API real, vas a reemplazar estos arreglos con datos que vienen de <code style="color:var(--gold);font-size:12px">fetch()</code>. La estructura de la UI no cambia.
+          </p>
+        </div>
+
+        <div class="guide-section" id="g4">
+          <div class="guide-section-num">4</div>
+          <div class="guide-section-title">El sistema de tabs (pestañas)</div>
+          <p class="guide-text">
+            El sistema de navegación usa una función simple: <strong>oculta todos los paneles</strong> y muestra solo el seleccionado. Cada botón tiene un atributo <span class="guide-badge badge-html">onclick</span> que llama a la función con el id del panel.
+          </p>
+          <div class="code-block"><span class="cmt">/* HTML: cada botón pasa su id y referencia a sí mismo */</span>
+&lt;<span class="kw">button</span> <span class="str">onclick</span>=<span class="fn">"switchTab('live', this)"</span>&gt;En Vivo&lt;/button&gt;
+
+<span class="cmt">/* JS: la función gestiona clases CSS para mostrar/ocultar */</span>
+<span class="kw">function</span> <span class="fn">switchTab</span>(id, btn) {
+  <span class="cmt">// 1. Quita 'active' de todos los paneles y botones</span>
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'.panel'</span>).<span class="fn">forEach</span>(p => p.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'.tab-btn'</span>).<span class="fn">forEach</span>(b => b.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
+  <span class="cmt">// 2. Agrega 'active' solo al seleccionado</span>
+  document.<span class="fn">getElementById</span>(<span class="str">'panel-'</span> + id).classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+  btn.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
+}</div>
+          <p class="guide-text">
+            En el CSS, <code style="color:var(--gold);font-size:12px">.panel</code> tiene <code style="color:var(--gold);font-size:12px">display: none</code> y <code style="color:var(--gold);font-size:12px">.panel.active</code> tiene <code style="color:var(--gold);font-size:12px">display: block</code>. Todo el sistema de navegación es solo eso.
+          </p>
+        </div>
+
+        <div class="guide-section" id="g5">
+          <div class="guide-section-num">5</div>
+          <div class="guide-section-title">Render dinámico con innerHTML</div>
+          <p class="guide-text">
+            En lugar de escribir el HTML de cada partido a mano, usamos <strong>template literals de JavaScript</strong> para generarlo desde los datos. La función <code style="color:var(--gold);font-size:12px">renderGroups()</code> toma el objeto de datos y construye el HTML como un string.
+          </p>
+          <div class="code-block"><span class="kw">function</span> <span class="fn">renderGroups</span>(key) {
+  <span class="kw">const</span> gData = GROUPS[key];
+
+  <span class="cmt">// Genera HTML para cada partido usando .map()</span>
+  <span class="kw">const</span> matchesHtml = gData.matches.<span class="fn">map</span>(m => <span class="str">`
+    &lt;div class="gmatch"&gt;
+      &lt;span&gt;${m.date}&lt;/span&gt;
+      &lt;span&gt;${m.home}&lt;/span&gt;
+      &lt;span&gt;${m.hs} — ${m.as}&lt;/span&gt;
+      &lt;span&gt;${m.away}&lt;/span&gt;
+    &lt;/div&gt;
+  `</span>).<span class="fn">join</span>(<span class="str">''</span>);
+
+  <span class="cmt">// Lo inyecta en el div correspondiente</span>
+  document.<span class="fn">getElementById</span>(<span class="str">'grpContent'</span>).innerHTML = matchesHtml;
+}</div>
+          <p class="guide-text">
+            Este patrón es el corazón de las apps web modernas. Frameworks como <strong>React o Vue</strong> hacen exactamente esto pero con más optimización. Acá lo hacés a mano para entender el concepto base.
+          </p>
+        </div>
+
+        <div class="guide-section" id="g6">
+          <div class="guide-section-num">6</div>
+          <div class="guide-section-title">El ticker (banda animada)</div>
+          <p class="guide-text">
+            El ticker de resultados en la parte superior usa solo <span class="guide-badge badge-css">CSS animation</span>. El truco es <strong>duplicar el contenido</strong> para que el loop sea infinito y sin saltos.
+          </p>
+          <div class="code-block"><span class="cmt">/* CSS: mueve el contenedor hacia la izquierda indefinidamente */</span>
+<span class="fn">@keyframes</span> ticker {
+  <span class="num">0%</span>   { <span class="str">transform</span>: <span class="fn">translateX</span>(0); }
+  <span class="num">100%</span> { <span class="str">transform</span>: <span class="fn">translateX</span>(-50%); }
+<span class="cmt">/* ↑ -50% porque el contenido está duplicado */</span>
+}
+<span class="fn">.ticker-track</span> { <span class="str">animation</span>: ticker 28s linear infinite; }
+
+<span class="cmt">/* JS: duplica el HTML para el loop perfecto */</span>
+<span class="kw">function</span> <span class="fn">buildTicker</span>() {
+  <span class="kw">const</span> html = items.<span class="fn">join</span>(<span class="str">''</span>);
+  track.innerHTML = html + html; <span class="cmt">// duplicado = loop sin salto</span>
+}</div>
+        </div>
+
+        <div class="guide-section" id="g7">
+          <div class="guide-section-num">7</div>
+          <div class="guide-section-title">Simulación de tiempo real (minutos)</div>
+          <p class="guide-text">
+            La app simula los minutos que avanzan en los partidos en vivo usando <code style="color:var(--gold);font-size:12px">setInterval()</code>. En el proyecto real, este dato vendría del <strong>WebSocket</strong>, no de un intervalo local.
+          </p>
+          <div class="code-block"><span class="cmt">/* Cada 5 segundos, incrementa el minuto y actualiza el DOM */</span>
+<span class="kw">const</span> liveData = [
+  { minEl: <span class="str">'live1-min'</span>, min: <span class="num">67</span>, max: <span class="num">90</span> },
+  { minEl: <span class="str">'live2-min'</span>, min: <span class="num">23</span>, max: <span class="num">90</span> },
+];
+
+<span class="fn">setInterval</span>(() => {
+  liveData.<span class="fn">forEach</span>(d => {
+    <span class="kw">if</span> (d.min < d.max) d.min++;
+    document.<span class="fn">getElementById</span>(d.minEl).textContent = d.min + <span class="str">"'"</span>;
+  });
+}, <span class="num">5000</span>); <span class="cmt">// cada 5000ms = 5 segundos</span>
+
+<span class="cmt">/* En producción con WebSocket sería así: */</span>
+<span class="cmt">// socket.on('match-update', (data) => {</span>
+<span class="cmt">//   document.getElementById('live1-min').textContent = data.minute + "'";</span>
+<span class="cmt">// });</span></div>
+        </div>
+
+        <div class="guide-section" id="g8">
+          <div class="guide-section-num">8</div>
+          <div class="guide-section-title">Siguiente paso: conectar a una API real</div>
+          <p class="guide-text">
+            Para pasar de maqueta a app real, hay <strong>tres cambios principales</strong>:
+          </p>
+          <div class="record-item" style="margin-bottom:10px">
+            <div class="record-cat">PASO 1 — API REST</div>
+            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Reemplazar datos hardcodeados</div>
+            <div class="record-desc">Cambiar los arreglos GROUPS, SCORERS, etc. por llamadas a <code style="color:var(--gold)">fetch('https://api-football.com/...')</code> y poblar el DOM con la respuesta.</div>
+          </div>
+          <div class="record-item" style="margin-bottom:10px">
+            <div class="record-cat">PASO 2 — WEBSOCKET</div>
+            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Conectar socket.io para tiempo real</div>
+            <div class="record-desc">Agregar <code style="color:var(--gold)">const socket = io('tu-servidor')</code> y escuchar eventos como <code style="color:var(--gold)">'match-update'</code> para actualizar scores y minutos sin recargar la página.</div>
+          </div>
+          <div class="record-item">
+            <div class="record-cat">PASO 3 — BACKEND</div>
+            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Servidor Node.js + Express</div>
+            <div class="record-desc">El backend consulta la API de fútbol cada 30 segundos y emite los datos actualizados a todos los clientes conectados por WebSocket. Actúa como intermediario.</div>
+          </div>
+          <div class="arch-diagram" style="margin-top:16px">
+            <div class="arch-row">
+              <div class="arch-box" style="background:#6699ff22;border:1px solid #6699ff44;color:#6699ff">API Football</div>
+              <span class="arch-arrow">→</span>
+              <div class="arch-box" style="background:#ff996622;border:1px solid #ff996644;color:#ff9966">Node.js Backend</div>
+              <span class="arch-arrow">→</span>
+              <div class="arch-box" style="background:#44cc8822;border:1px solid #44cc8844;color:#44cc88">WebSocket</div>
+              <span class="arch-arrow">→</span>
+              <div class="arch-box" style="background:#00AA5522;border:1px solid #00AA5544;color:#00DD77">Este HTML</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /guide sections -->
+    </div><!-- /guide-grid -->
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-brand">TODO FÚTBOL · 2026</span>
+  <div class="footer-info">
+    <span class="footer-tag">⚡ API EN TIEMPO REAL</span>
+    <span class="footer-tag">🔌 WEBSOCKET ACTIVO</span>
+    <span class="footer-tag pulse" style="color:var(--red)">● CONECTADO</span>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────
+   DATOS: Grupos (Mundial 2022 / base 2026)
+───────────────────────────────────── */
+const GROUPS = {
+  A:{teams:["Qatar","Ecuador","Senegal","Países Bajos"],matches:[{home:"Qatar",away:"Ecuador",hs:0,as:2,date:"20 Nov"},{home:"Senegal",away:"Países Bajos",hs:0,as:2,date:"21 Nov"},{home:"Qatar",away:"Senegal",hs:1,as:3,date:"25 Nov"},{home:"Países Bajos",away:"Ecuador",hs:1,as:1,date:"25 Nov"},{home:"Ecuador",away:"Senegal",hs:1,as:2,date:"29 Nov"},{home:"Países Bajos",away:"Qatar",hs:2,as:0,date:"29 Nov"}]},
+  B:{teams:["Inglaterra","Iran","EEUU","Gales"],matches:[{home:"Inglaterra",away:"Iran",hs:6,as:2,date:"21 Nov"},{home:"EEUU",away:"Gales",hs:1,as:1,date:"21 Nov"},{home:"Gales",away:"Iran",hs:0,as:2,date:"25 Nov"},{home:"Inglaterra",away:"EEUU",hs:0,as:0,date:"25 Nov"},{home:"Gales",away:"Inglaterra",hs:0,as:3,date:"29 Nov"},{home:"Iran",away:"EEUU",hs:0,as:1,date:"29 Nov"}]},
+  C:{teams:["Argentina","Arabia Saudita","México","Polonia"],matches:[{home:"Argentina",away:"Arabia Saudita",hs:1,as:2,date:"22 Nov"},{home:"México",away:"Polonia",hs:0,as:0,date:"22 Nov"},{home:"Polonia",away:"Arabia Saudita",hs:2,as:0,date:"26 Nov"},{home:"Argentina",away:"México",hs:2,as:0,date:"26 Nov"},{home:"Polonia",away:"Argentina",hs:0,as:2,date:"30 Nov"},{home:"Arabia Saudita",away:"México",hs:1,as:2,date:"30 Nov"}]},
+  D:{teams:["Francia","Australia","Túnez","Dinamarca"],matches:[{home:"Dinamarca",away:"Túnez",hs:0,as:0,date:"22 Nov"},{home:"Francia",away:"Australia",hs:4,as:1,date:"22 Nov"},{home:"Túnez",away:"Australia",hs:0,as:1,date:"26 Nov"},{home:"Francia",away:"Dinamarca",hs:2,as:1,date:"26 Nov"},{home:"Australia",away:"Dinamarca",hs:1,as:0,date:"30 Nov"},{home:"Túnez",away:"Francia",hs:1,as:0,date:"30 Nov"}]},
+};
+
+/* ─────────────────────────────────────
+   DATOS: Goleadores
+───────────────────────────────────── */
+const SCORERS = [
+  {name:"Kylian Mbappé",    team:"Francia",      goals:8, assists:2, flag:"🇫🇷"},
+  {name:"Lionel Messi",     team:"Argentina",    goals:7, assists:3, flag:"🇦🇷"},
+  {name:"Olivier Giroud",   team:"Francia",      goals:4, assists:1, flag:"🇫🇷"},
+  {name:"Marcus Rashford",  team:"Inglaterra",   goals:3, assists:0, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+  {name:"Cody Gakpo",       team:"Países Bajos", goals:3, assists:1, flag:"🇳🇱"},
+  {name:"Richarlison",      team:"Brasil",       goals:3, assists:0, flag:"🇧🇷"},
+  {name:"Bukayo Saka",      team:"Inglaterra",   goals:3, assists:2, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+  {name:"Raheem Sterling",  team:"Inglaterra",   goals:3, assists:1, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+];
+
+/* ─────────────────────────────────────
+   DATOS: Tarjetas
+───────────────────────────────────── */
+const CARDS = [
+  {name:"Sofyan Amrabat",   team:"Marruecos",  yellow:3,red:0,flag:"🇲🇦"},
+  {name:"Mason Mount",      team:"Inglaterra", yellow:2,red:0,flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+  {name:"Adrien Rabiot",    team:"Francia",    yellow:2,red:0,flag:"🇫🇷"},
+  {name:"Idrissa Gueye",    team:"Senegal",    yellow:1,red:1,flag:"🇸🇳"},
+  {name:"Gonçalo Ramos",    team:"Portugal",   yellow:2,red:0,flag:"🇵🇹"},
+  {name:"Granit Xhaka",     team:"Suiza",      yellow:2,red:0,flag:"🇨🇭"},
+  {name:"A.F. Zambo",       team:"Camerún",    yellow:1,red:1,flag:"🇨🇲"},
+];
+
+/* ─────────────────────────────────────
+   DATOS: Historial de Mundiales
+───────────────────────────────────── */
+const EDITIONS = [
+  {
+    year:1970, host:"México", dates:"31 May – 21 Jun", champion:"Brasil", champFlag:"🇧🇷",
+    scorers:[{name:"Gerd Müller",flag:"🇩🇪",goals:10},{name:"Jairzinho",flag:"🇧🇷",goals:7},{name:"Teofilo Cubillas",flag:"🇵🇪",goals:5}],
+    finalists:[{team:"Brasil",flag:"🇧🇷",note:"Campeón"},{team:"Italia",flag:"🇮🇹",note:"Subcampeón"},{team:"Alemania",flag:"🇩🇪",note:"3er lugar"},{team:"Uruguay",flag:"🇺🇾",note:"4to lugar"}],
+    records:[{cat:"Goles totales",val:"95",desc:"En 32 partidos jugados"},{cat:"Récord histórico",val:"4–1",desc:"Brasil vs Italia en la final"},{cat:"Debutantes",val:"3",desc:"El Salvador, Marruecos, Israel"}],
+    facts:["⚽ Pelé disputó su último Mundial y ganó su 3er título","🎨 Considerado el torneo más bello de la historia por muchos","📺 Primer Mundial transmitido en color"],
+  },
+  {
+    year:1986, host:"México", dates:"31 May – 29 Jun", champion:"Argentina", champFlag:"🇦🇷",
+    scorers:[{name:"Gary Lineker",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",goals:6},{name:"Diego Maradona",flag:"🇦🇷",goals:5},{name:"Emilio Butragueño",flag:"🇪🇸",goals:5}],
+    finalists:[{team:"Argentina",flag:"🇦🇷",note:"Campeón"},{team:"Alemania Occ.",flag:"🇩🇪",note:"Subcampeón"},{team:"Francia",flag:"🇫🇷",note:"3er lugar"},{team:"Bélgica",flag:"🇧🇪",note:"4to lugar"}],
+    records:[{cat:"El gol del siglo",val:"11 jun",desc:"Maradona vs Inglaterra – el mejor gol de la historia"},{cat:"Primer Hat-trick",val:"x3",desc:"Emilio Butragueño marcó 4 goles a Dinamarca"},{cat:"Equipos",val:"24",desc:"El formato amplió a 24 selecciones"}],
+    facts:["🙌 Maradona marcó 'La Mano de Dios' y 'El Gol del Siglo' en el mismo partido","🏟️ El Estadio Azteca fue sede de la final por segunda vez","🌡️ Partidos jugados con +40°C de temperatura"],
+  },
+  {
+    year:1998, host:"Francia", dates:"10 Jun – 12 Jul", champion:"Francia", champFlag:"🇫🇷",
+    scorers:[{name:"Davor Šuker",flag:"🇭🇷",goals:6},{name:"Gabriel Batistuta",flag:"🇦🇷",goals:5},{name:"Ronaldo",flag:"🇧🇷",goals:4}],
+    finalists:[{team:"Francia",flag:"🇫🇷",note:"Campeón"},{team:"Brasil",flag:"🇧🇷",note:"Subcampeón"},{team:"Croacia",flag:"🇭🇷",note:"3er lugar"},{team:"Países Bajos",flag:"🇳🇱",note:"4to lugar"}],
+    records:[{cat:"Equipos",val:"32",desc:"Primera edición con 32 selecciones"},{cat:"Goles en la final",val:"3–0",desc:"Francia vs Brasil: Zidane marcó dos cabezazos"},{cat:"Debutante histórico",val:"🇭🇷",desc:"Croacia llegó a 3er puesto en su primer Mundial"}],
+    facts:["🏆 Francia ganó su primer Mundial siendo local","😱 Ronaldo tuvo un episodio médico horas antes de la final","🎯 Zinedine Zidane fue elegido mejor jugador del torneo"],
+  },
+  {
+    year:2002, host:"Corea/Japón", dates:"31 May – 30 Jun", champion:"Brasil", champFlag:"🇧🇷",
+    scorers:[{name:"Ronaldo",flag:"🇧🇷",goals:8},{name:"Miroslav Klose",flag:"🇩🇪",goals:5},{name:"Jon Dahl Tomasson",flag:"🇩🇰",goals:4}],
+    finalists:[{team:"Brasil",flag:"🇧🇷",note:"Campeón"},{team:"Alemania",flag:"🇩🇪",note:"Subcampeón"},{team:"Turquía",flag:"🇹🇷",note:"3er lugar"},{team:"Corea del Sur",flag:"🇰🇷",note:"4to lugar"}],
+    records:[{cat:"Primera vez en Asia",val:"2002",desc:"Primer Mundial celebrado en el continente asiático"},{cat:"Sorpresa histórica",val:"🇰🇷",desc:"Corea del Sur llegó a semifinales como local"},{cat:"Ronaldo",val:"8",desc:"Ronaldo terminó como máximo goleador histórico del torneo"}],
+    facts:["⚽ Ronaldo redimió el desastre de 1998 con 8 goles y el título","🌍 Primer Mundial organizado por dos países simultáneamente","🇫🇷 Francia, campeón defensor, fue eliminada en fase de grupos sin anotar"],
+  },
+  {
+    year:2010, host:"Sudáfrica", dates:"11 Jun – 11 Jul", champion:"España", champFlag:"🇪🇸",
+    scorers:[{name:"Thomas Müller",flag:"🇩🇪",goals:5},{name:"David Villa",flag:"🇪🇸",goals:5},{name:"Wesley Sneijder",flag:"🇳🇱",goals:5}],
+    finalists:[{team:"España",flag:"🇪🇸",note:"Campeón"},{team:"Países Bajos",flag:"🇳🇱",note:"Subcampeón"},{team:"Alemania",flag:"🇩🇪",note:"3er lugar"},{team:"Uruguay",flag:"🇺🇾",note:"4to lugar"}],
+    records:[{cat:"Primer Mundial en África",val:"2010",desc:"Africa debutó como anfitrión de la Copa del Mundo"},{cat:"Gol de la final",val:"116'",desc:"Andrés Iniesta marcó el gol más tarde en una final"},{cat:"Vuvuzela",val:"∞",desc:"El instrumento se hizo viral en todo el mundo"}],
+    facts:["🦑 El pulpo Paul predijo todos los resultados de Alemania","🏆 España ganó su primer Mundial con el estilo Tiki-Taka","🎵 El sonido de la vuvuzela marcó una era"],
+  },
+  {
+    year:2014, host:"Brasil", dates:"12 Jun – 13 Jul", champion:"Alemania", champFlag:"🇩🇪",
+    scorers:[{name:"James Rodríguez",flag:"🇨🇴",goals:6},{name:"Thomas Müller",flag:"🇩🇪",goals:5},{name:"Neymar",flag:"🇧🇷",goals:4}],
+    finalists:[{team:"Alemania",flag:"🇩🇪",note:"Campeón"},{team:"Argentina",flag:"🇦🇷",note:"Subcampeón"},{team:"Países Bajos",flag:"🇳🇱",note:"3er lugar"},{team:"Brasil",flag:"🇧🇷",note:"4to lugar"}],
+    records:[{cat:"Goleada histórica",val:"7–1",desc:"Alemania goleó al local Brasil en semifinales (el Mineirazo)"},{cat:"Gol más rápido",val:"18''",desc:"Hakan Şükür sigue siendo el más rápido (Turquía 2002)"},{cat:"Gol dorado",val:"113'",desc:"Mario Götze definió la final vs Argentina en alargue"}],
+    facts:["💥 El 7-1 de Alemania a Brasil es el resultado más impactante de la historia","🥇 Alemania se convirtió en el primer equipo europeo en ganar en América","🇦🇷 Messi ganó el Balón de Oro del torneo pese a perder la final"],
+  },
+  {
+    year:2018, host:"Rusia", dates:"14 Jun – 15 Jul", champion:"Francia", champFlag:"🇫🇷",
+    scorers:[{name:"Harry Kane",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",goals:6},{name:"Romelu Lukaku",flag:"🇧🇪",goals:4},{name:"Cristiano Ronaldo",flag:"🇵🇹",goals:4}],
+    finalists:[{team:"Francia",flag:"🇫🇷",note:"Campeón"},{team:"Croacia",flag:"🇭🇷",note:"Subcampeón"},{team:"Bélgica",flag:"🇧🇪",note:"3er lugar"},{team:"Inglaterra",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",note:"4to lugar"}],
+    records:[{cat:"Goles en propia meta",val:"12",desc:"Récord: 12 autogoles en el mismo torneo"},{cat:"VAR debut mundial",val:"2018",desc:"Primera Copa del Mundo con tecnología VAR"},{cat:"Croacia",val:"3",desc:"Croacia ganó 3 partidos en penaltis para llegar a la final"}],
+    facts:["🤖 Fue el primer Mundial con VAR (árbitro asistente de video)","🇭🇷 Croacia (4 millones de habitantes) llegó a la final","🇲🇦 Marruecos fue el mejor equipo africano, llegó a cuartos"],
+  },
+  {
+    year:2022, host:"Qatar", dates:"20 Nov – 18 Dic", champion:"Argentina", champFlag:"🇦🇷",
+    scorers:[{name:"Kylian Mbappé",flag:"🇫🇷",goals:8},{name:"Lionel Messi",flag:"🇦🇷",goals:7},{name:"Olivier Giroud",flag:"🇫🇷",goals:4}],
+    finalists:[{team:"Argentina",flag:"🇦🇷",note:"Campeón"},{team:"Francia",flag:"🇫🇷",note:"Subcampeón"},{team:"Croacia",flag:"🇭🇷",note:"3er lugar"},{team:"Marruecos",flag:"🇲🇦",note:"4to lugar"}],
+    records:[{cat:"Final más épica",val:"3–3",desc:"Argentina vs Francia – la mejor final de la historia"},{cat:"Hat-trick en final",val:"3",desc:"Mbappé marcó 3 goles en la final y casi da la vuelta"},{cat:"1ª semifinalista africana",val:"🇲🇦",desc:"Marruecos fue la primera selección africana en semifinales"}],
+    facts:["🏆 Messi ganó el único título que le faltaba a los 35 años","⚽ La final Argentina-Francia es considerada la mejor de la historia","🌟 Mbappé marcó 8 goles, el récord más alto de un jugador eliminado"],
+  },
+];
+
+/* ─────────────────────────────────────
+   TICKER: construir y duplicar para loop infinito
+───────────────────────────────────── */
+function buildTicker() {
+  const track = document.getElementById('tickerTrack');
+  const LIVE = [
+    {home:"España",away:"Alemania",hg:1,ag:1,min:67,group:"E"},
+    {home:"Brasil",away:"Suiza",hg:0,ag:0,min:23,group:"G"},
+    {home:"México",away:"Polonia",hg:1,ag:0,min:44,group:"C"},
+  ];
+  const items = [
+    ...LIVE.map(m => `<div class="ticker-item"><span class="t-dot"></span><span class="t-min">${m.min}'</span><span class="t-team">${m.home}</span><span class="t-score">${m.hg} — ${m.ag}</span><span class="t-team">${m.away}</span><span class="t-grp">GRP ${m.group}</span></div>`),
+    `<div class="ticker-item"><span class="t-info">+12 PARTIDOS HOY &nbsp;·&nbsp; MUNDIAL 2026 &nbsp;·&nbsp; TODO FÚTBOL</span></div>`,
+    `<div class="ticker-item"><span class="t-dot"></span><span class="t-min">52'</span><span class="t-team">Croacia</span><span class="t-score">0 — 0</span><span class="t-team">Marruecos</span><span class="t-grp">GRP F</span></div>`,
+  ];
+  const html = items.join('');
+  track.innerHTML = html + html;
+}
+buildTicker();
+
+/* ─────────────────────────────────────
+   TABS: mostrar/ocultar paneles
+───────────────────────────────────── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'groups')  renderGroups('A');
+  if (id === 'fixtures') renderFixtures();
+  if (id === 'scorers') renderScorers();
+  if (id === 'cards')   renderCards();
+  if (id === 'history') renderHistory();
+}
+
+/* ─────────────────────────────────────
+   GRUPOS: calcular posiciones
+───────────────────────────────────── */
+function computeStandings(key) {
+  const g = GROUPS[key];
+  const s = {};
+  g.teams.forEach(t => s[t] = {p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+  g.matches.forEach(m => {
+    s[m.home].p++; s[m.away].p++;
+    s[m.home].gf += m.hs; s[m.home].ga += m.as;
+    s[m.away].gf += m.as; s[m.away].ga += m.hs;
+    if (m.hs > m.as) { s[m.home].w++; s[m.away].l++; s[m.home].pts+=3; }
+    else if (m.hs < m.as) { s[m.away].w++; s[m.home].l++; s[m.away].pts+=3; }
+    else { s[m.home].d++; s[m.away].d++; s[m.home].pts++; s[m.away].pts++; }
+  });
+  return Object.entries(s).sort((a,b) => b[1].pts-a[1].pts || (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga));
+}
+
+function renderGroups(key) {
+  const sel = document.getElementById('grpSelector');
+  sel.innerHTML = Object.keys(GROUPS).map(g =>
+    `<button class="grp-btn ${g===key?'active':''}" onclick="renderGroups('${g}')">Grupo ${g}</button>`
+  ).join('');
+
+  const standings = computeStandings(key);
+  const gData = GROUPS[key];
+
+  const standHtml = `
+    <div>
+      <p class="section-label">Tabla — Grupo ${key}</p>
+      <div class="tbl">
+        <div class="tbl-head">
+          <span>#</span><span>EQUIPO</span>
+          <span class="cc">PJ</span><span class="cc">G</span>
+          <span class="cc">E</span><span class="cc">P</span>
+          <span class="cc">DG</span><span class="cc">PTS</span>
+        </div>
+        ${standings.map(([team,s],i) => {
+          const dg = s.gf - s.ga;
+          return `<div class="tbl-row ${i<2?'qualify':''}">
+            <span style="font-weight:900;color:${i<2?'var(--red)':'var(--text4)'}">${i+1}</span>
+            <span style="font-weight:700;color:var(--text2)">${team}</span>
+            <span class="cc" style="color:var(--text3)">${s.p}</span>
+            <span class="cc" style="color:var(--text3)">${s.w}</span>
+            <span class="cc" style="color:var(--text3)">${s.d}</span>
+            <span class="cc" style="color:var(--text3)">${s.l}</span>
+            <span class="cc ${dg>0?'dg-pos':dg<0?'dg-neg':'dg-zer'}">${dg>0?'+':''}${dg}</span>
+            <span class="pts-big">${s.pts}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  const matchHtml = `
+    <div>
+      <p class="section-label">Partidos — Grupo ${key}</p>
+      ${gData.matches.map(m => `
+        <div class="gmatch">
+          <span class="gm-date">${m.date}</span>
+          <div class="gm-teams">
+            <span class="gm-home">${m.home}</span>
+            <span class="gm-score">${m.hs}–${m.as}</span>
+            <span class="gm-away">${m.away}</span>
+          </div>
+          <span class="gm-ft">FT</span>
+        </div>`).join('')}
+    </div>`;
+
+  document.getElementById('grpContent').innerHTML = standHtml + matchHtml;
+}
+
+/* ─────────────────────────────────────
+   FIXTURE
+───────────────────────────────────── */
+function renderFixtures() {
+  document.getElementById('fixtureContent').innerHTML = Object.entries(GROUPS).map(([key,g]) => `
+    <div class="fix-card">
+      <div class="fix-hdr">
+        <span class="fix-grp-name">GRUPO ${key}</span>
+        <span class="fix-grp-teams">${g.teams.join(' · ')}</span>
+      </div>
+      ${g.matches.map(m => `
+        <div class="fix-match">
+          <span class="fix-date">${m.date}</span>
+          <div class="fix-teams">
+            <span class="fix-home">${m.home}</span>
+            <span class="fix-score">${m.hs}–${m.as}</span>
+            <span class="fix-away">${m.away}</span>
+          </div>
+          <span class="fix-ft">FT</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ─────────────────────────────────────
+   GOLEADORES
+───────────────────────────────────── */
+function renderScorers() {
+  const max = SCORERS[0].goals;
+  const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)','var(--text4)','var(--text4)','var(--text4)'];
+  document.getElementById('scorersBody').innerHTML = SCORERS.map((s,i) => `
+    <div class="sc-row">
+      <span class="sc-rank" style="color:${colors[i]}">${i+1}</span>
+      <span class="sc-flag">${s.flag}</span>
+      <div><div class="sc-name">${s.name}</div><div class="sc-team">${s.team}</div></div>
+      <span class="sc-team" style="font-size:13px">${s.team}</span>
+      <div class="sc-goals-cell">
+        <div class="sc-goals-num">${s.goals}</div>
+        <div class="sc-bar-wrap"><div class="sc-bar" style="width:${Math.round(s.goals/max*100)}%"></div></div>
+      </div>
+      <span class="sc-ast">${s.assists}</span>
+    </div>`).join('');
+}
+
+/* ─────────────────────────────────────
+   TARJETAS
+───────────────────────────────────── */
+function renderCards() {
+  document.getElementById('cardsBody').innerHTML = CARDS.map((c,i) => `
+    <div class="cd-row">
+      <span class="cd-rank">${i+1}</span>
+      <span class="cd-flag">${c.flag}</span>
+      <div><div class="cd-name">${c.name}</div><div class="cd-team">${c.team}</div></div>
+      <span class="cd-team" style="font-size:12px">${c.team}</span>
+      <div class="cd-cards">${Array(c.yellow).fill('<span class="cy"></span>').join('')}${c.yellow===0?'<span class="c-none">—</span>':''}</div>
+      <div class="cd-cards">${Array(c.red).fill('<span class="cr"></span>').join('')}${c.red===0?'<span class="c-none">—</span>':''}</div>
+    </div>`).join('');
+}
+
+/* ─────────────────────────────────────
+   HISTORIAL: render ediciones
+───────────────────────────────────── */
+function renderHistory() {
+  const sel = document.getElementById('editionSelector');
+  const cards = document.getElementById('editionCards');
+
+  sel.innerHTML = EDITIONS.map(e =>
+    `<button class="ed-btn ${e.year===2022?'active':''}" onclick="showEdition(${e.year})">${e.year}</button>`
+  ).join('');
+
+  cards.innerHTML = EDITIONS.map(e => `
+    <div class="ed-card ${e.year===2022?'active':''}" id="ed-${e.year}">
+      <div class="ed-header">
+        <div class="ed-year">${e.year}</div>
+        <div class="ed-info-main">
+          <div class="ed-host">${e.host}</div>
+          <div class="ed-dates">${e.dates}</div>
+        </div>
+        <div class="ed-champion-block">
+          <div class="ed-champion-lbl">CAMPEÓN</div>
+          <span class="ed-champion-flag">${e.champFlag}</span>
+          <div class="ed-champion-name">${e.champion}</div>
+        </div>
+      </div>
+      <div class="ed-body">
+
+        <!-- Columna 1: Goleadores -->
+        <div>
+          <div class="ed-section-title">Goleadores del torneo</div>
+          ${e.scorers.map((s,i) => `
+            <div class="hist-scorer-row">
+              <span class="hsr-pos">${i+1}</span>
+              <span class="hsr-flag">${s.flag}</span>
+              <span class="hsr-name">${s.name}</span>
+              <span class="hsr-goals">${s.goals}</span>
+            </div>`).join('')}
+          <div class="ed-section-title" style="margin-top:20px">Clasificación final</div>
+          ${e.finalists.map(f => `
+            <div class="finalist-row">
+              <span class="fn-flag">${f.flag}</span>
+              <span class="fn-team">${f.team}</span>
+              <span style="font-size:11px;color:var(--text4)">${f.note}</span>
+            </div>`).join('')}
+        </div>
+
+        <!-- Columna 2: Récords -->
+        <div>
+          <div class="ed-section-title">Récords y datos</div>
+          ${e.records.map(r => `
+            <div class="record-item">
+              <div class="record-cat">${r.cat}</div>
+              <div class="record-val">${r.val}</div>
+              <div class="record-desc">${r.desc}</div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Columna 3: Datos curiosos -->
+        <div>
+          <div class="ed-section-title">Curiosidades</div>
+          ${e.facts.map(f => `
+            <div class="fact-item">
+              <span class="fact-emoji">${f.slice(0,2)}</span>
+              <div class="fact-text">${f.slice(2)}</div>
+            </div>`).join('')}
+        </div>
+
+      </div>
+    </div>`).join('');
+}
+
+function showEdition(year) {
+  document.querySelectorAll('.ed-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.ed-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ed-' + year).classList.add('active');
+  event.target.classList.add('active');
+}
+
+/* ─────────────────────────────────────
+   SIDEBAR: goleadores en vivo
+───────────────────────────────────── */
+function renderLiveScorers() {
+  const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)'];
+  document.getElementById('liveScorers').innerHTML = SCORERS.slice(0,5).map((s,i) => `
+    <div class="srow">
+      <span class="srow-rank" style="color:${colors[i]}">${i+1}</span>
+      <span class="srow-flag">${s.flag}</span>
+      <div style="flex:1"><div class="srow-name">${s.name}</div><div class="srow-sub">${s.team}</div></div>
+      <div style="text-align:right"><div class="srow-num">${s.goals}</div><div class="srow-unit">GOLES</div></div>
+    </div>`).join('');
+}
+renderLiveScorers();
+
+/* ─────────────────────────────────────
+   TIEMPO REAL: minutos del partido
+───────────────────────────────────── */
+const liveMinutes = [{id:'live1-min', min:67, max:90}, {id:'live2-min', min:23, max:90}];
+setInterval(() => {
+  liveMinutes.forEach(d => {
+    if (d.min < d.max) d.min++;
+    const el = document.getElementById(d.id);
+    if (el) el.textContent = d.min + "'";
+  });
+}, 5000);
+
+/* ─────────────────────────────────────
+   INICIALIZAR todo al cargar la página
+───────────────────────────────────── */
+renderGroups('A');
+renderFixtures();
+renderScorers();
+renderCards();
+</script>
+
+</div><!-- /app-wrapper -->
+
+<!-- ══════════════════════════════════════
+     AUTH SCRIPT — Supabase + Google OAuth + Token
+══════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────────────────────────────
+   CONFIGURACIÓN — Tus claves de Supabase
+   SUPABASE_URL: ya completada con tu proyecto
+   SUPABASE_ANON: Supabase Dashboard → Settings → API → anon public
+────────────────────────────────────────────────────────────── */
+const SUPABASE_URL  = 'https://iplsamlkpkuzurthdzdh.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwbHNhbWxrcGt1enVydGhkemRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIwMjMsImV4cCI6MjA5MDEwODAyM30.2mCc0Z_yfqsFC5XX5OWBtTkHMqaYFyauUZlDPh4WZVo'; // 🔧 Reemplazá con tu anon key
+
+/* ── Init Supabase client ── */
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ── Referencias DOM ── */
+const overlay       = document.getElementById('auth-overlay');
+const appWrapper    = document.getElementById('app-wrapper');
+const msgEl         = document.getElementById('auth-message');
+const emailEl       = document.getElementById('auth-email');
+const passEl        = document.getElementById('auth-password');
+const passField     = document.getElementById('auth-password-field');
+const usernameField = document.getElementById('auth-username-field');
+const usernameEl    = document.getElementById('auth-username');
+const btnGoogle     = document.getElementById('btn-google-login');
+const btnToken      = document.getElementById('btn-token-login');
+const modeToggle    = document.getElementById('auth-mode-toggle');
+const headerRight   = document.querySelector('.header-right');
+
+/* ── Estado ── */
+let authMode        = 'login'; // 'login' | 'register'
+let _currentProfile = null;
+
+// Exponer para realtime.js (si lo integrás como módulo externo)
+window.__sb             = sb;
+window.__currentUser    = null;
+window.__currentProfile = null;
+
+/* ─────────────────────────
+   Mostrar / ocultar app
+───────────────────────── */
+async function showApp(session) {
+  overlay.classList.add('hidden');
+  appWrapper.classList.add('visible');
+
+  // Cargar el perfil completo desde la tabla profiles
+  // (tiene username, puntos_prode, avatar_url custom, etc.)
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+
+  _currentProfile = profile;
+  window.__currentProfile = profile;
+  window.__currentUser    = session.user;
+
+  renderUserMenu(session.user, profile);
+}
+
+function showAuth() {
+  overlay.classList.remove('hidden');
+  appWrapper.classList.remove('visible');
+}
+
+/* ─────────────────────────
+   Menú de usuario en header
+───────────────────────── */
+function renderUserMenu(user, profile) {
+  // Prioridad: username de profiles > full_name de Google > parte del email
+  const name     = profile?.username || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
+  const avatar   = profile?.avatar_url || user.user_metadata?.avatar_url;
+  const initials = name.slice(0, 2).toUpperCase();
+
+  const avatarHtml   = avatar
+    ? `<img src="${avatar}" class="user-avatar" id="user-avatar-btn" alt="${name}" onerror="this.style.display='none';document.getElementById('user-avatar-fallback').style.display='flex'">`
+    : '';
+  const fallbackHtml = `<div class="user-avatar-fallback" id="user-avatar-fallback" style="${avatar ? 'display:none' : ''}">${initials}</div>`;
+
+  const menuHtml = `
+    <div class="user-menu" id="user-menu">
+      ${avatarHtml}${fallbackHtml}
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-dropdown-name">
+          ${name}
+          <div class="user-dropdown-email">${user.email}</div>
+        </div>
+        <div class="user-dropdown-item" style="font-size:12px;opacity:0.7;padding:2px 0">
+          🏆 ${profile?.puntos_prode ?? 0} pts prode
+        </div>
+        <div class="user-dropdown-item danger" id="btn-logout">
+          <span>🚪</span> Cerrar sesión
+        </div>
+      </div>
+    </div>`;
+
+  headerRight.insertAdjacentHTML('beforeend', menuHtml);
+
+  const avatarBtn   = document.getElementById('user-avatar-btn');
+  const fallbackBtn = document.getElementById('user-avatar-fallback');
+  const dropdown    = document.getElementById('user-dropdown');
+  const logoutBtn   = document.getElementById('btn-logout');
+
+  [avatarBtn, fallbackBtn].forEach(el => {
+    if (el) el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+  });
+
+  document.addEventListener('click', () => dropdown.classList.remove('open'));
+
+  logoutBtn.addEventListener('click', async () => {
+    await sb.auth.signOut();
+    document.getElementById('user-menu').remove();
+    _currentProfile = null;
+    window.__currentProfile = null;
+    window.__currentUser    = null;
+    showAuth();
+    setMsg('', '');
+  });
+}
+
+/* ─────────────────────────
+   Helpers UI
+───────────────────────── */
+function setMsg(text, type) {
+  msgEl.className = 'auth-msg' + (type ? ' ' + type : '');
+  msgEl.textContent = text;
+}
+
+function setLoading(btn, loading) {
+  if (loading) {
+    btn.classList.add('btn-loading');
+    btn.dataset.originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span>';
+  } else {
+    btn.classList.remove('btn-loading');
+    btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
+  }
+}
+
+/* ─────────────────────────
+   Toggle login ↔ register
+───────────────────────── */
+modeToggle.addEventListener('click', () => {
+  if (authMode === 'login') {
+    authMode = 'register';
+    btnToken.textContent = 'Crear cuenta';
+    modeToggle.textContent = '¿Ya tenés cuenta? Iniciá sesión';
+    usernameField.style.display = '';    // mostrar campo username
+    setMsg('', '');
+  } else {
+    authMode = 'login';
+    btnToken.textContent = 'Ingresar';
+    modeToggle.textContent = '¿No tenés cuenta? Registrate';
+    usernameField.style.display = 'none'; // ocultar campo username
+    setMsg('', '');
+  }
+});
+
+/* ─────────────────────────
+   Google OAuth
+───────────────────────── */
+btnGoogle.addEventListener('click', async () => {
+  setLoading(btnGoogle, true);
+  setMsg('', '');
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      // Después del OAuth, Supabase redirige aquí y onAuthStateChange toma el control
+      redirectTo: window.location.origin + window.location.pathname,
+    }
+  });
+  if (error) {
+    setMsg('Error con Google: ' + error.message, 'error');
+    setLoading(btnGoogle, false);
+  }
+  // Si no hay error el browser redirige a Google; el loading queda visible hasta que vuelva
+});
+
+/* ─────────────────────────
+   Email + Contraseña
+───────────────────────── */
+btnToken.addEventListener('click', async () => {
+  const email    = emailEl.value.trim();
+  const password = passEl.value;
+  const username = usernameEl?.value?.trim();
+  setMsg('', '');
+
+  if (!email)    { setMsg('Ingresá tu email.',       'error'); return; }
+  if (!password) { setMsg('Ingresá tu contraseña.', 'error'); return; }
+
+  setLoading(btnToken, true);
+
+  if (authMode === 'register') {
+    if (!username) {
+      setMsg('Elegí un nombre de usuario.', 'error');
+      setLoading(btnToken, false);
+      return;
+    }
+    if (password.length < 6) {
+      setMsg('La contraseña debe tener al menos 6 caracteres.', 'error');
+      setLoading(btnToken, false);
+      return;
+    }
+
+    // username se pasa como metadata → el trigger handle_new_user lo inserta en profiles
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    });
+
+    if (error) {
+      setMsg(traducirError(error.message), 'error');
+    } else if (data.session) {
+      await showApp(data.session);
+    } else {
+      setMsg('¡Cuenta creada! Revisá tu email para confirmar.', 'success');
+    }
+
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      setMsg(traducirError(error.message), 'error');
+    } else {
+      await showApp(data.session);
+    }
+  }
+
+  setLoading(btnToken, false);
+});
+
+/* Enter para enviar */
+[emailEl, passEl].forEach(el => {
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnToken.click(); });
+});
+
+/* ─────────────────────────
+   Traducir errores de Supabase al español
+───────────────────────── */
+function traducirError(msg) {
+  const mapa = {
+    'Invalid login credentials':      'Email o contraseña incorrectos.',
+    'Email not confirmed':            'Confirmá tu email antes de ingresar.',
+    'User already registered':        'Ya existe una cuenta con ese email.',
+    'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+    'Unable to validate email address': 'El email ingresado no es válido.',
+    'Email rate limit exceeded':      'Demasiados intentos. Esperá unos minutos.',
+  };
+  return mapa[msg] || msg;
+}
+
+/* ─────────────────────────
+   Verificar sesión al cargar
+   (también maneja el redirect de Google OAuth)
+───────────────────────── */
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await showApp(session);
+  } else {
+    showAuth();
+  }
+}
+
+/* Escuchar cambios de sesión (OAuth redirect callback) */
+sb.auth.onAuthStateChange(async (_event, session) => {
+  if (session && !document.getElementById('user-menu')) {
+    await showApp(session);
+  }
+});
+
+initAuth();
+</script>
+</body>
+</html>
