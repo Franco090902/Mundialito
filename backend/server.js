@@ -33,10 +33,9 @@ const footballData = axios.create({
 });
 
 const apiFootball = axios.create({
-  baseURL: 'https://api-football-v1.p.rapidapi.com/v3',
+  baseURL: 'https://v3.football.api-sports.io',
   headers: {
-    'X-RapidAPI-Key':  process.env.API_FOOTBALL_KEY,
-    'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
+    'x-apisports-key': process.env.API_FOOTBALL_KEY
   },
   timeout: 10000,
 });
@@ -72,13 +71,15 @@ async function actualizarFixture() {
                            : (p.stage || 'Fase eliminatoria'),
       jornada:           p.matchday,
       fecha_utc:         p.utcDate,
-      equipo_local:      p.homeTeam.shortName || p.homeTeam.name,
-      equipo_visitante:  p.awayTeam.shortName || p.awayTeam.name,
-      escudo_local:      p.homeTeam.crest,
-      escudo_visitante:  p.awayTeam.crest,
+      // Usamos ?. para evitar errores y ponemos "Por definirse" si viene nulo
+      equipo_local:      p.homeTeam?.shortName || p.homeTeam?.name || 'Por definirse',
+      equipo_visitante:  p.awayTeam?.shortName || p.awayTeam?.name || 'Por definirse',
+      escudo_local:      p.homeTeam?.crest || null,
+      escudo_visitante:  p.awayTeam?.crest || null,
       estado:            mapearEstado(p.status),
-      goles_local:       p.score.fullTime.home,
-      goles_visitante:   p.score.fullTime.away,
+      // También protegemos los goles por si fullTime viene nulo
+      goles_local:       p.score?.fullTime?.home ?? null,
+      goles_visitante:   p.score?.fullTime?.away ?? null,
       updated_at:        new Date().toISOString(),
     }));
 
@@ -132,11 +133,15 @@ async function actualizarEnVivo() {
 
     for (const partido of enCurso) {
       // Cruzar por id_api_football si ya está mapeado, sino por nombre de equipo
-      const fixture = fixtures.find(f =>
-        (partido.id_api_football && f.fixture.id === partido.id_api_football) ||
-        f.teams.home.name.toLowerCase().includes(partido.equipo_local.toLowerCase()) ||
-        f.teams.away.name.toLowerCase().includes(partido.equipo_visitante.toLowerCase())
-      );
+      const normalize = s => s.toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
+  .replace(/[^a-z0-9]/g, '');                       // solo alfanumérico
+
+    const fixture = fixtures.find(f =>
+      (partido.id_api_football && f.fixture.id === partido.id_api_football) ||
+      normalize(f.teams.home.name).includes(normalize(partido.equipo_local)) ||
+      normalize(f.teams.away.name).includes(normalize(partido.equipo_visitante))
+);
 
       if (!fixture) continue;
 
@@ -198,15 +203,34 @@ cron.schedule('*/3 * * * *', actualizarEnVivo);
 // ══════════════════════════════════════════════════════════════════
 async function actualizarHistoria() {
   console.log('\n📚 [HISTORIA] Consultando TheSportsDB...');
-  // TheSportsDB no requiere auth. La data casi nunca cambia.
-  // Descomenta cuando tengas la tabla de historia:
-  //
-  // const { data } = await axios.get(
-  //   'https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4487&s=2022-2023'
-  // );
-  // await supabase.from('historia_ediciones').upsert(
-  //   data.events.map(e => ({ ... }))
-  // );
+
+  try {
+    // Mundiales pasados: ID 4487 es FIFA World Cup en TheSportsDB
+    const { data } = await axios.get(
+      'https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4487&s=2022-2023'
+    );
+
+    if (!data.events?.length) return;
+
+    const rows = data.events.map(e => ({
+      id_thesports:   e.idEvent,
+      nombre:         e.strEvent,
+      fecha:          e.dateEvent,
+      equipo_local:   e.strHomeTeam,
+      equipo_visitante: e.strAwayTeam,
+      goles_local:    parseInt(e.intHomeScore) || null,
+      goles_visitante: parseInt(e.intAwayScore) || null,
+      temporada:      e.strSeason,
+    }));
+
+    await supabase
+      .from('historia_ediciones')
+      .upsert(rows, { onConflict: 'id_thesports' });
+
+    console.log(`   ✅ ${rows.length} partidos históricos actualizados.`);
+  } catch (err) {
+    console.error('   ❌ Error en actualizarHistoria:', err.message);
+  }
 }
 
 cron.schedule('0 3 * * *', actualizarHistoria);

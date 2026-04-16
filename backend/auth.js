@@ -17,7 +17,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // NUNCA pongas la Service Role Key aquí.
 // ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://iplsamlkpkuzurthdzdh.supabase.co';
-const SUPABASE_ANON = 'TU_ANON_KEY_AQUI'; // Supabase Dashboard → Settings → API → anon public
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwbHNhbWxrcGt1enVydGhkemRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIwMjMsImV4cCI6MjA5MDEwODAyM30.2mCc0Z_yfqsFC5XX5OWBtTkHMqaYFyauUZlDPh4WZVo'; // Supabase Dashboard → Settings → API → anon public
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
@@ -109,7 +109,7 @@ export async function iniciarSesionGoogle() {
     provider: 'google',
     options: {
       // Redirigir a la app después del login
-      redirectTo: window.location.origin,
+      redirectTo: window.location.href,
       // Pedir solo los scopes necesarios
       queryParams: {
         access_type: 'offline',

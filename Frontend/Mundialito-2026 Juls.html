@@ -1353,7 +1353,7 @@
 /* ─────────────────────────────────────
    DATOS: Grupos (Mundial 2022 / base 2026)
 ───────────────────────────────────── */
-const GROUPS = {
+window.GROUPS = {
   A:{teams:["Qatar","Ecuador","Senegal","Países Bajos"],matches:[{home:"Qatar",away:"Ecuador",hs:0,as:2,date:"20 Nov"},{home:"Senegal",away:"Países Bajos",hs:0,as:2,date:"21 Nov"},{home:"Qatar",away:"Senegal",hs:1,as:3,date:"25 Nov"},{home:"Países Bajos",away:"Ecuador",hs:1,as:1,date:"25 Nov"},{home:"Ecuador",away:"Senegal",hs:1,as:2,date:"29 Nov"},{home:"Países Bajos",away:"Qatar",hs:2,as:0,date:"29 Nov"}]},
   B:{teams:["Inglaterra","Iran","EEUU","Gales"],matches:[{home:"Inglaterra",away:"Iran",hs:6,as:2,date:"21 Nov"},{home:"EEUU",away:"Gales",hs:1,as:1,date:"21 Nov"},{home:"Gales",away:"Iran",hs:0,as:2,date:"25 Nov"},{home:"Inglaterra",away:"EEUU",hs:0,as:0,date:"25 Nov"},{home:"Gales",away:"Inglaterra",hs:0,as:3,date:"29 Nov"},{home:"Iran",away:"EEUU",hs:0,as:1,date:"29 Nov"}]},
   C:{teams:["Argentina","Arabia Saudita","México","Polonia"],matches:[{home:"Argentina",away:"Arabia Saudita",hs:1,as:2,date:"22 Nov"},{home:"México",away:"Polonia",hs:0,as:0,date:"22 Nov"},{home:"Polonia",away:"Arabia Saudita",hs:2,as:0,date:"26 Nov"},{home:"Argentina",away:"México",hs:2,as:0,date:"26 Nov"},{home:"Polonia",away:"Argentina",hs:0,as:2,date:"30 Nov"},{home:"Arabia Saudita",away:"México",hs:1,as:2,date:"30 Nov"}]},
@@ -1363,7 +1363,7 @@ const GROUPS = {
 /* ─────────────────────────────────────
    DATOS: Goleadores
 ───────────────────────────────────── */
-const SCORERS = [
+window.SCORERS = [
   {name:"Kylian Mbappé",    team:"Francia",      goals:8, assists:2, flag:"🇫🇷"},
   {name:"Lionel Messi",     team:"Argentina",    goals:7, assists:3, flag:"🇦🇷"},
   {name:"Olivier Giroud",   team:"Francia",      goals:4, assists:1, flag:"🇫🇷"},
@@ -1377,7 +1377,7 @@ const SCORERS = [
 /* ─────────────────────────────────────
    DATOS: Tarjetas
 ───────────────────────────────────── */
-const CARDS = [
+window.CARDS = [
   {name:"Sofyan Amrabat",   team:"Marruecos",  yellow:3,red:0,flag:"🇲🇦"},
   {name:"Mason Mount",      team:"Inglaterra", yellow:2,red:0,flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
   {name:"Adrien Rabiot",    team:"Francia",    yellow:2,red:0,flag:"🇫🇷"},
@@ -1390,7 +1390,7 @@ const CARDS = [
 /* ─────────────────────────────────────
    DATOS: Historial de Mundiales
 ───────────────────────────────────── */
-const EDITIONS = [
+window.EDITIONS = [
   {
     year:1970, host:"México", dates:"31 May – 21 Jun", champion:"Brasil", champFlag:"🇧🇷",
     scorers:[{name:"Gerd Müller",flag:"🇩🇪",goals:10},{name:"Jairzinho",flag:"🇧🇷",goals:7},{name:"Teofilo Cubillas",flag:"🇵🇪",goals:5}],
@@ -1477,7 +1477,12 @@ function switchTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'groups')  renderGroups('A');
+  
+  if (id === 'groups') {
+    // 🛑 EL ARREGLO: Buscamos el primer grupo que exista en la base de datos en vez de forzar la 'A'
+    const primerGrupo = Object.keys(window.GROUPS)[0];
+    if (primerGrupo) renderGroups(primerGrupo);
+  }
   if (id === 'fixtures') renderFixtures();
   if (id === 'scorers') renderScorers();
   if (id === 'cards')   renderCards();
@@ -1488,16 +1493,20 @@ function switchTab(id, btn) {
    GRUPOS: calcular posiciones
 ───────────────────────────────────── */
 function computeStandings(key) {
-  const g = GROUPS[key];
+  const g = window.GROUPS[key];
   const s = {};
   g.teams.forEach(t => s[t] = {p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+  
   g.matches.forEach(m => {
-    s[m.home].p++; s[m.away].p++;
-    s[m.home].gf += m.hs; s[m.home].ga += m.as;
-    s[m.away].gf += m.as; s[m.away].ga += m.hs;
-    if (m.hs > m.as) { s[m.home].w++; s[m.away].l++; s[m.home].pts+=3; }
-    else if (m.hs < m.as) { s[m.away].w++; s[m.home].l++; s[m.away].pts+=3; }
-    else { s[m.home].d++; s[m.away].d++; s[m.home].pts++; s[m.away].pts++; }
+    // 🛑 EL ARREGLO: Solo calculamos puntos si hay números (si no hay guiones)
+    if (m.hs !== '-' && m.as !== '-') {
+      s[m.home].p++; s[m.away].p++;
+      s[m.home].gf += m.hs; s[m.home].ga += m.as;
+      s[m.away].gf += m.as; s[m.away].ga += m.hs;
+      if (m.hs > m.as) { s[m.home].w++; s[m.away].l++; s[m.home].pts+=3; }
+      else if (m.hs < m.as) { s[m.away].w++; s[m.home].l++; s[m.away].pts+=3; }
+      else { s[m.home].d++; s[m.away].d++; s[m.home].pts++; s[m.away].pts++; }
+    }
   });
   return Object.entries(s).sort((a,b) => b[1].pts-a[1].pts || (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga));
 }
@@ -1729,282 +1738,159 @@ renderCards();
 
 </div><!-- /app-wrapper -->
 
-<!-- ══════════════════════════════════════
-     AUTH SCRIPT — Supabase + Google OAuth + Token
-══════════════════════════════════════ -->
-<script>
-/* ──────────────────────────────────────────────────────────────
-   CONFIGURACIÓN — Tus claves de Supabase
-   SUPABASE_URL: ya completada con tu proyecto
-   SUPABASE_ANON: Supabase Dashboard → Settings → API → anon public
-────────────────────────────────────────────────────────────── */
-const SUPABASE_URL  = 'https://iplsamlkpkuzurthdzdh.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwbHNhbWxrcGt1enVydGhkemRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIwMjMsImV4cCI6MjA5MDEwODAyM30.2mCc0Z_yfqsFC5XX5OWBtTkHMqaYFyauUZlDPh4WZVo'; // 🔧 Reemplazá con tu anon key
 
-/* ── Init Supabase client ── */
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+<script type="module">
+  // Importamos las funciones exactas de tu auth.js
+  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion } from '../backend/auth.js'; 
+  import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
 
-/* ── Referencias DOM ── */
-const overlay       = document.getElementById('auth-overlay');
-const appWrapper    = document.getElementById('app-wrapper');
-const msgEl         = document.getElementById('auth-message');
-const emailEl       = document.getElementById('auth-email');
-const passEl        = document.getElementById('auth-password');
-const passField     = document.getElementById('auth-password-field');
-const usernameField = document.getElementById('auth-username-field');
-const usernameEl    = document.getElementById('auth-username');
-const btnGoogle     = document.getElementById('btn-google-login');
-const btnToken      = document.getElementById('btn-token-login');
-const modeToggle    = document.getElementById('auth-mode-toggle');
-const headerRight   = document.querySelector('.header-right');
+  // ─── 1. REFERENCIAS DE TU INTERFAZ ───
+  const overlay       = document.getElementById('auth-overlay');
+  const appWrapper    = document.getElementById('app-wrapper');
+  const msgEl         = document.getElementById('auth-message');
+  const emailEl       = document.getElementById('auth-email');
+  const passEl        = document.getElementById('auth-password');
+  const usernameField = document.getElementById('auth-username-field');
+  const usernameEl    = document.getElementById('auth-username');
+  const btnGoogle     = document.getElementById('btn-google-login');
+  const btnToken      = document.getElementById('btn-token-login');
+  const modeToggle    = document.getElementById('auth-mode-toggle');
 
-/* ── Estado ── */
-let authMode        = 'login'; // 'login' | 'register'
-let _currentProfile = null;
+  let authMode = 'login';
 
-// Exponer para realtime.js (si lo integrás como módulo externo)
-window.__sb             = sb;
-window.__currentUser    = null;
-window.__currentProfile = null;
+  function setMsg(text, type) {
+    msgEl.className = 'auth-msg ' + type;
+    msgEl.textContent = text;
+    msgEl.style.display = text ? 'block' : 'none';
+  }
 
-/* ─────────────────────────
-   Mostrar / ocultar app
-───────────────────────── */
-async function showApp(session) {
-  overlay.classList.add('hidden');
-  appWrapper.classList.add('visible');
-
-  // Cargar el perfil completo desde la tabla profiles
-  // (tiene username, puntos_prode, avatar_url custom, etc.)
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
-
-  _currentProfile = profile;
-  window.__currentProfile = profile;
-  window.__currentUser    = session.user;
-
-  renderUserMenu(session.user, profile);
-}
-
-function showAuth() {
-  overlay.classList.remove('hidden');
-  appWrapper.classList.remove('visible');
-}
-
-/* ─────────────────────────
-   Menú de usuario en header
-───────────────────────── */
-function renderUserMenu(user, profile) {
-  // Prioridad: username de profiles > full_name de Google > parte del email
-  const name     = profile?.username || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
-  const avatar   = profile?.avatar_url || user.user_metadata?.avatar_url;
-  const initials = name.slice(0, 2).toUpperCase();
-
-  const avatarHtml   = avatar
-    ? `<img src="${avatar}" class="user-avatar" id="user-avatar-btn" alt="${name}" onerror="this.style.display='none';document.getElementById('user-avatar-fallback').style.display='flex'">`
-    : '';
-  const fallbackHtml = `<div class="user-avatar-fallback" id="user-avatar-fallback" style="${avatar ? 'display:none' : ''}">${initials}</div>`;
-
-  const menuHtml = `
-    <div class="user-menu" id="user-menu">
-      ${avatarHtml}${fallbackHtml}
-      <div class="user-dropdown" id="user-dropdown">
-        <div class="user-dropdown-name">
-          ${name}
-          <div class="user-dropdown-email">${user.email}</div>
-        </div>
-        <div class="user-dropdown-item" style="font-size:12px;opacity:0.7;padding:2px 0">
-          🏆 ${profile?.puntos_prode ?? 0} pts prode
-        </div>
-        <div class="user-dropdown-item danger" id="btn-logout">
-          <span>🚪</span> Cerrar sesión
-        </div>
-      </div>
-    </div>`;
-
-  headerRight.insertAdjacentHTML('beforeend', menuHtml);
-
-  const avatarBtn   = document.getElementById('user-avatar-btn');
-  const fallbackBtn = document.getElementById('user-avatar-fallback');
-  const dropdown    = document.getElementById('user-dropdown');
-  const logoutBtn   = document.getElementById('btn-logout');
-
-  [avatarBtn, fallbackBtn].forEach(el => {
-    if (el) el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle('open');
-    });
-  });
-
-  document.addEventListener('click', () => dropdown.classList.remove('open'));
-
-  logoutBtn.addEventListener('click', async () => {
-    await sb.auth.signOut();
-    document.getElementById('user-menu').remove();
-    _currentProfile = null;
-    window.__currentProfile = null;
-    window.__currentUser    = null;
-    showAuth();
+  // ─── 2. EVENTOS DE LOS BOTONES ───
+  
+  // Cambiar entre Login y Registro
+  modeToggle.addEventListener('click', () => {
+    authMode = authMode === 'login' ? 'register' : 'login';
+    btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
+    modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
+    usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
     setMsg('', '');
   });
-}
 
-/* ─────────────────────────
-   Helpers UI
-───────────────────────── */
-function setMsg(text, type) {
-  msgEl.className = 'auth-msg' + (type ? ' ' + type : '');
-  msgEl.textContent = text;
-}
-
-function setLoading(btn, loading) {
-  if (loading) {
-    btn.classList.add('btn-loading');
-    btn.dataset.originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner"></span>';
-  } else {
-    btn.classList.remove('btn-loading');
-    btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
-  }
-}
-
-/* ─────────────────────────
-   Toggle login ↔ register
-───────────────────────── */
-modeToggle.addEventListener('click', () => {
-  if (authMode === 'login') {
-    authMode = 'register';
-    btnToken.textContent = 'Crear cuenta';
-    modeToggle.textContent = '¿Ya tenés cuenta? Iniciá sesión';
-    usernameField.style.display = '';    // mostrar campo username
-    setMsg('', '');
-  } else {
-    authMode = 'login';
-    btnToken.textContent = 'Ingresar';
-    modeToggle.textContent = '¿No tenés cuenta? Registrate';
-    usernameField.style.display = 'none'; // ocultar campo username
-    setMsg('', '');
-  }
-});
-
-/* ─────────────────────────
-   Google OAuth
-───────────────────────── */
-btnGoogle.addEventListener('click', async () => {
-  setLoading(btnGoogle, true);
-  setMsg('', '');
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      // Después del OAuth, Supabase redirige aquí y onAuthStateChange toma el control
-      redirectTo: window.location.origin + window.location.pathname,
-    }
+  // Botón de Google
+  btnGoogle.addEventListener('click', () => {
+    btnGoogle.textContent = 'Cargando...';
+    iniciarSesionGoogle();
   });
-  if (error) {
-    setMsg('Error con Google: ' + error.message, 'error');
-    setLoading(btnGoogle, false);
-  }
-  // Si no hay error el browser redirige a Google; el loading queda visible hasta que vuelva
-});
 
-/* ─────────────────────────
-   Email + Contraseña
-───────────────────────── */
-btnToken.addEventListener('click', async () => {
-  const email    = emailEl.value.trim();
-  const password = passEl.value;
-  const username = usernameEl?.value?.trim();
-  setMsg('', '');
+  // Botón de Email / Contraseña
+  btnToken.addEventListener('click', async () => {
+    const email = emailEl.value.trim();
+    const password = passEl.value;
+    const username = usernameEl?.value?.trim();
 
-  if (!email)    { setMsg('Ingresá tu email.',       'error'); return; }
-  if (!password) { setMsg('Ingresá tu contraseña.', 'error'); return; }
+    if (!email || !password) return setMsg('Completá todos los campos.', 'error');
+    btnToken.textContent = 'Cargando...';
 
-  setLoading(btnToken, true);
-
-  if (authMode === 'register') {
-    if (!username) {
-      setMsg('Elegí un nombre de usuario.', 'error');
-      setLoading(btnToken, false);
-      return;
-    }
-    if (password.length < 6) {
-      setMsg('La contraseña debe tener al menos 6 caracteres.', 'error');
-      setLoading(btnToken, false);
-      return;
-    }
-
-    // username se pasa como metadata → el trigger handle_new_user lo inserta en profiles
-    const { data, error } = await sb.auth.signUp({
-      email,
-      password,
-      options: { data: { username } },
-    });
-
-    if (error) {
-      setMsg(traducirError(error.message), 'error');
-    } else if (data.session) {
-      await showApp(data.session);
+    if (authMode === 'register') {
+      if (!username) { btnToken.textContent = 'Crear cuenta'; return setMsg('Elegí un usuario.', 'error'); }
+      
+      const { error } = await registrarse(email, password, username);
+      
+      if (error) setMsg(error.message, 'error');
+      else setMsg('Revisá tu email para confirmar.', 'success');
+      btnToken.textContent = 'Crear cuenta';
     } else {
-      setMsg('¡Cuenta creada! Revisá tu email para confirmar.', 'success');
+      const { error } = await iniciarSesionEmail(email, password);
+      
+      if (error) setMsg('Email o contraseña incorrectos.', 'error');
+      btnToken.textContent = 'Ingresar';
     }
+  });
 
-  } else {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      setMsg(traducirError(error.message), 'error');
+  // Detectar cambios de sesión (Oculta el login y muestra la app)
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      overlay.classList.add('hidden');
+      appWrapper.classList.add('visible');
     } else {
-      await showApp(data.session);
+      overlay.classList.remove('hidden');
+      appWrapper.classList.remove('visible');
+    }
+  });
+
+  // ─── 3. CARGA DE DATOS ───
+  async function cargarFixtureBD() {
+    console.log("⏳ Cargando partidos desde Supabase...");
+    const { data, error } = await supabase.from('partidos').select('*').order('fecha_utc');
+    
+    if (error) return console.error('Error cargando partidos:', error);
+
+    if (data && data.length > 0) {
+      let gruposReales = {};
+      
+      data.forEach(p => {
+        if(p.fase && p.fase.includes('Grupo')) {
+           let letra = p.fase.replace('Grupo ', '').trim();
+           if(!gruposReales[letra]) gruposReales[letra] = { teams: [], matches: [] };
+           
+           if(!gruposReales[letra].teams.includes(p.equipo_local)) gruposReales[letra].teams.push(p.equipo_local);
+           if(!gruposReales[letra].teams.includes(p.equipo_visitante)) gruposReales[letra].teams.push(p.equipo_visitante);
+
+           const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', {day:'2-digit', month:'short'});
+           
+           gruposReales[letra].matches.push({
+             id: p.id, home: p.equipo_local, away: p.equipo_visitante,
+             hs: p.goles_local === null ? '-' : p.goles_local,
+             as: p.goles_visitante === null ? '-' : p.goles_visitante,
+             date: fechaFormateada, estado: p.estado
+           });
+        }
+      });
+
+      const letrasDeGrupos = Object.keys(gruposReales);
+      if (letrasDeGrupos.length > 0) {
+        window.GROUPS = gruposReales;
+        renderGroups(letrasDeGrupos[0]);
+        renderFixtures();
+      }
     }
   }
 
-  setLoading(btnToken, false);
-});
+  async function cargarHistoriaBD() {
+    console.log("⏳ Cargando historia desde Supabase...");
+    const { data, error } = await supabase.from('historia_ediciones').select('*');
+    if (error) return console.error('Error cargando historia:', error);
 
-/* Enter para enviar */
-[emailEl, passEl].forEach(el => {
-  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnToken.click(); });
-});
+    if (data && data.length > 0) {
+      let edicionesReales = {};
+      data.forEach(h => {
+        let year = parseInt(h.temporada);
+        if(!edicionesReales[year]) {
+          edicionesReales[year] = {
+            year: year, host: "Edición " + year, dates: "Consultado de BD",
+            champion: "Ver Detalles", champFlag: "🏆",
+            scorers: [], finalists: [], records: [],
+            facts: [{slice: () => "💡", slice: () => "Partido importado: " + h.nombre}],
+            matches: []
+          };
+        }
+        edicionesReales[year].records.push({
+          cat: h.nombre, val: `${h.goles_local || 0} - ${h.goles_visitante || 0}`, desc: `${h.equipo_local} vs ${h.equipo_visitante}`
+        });
+      });
+      window.EDITIONS = Object.values(edicionesReales).sort((a,b) => b.year - a.year);
+      renderHistory();
+    }
+  }
 
-/* ─────────────────────────
-   Traducir errores de Supabase al español
-───────────────────────── */
-function traducirError(msg) {
-  const mapa = {
-    'Invalid login credentials':      'Email o contraseña incorrectos.',
-    'Email not confirmed':            'Confirmá tu email antes de ingresar.',
-    'User already registered':        'Ya existe una cuenta con ese email.',
-    'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
-    'Unable to validate email address': 'El email ingresado no es válido.',
-    'Email rate limit exceeded':      'Demasiados intentos. Esperá unos minutos.',
+  // ─── 4. INICIALIZACIÓN FINAL ───
+  document.addEventListener('DOMContentLoaded', async () => {
+    await cargarFixtureBD();
+    await cargarHistoriaBD();
+  });
+
+  window.abrirPartido = async (partidoId, estado) => {
+    await initPartidoView(partidoId, estado);
   };
-  return mapa[msg] || msg;
-}
-
-/* ─────────────────────────
-   Verificar sesión al cargar
-   (también maneja el redirect de Google OAuth)
-───────────────────────── */
-async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    await showApp(session);
-  } else {
-    showAuth();
-  }
-}
-
-/* Escuchar cambios de sesión (OAuth redirect callback) */
-sb.auth.onAuthStateChange(async (_event, session) => {
-  if (session && !document.getElementById('user-menu')) {
-    await showApp(session);
-  }
-});
-
-initAuth();
 </script>
 </body>
 </html>
