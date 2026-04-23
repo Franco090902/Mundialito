@@ -386,6 +386,7 @@ export function suscribirseAPartidosEnVivo(onUpdate) {
     .subscribe();
 }
 
+
 /**
  * Carga los partidos de hoy desde Supabase.
  * El Worker ya los pobló, el frontend solo los lee.
@@ -744,6 +745,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Suscribirse a todos los partidos en curso para el ticker/dashboard
   suscribirseAPartidosEnVivo((partidoActualizado) => {
+    if (window.actualizarPaneles && partidoActualizado && partidoActualizado.equipo_local) {
+        window.actualizarPaneles(partidoActualizado.equipo_local);
+
+        // Bonus: Cambiamos el select visualmente para que coincida con el partido
+        const selectFiltro = document.getElementById('filtro-noticias');
+        if (selectFiltro) selectFiltro.value = partidoActualizado.equipo_local;
+    }
+    
     // Actualizar el ticker y las tarjetas de partidos en vivo
     const card = document.querySelector(`[data-partido-id="${partidoActualizado.id}"]`);
     if (!card) return;

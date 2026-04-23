@@ -14,6 +14,8 @@ require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const axios            = require('axios');
 const cron             = require('node-cron');
+const express = require('express');
+const cors = require('cors');
 
 // ──────────────────────────────────────────────────────────────────
 // SUPABASE — Service Role Key (bypasea RLS, solo usar en backend)
@@ -271,4 +273,106 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (error) => {
   console.error('💥 Uncaught Exception:', error);
   process.exit(1); // PM2 / Render lo reinicia automáticamente
+});
+
+
+
+// --- AL FINAL DE TU SERVER.JS ACTUAL ---
+
+const app = express();
+app.use(cors()); // Permite que tu frontend haga peticiones sin bloqueos
+app.use(express.json());
+
+// ══════════════════════════════════════════════════════════════════
+// 1. ENDPOINT DE CATEGORÍAS (Para el filtro HTML)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/categorias', async (req, res) => {
+    try {
+        // Armamos el filtro basándonos en los países que SÍ tienen productos en tu tienda.
+        const { data, error } = await supabase
+            .from('productos_ml')
+            .select('categoria_relacionada')
+            .eq('activo', true);
+            
+        if (error) throw error;
+        
+        // Filtramos para obtener una lista de países únicos
+        const categoriasUnicas = [...new Set(data.map(item => item.categoria_relacionada))].filter(Boolean);
+        res.json(categoriasUnicas);
+    } catch (error) { 
+        console.error("Error al obtener categorías:", error.message);
+        res.status(500).json({ error: 'Error al obtener categorías' }); 
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// 2. ENDPOINT DE NOTICIAS (Conectado a la API de GNews)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/noticias', async (req, res) => {
+    const { pais } = req.query;
+    
+    // Armamos la búsqueda base para GNews
+    let queryBusqueda = '"Mundial" AND "FIFA"';
+    
+    // Si el usuario seleccionó un país (o si llega por el websocket), lo agregamos
+    if (pais && pais !== 'Todos' && pais !== '') {
+        queryBusqueda += ` AND "${pais}"`;
+    }
+
+    try {
+        // Hacemos la petición a GNews
+        const response = await axios.get('https://gnews.io/api/v4/search', {
+            params: {
+                q: queryBusqueda,
+                lang: 'es',       // Noticias en español
+                max: 6,           // Traemos 6 para mantener el diseño prolijo
+                token: process.env.GNEWS_API_KEY // Tu clave desde el .env
+            }
+        });
+
+        // "Traducimos" los datos de GNews al formato que espera tu Frontend
+        const noticiasFormateadas = response.data.articles.map(apiArt => ({
+            titulo: apiArt.title,
+            imagen: apiArt.image,
+            link: apiArt.url
+        }));
+
+        res.json(noticiasFormateadas);
+
+    } catch (error) { 
+        console.error("Error consultando GNews:", error.message);
+        res.status(500).json({ error: 'Error al obtener noticias de GNews' }); 
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// 3. ENDPOINT DE PRODUCTOS (Tabla: productos_ml)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/productos', async (req, res) => {
+    const { pais } = req.query;
+    
+    // Si no hay país seleccionado, o si eligió "Todos", no mostramos productos.
+    if (!pais || pais === '' || pais === 'Todos') return res.json([]); 
+
+    try {
+        const { data, error } = await supabase
+            .from('productos_ml')
+            .select('*')
+            .eq('categoria_relacionada', pais)
+            .eq('activo', true);
+
+        if (error) throw error;
+        res.json(data || []);
+    } catch (error) { 
+        console.error("Error en productos:", error.message);
+        res.status(500).json({ error: 'Error al obtener productos' }); 
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ARRANQUE DEL SERVIDOR
+// ══════════════════════════════════════════════════════════════════
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 API de Mundialito escuchando peticiones en puerto ${PORT}`);
 });

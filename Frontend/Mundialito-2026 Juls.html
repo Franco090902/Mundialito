@@ -806,6 +806,96 @@
     /* Ocultar app hasta que el auth esté listo */
     #app-wrapper { display: none; }
     #app-wrapper.visible { display: block; }
+
+
+    /* SISTEMA DE GRILLAS PARA LAS TARJETAS */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.card-item {
+  background-color: var(--navy2); /* Asumiendo tus variables de color */
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border2);
+}
+
+.card-body {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.card-price {
+  font-size: 20px;
+  color: #00ff88; /* Verde destacado */
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.card-btn {
+  margin-top: auto; /* Empuja el botón siempre hacia abajo */
+  text-align: center;
+  background-color: var(--red);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.card-item {
+  background: var(--navy2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+}
+
+.card-item:hover { transform: translateY(-5px); }
+
+.card-img { width: 100%; height: 160px; object-fit: cover; }
+
+.card-body { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+
+.card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: white; line-height: 1.3; }
+
+.btn-card {
+  background: var(--red); color: white; text-align: center;
+  padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold;
+  margin-top: auto;
+}
+.card-btn:hover { background-color: var(--red2); }
   </style>
 </head>
 <body>
@@ -906,6 +996,8 @@
     <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
     <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
     <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+    <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
+<button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda</button>
     <button class="tab-btn" onclick="switchTab('guide',this)">📖 Guía de Código</button>
   </div>
 
@@ -1101,6 +1193,27 @@
     <div id="editionCards"></div>
 
   </div>
+
+  <div id="panel-noticias" class="panel" style="display:none">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+    <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
+    
+    <select id="filtro-noticias" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+      <option value="">🌎 Ver Todo el Mundial</option>
+    </select>
+  </div>
+  
+  <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
+    Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
+  </p>
+  
+  <div id="grid-noticias" class="cards-grid"></div>
+</div>
+
+<div id="panel-tienda" class="panel" style="display:none">
+  <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
+  <div id="grid-productos" class="cards-grid"></div>
+</div>
 
   <!-- ══ PANEL: GUÍA DE CÓDIGO ══ -->
   <div id="panel-guide" class="panel">
@@ -1727,6 +1840,78 @@ setInterval(() => {
   });
 }, 5000);
 
+
+// Funciones Globales para Noticias y Tienda
+const API_URL = 'http://localhost:3000/api';
+
+// 1. Carga los países en el selector basándose en lo que hay en la tienda
+window.cargarFiltrosDinamicos = async function() {
+  try {
+    const res = await fetch(`${API_URL}/categorias`);
+    const paises = await res.json();
+    const select = document.getElementById('filtro-noticias');
+    if (select && paises.length > 0) {
+      paises.forEach(pais => {
+        const opt = document.createElement('option');
+        opt.value = pais;
+        opt.textContent = `📍 ${pais}`;
+        select.appendChild(opt);
+      });
+    }
+  } catch (e) { console.error("Error cargando filtros:", e); }
+};
+
+// 2. Busca noticias en GNews y Productos en Supabase
+window.actualizarPaneles = async function(pais = "") {
+  const label = document.getElementById('label-pais-noticias');
+  const tiendaLabel = document.getElementById('tienda-pais-nombre');
+  if (label) label.innerText = pais || "Todo el Mundial";
+  if (tiendaLabel) tiendaLabel.innerText = pais || "Mundial 2026";
+
+  // Buscar Noticias
+  try {
+    const res = await fetch(`${API_URL}/noticias?pais=${pais}`);
+    const noticias = await res.json();
+    const grid = document.getElementById('grid-noticias');
+    if (grid) {
+      grid.innerHTML = noticias.map(n => `
+        <div class="card-item">
+          <img src="${n.imagen || 'https://via.placeholder.com/300x150'}" class="card-img">
+          <div class="card-body">
+            <div class="card-title">${n.titulo}</div>
+            <a href="${n.link}" target="_blank" class="btn-card">Leer Noticia</a>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (e) { console.error("Error noticias:", e); }
+
+  // Buscar Productos
+  try {
+    const res = await fetch(`${API_URL}/productos?pais=${pais}`);
+    const productos = await res.json();
+    const gridP = document.getElementById('grid-productos');
+    if (gridP) {
+      gridP.innerHTML = productos.length > 0 ? productos.map(p => `
+        <div class="card-item">
+          <img src="${p.imagen}" class="card-img">
+          <div class="card-body">
+            <div class="card-title">${p.nombre}</div>
+            <div style="color: #00ff88; font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">$${p.precio}</div>
+            <a href="${p.link}" target="_blank" class="btn-card">Comprar</a>
+          </div>
+        </div>
+      `).join('') : '<p style="color: var(--text3); padding: 20px;">No hay productos para esta selección.</p>';
+    }
+  } catch (e) { console.error("Error tienda:", e); }
+};
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+  window.cargarFiltrosDinamicos();
+  window.actualizarPaneles(""); // Carga inicial "Todo el Mundial"
+});
+
 /* ─────────────────────────────────────
    INICIALIZAR todo al cargar la página
 ───────────────────────────────────── */
@@ -1888,9 +2073,7 @@ renderCards();
     await cargarHistoriaBD();
   });
 
-  window.abrirPartido = async (partidoId, estado) => {
-    await initPartidoView(partidoId, estado);
-  };
+
 </script>
 </body>
 </html>
