@@ -313,19 +313,16 @@
     <div class="paginacion" id="tiendaPaginacion"></div>
   </div>
 
-<<<<<<< HEAD
-<div id="panel-tienda" class="panel" style="display:none">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-    <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
-    <select id="filtro-tienda" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
-      <option value="">🌎 Todo el Mundial</option>
-    </select>
+  <!-- ══ PANEL: TIENDA ══ -->
+  <div id="panel-tienda" class="panel" style="display:none">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
+      <select id="filtro-tienda" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
+        <option value="">🌎 Todo el Mundial</option>
+      </select>
+    </div>
+    <div id="grid-productos" class="cards-grid"></div>
   </div>
-  <div id="grid-productos" class="cards-grid"></div>
-</div>
-=======
->>>>>>> be851c7e820fb3b23ce4eef346f4dc29bd693b8a
-
   <!-- ══ PANEL: GUÍA DE CÓDIGO ══ -->
   <div id="panel-guide" class="panel">
     <div class="guide-grid">
@@ -724,56 +721,6 @@
     await cargarFixtureBD();
     await cargarHistoriaBD();
   });
-
-  window.abrirPartido = async (partidoId, estado) => {
-    await initPartidoView(partidoId, estado);
-  };
-
-function crearTarjetaProducto(producto) { return `
-    <div class="producto-card">
-      <img src="${producto.imagen_url}" alt="${producto.nombre}" class="prod-img" loading="lazy">
-      <div class="prod-nombre">${producto.nombre}</div>
-      <div class="prod-precio">${producto.precio}</div>
-      <a href="${producto.link_afiliado}" target="_blank" class="prod-btn">Ver en Mercado Libre</a>
-    </div>
-  `; }
-    function renderTienda(pagina) { paginaActual = pagina;
-  
-  // Calcular los índices para cortar el array
-  const inicio = (pagina - 1) * productosPorPagina;
-  const fin = inicio + productosPorPagina;
-  const productosPagina = PRODUCTOS_ML.slice(inicio, fin);
-  
-  // Inyectar los productos en el HTML
-  document.getElementById('tiendaContent').innerHTML = productosPagina.map(crearTarjetaProducto).join('');
-  
-  // Lógica para crear los botones de paginación
-  const totalPaginas = Math.ceil(PRODUCTOS_ML.length / productosPorPagina);
-  let botonesPaginacion = '';
-  
-  for (let i = 1; i <= totalPaginas; i++) {
-    botonesPaginacion += `<button class="pag-btn ${i === paginaActual ? 'active' : ''}" onclick="renderTienda(${i})">${i}</button>`;
-  }
-  
-  document.getElementById('tiendaPaginacion').innerHTML = botonesPaginacion; }
-    function mostrarDetallesPartido(equipoLocal, equipoVisitante) { // Filtrar productos que coincidan con cualquiera de los dos equipos
-  // Agregamos "General" por si quieres mostrar balones o botines neutros siempre
-  const productosRecomendados = PRODUCTOS_ML.filter(p => 
-    p.categoria_relacionada === equipoLocal || 
-    p.categoria_relacionada === equipoVisitante ||
-    p.categoria_relacionada === "General"
-  );
-
-  // Inyectar en el HTML del detalle del partido
-  document.getElementById('tituloPartido').textContent = `${equipoLocal} vs ${equipoVisitante}`;
-  
-  // Mostramos solo los primeros 4 recomendados para no saturar el modal/vista
-  document.getElementById('productosPartidoContent').innerHTML = 
-    productosRecomendados.slice(0, 4).map(crearTarjetaProducto).join('');
-    
-  // Aquí llamarías a tu código para mostrar el panel/modal de detalles
-  // document.getElementById('panel-detalles-partido').style.display = 'block'; }
-}
 </script>
  <script src="app.js"></script>
 </body>
