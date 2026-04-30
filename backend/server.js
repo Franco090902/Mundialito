@@ -272,7 +272,6 @@ process.on('uncaughtException', (error) => {
   console.error('💥 Uncaught Exception:', error);
   process.exit(1); // PM2 / Render lo reinicia automáticamente
 });
-<<<<<<< HEAD
 
 
 
@@ -374,6 +373,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 API de Mundialito escuchando peticiones en puerto ${PORT}`);
 });
-=======
->>>>>>> be851c7e820fb3b23ce4eef346f4dc29bd693b8a
 
