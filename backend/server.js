@@ -14,7 +14,8 @@ require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const axios            = require('axios');
 const cron             = require('node-cron');
-
+const express = require('express');
+const cors    = require('cors');
 // ──────────────────────────────────────────────────────────────────
 // SUPABASE — Service Role Key (bypasea RLS, solo usar en backend)
 // ──────────────────────────────────────────────────────────────────

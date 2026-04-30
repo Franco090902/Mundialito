@@ -108,6 +108,7 @@
     <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
     <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
     <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+    <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
     <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
       
     <button class="tab-btn" onclick="switchTab('guide',this)">📖 Guía de Código</button>
@@ -306,13 +307,19 @@
 
   </div>
 
-  <!-- ══ PANEL: PRODUCTOS ML ══ -->
-  <div id="panel-tienda" class="panel" style="display: none;">
-    <p class="section-label">Productos Recomendados</p>
-    <div class="tienda-grid" id="tiendaContent"></div>
-    <div class="paginacion" id="tiendaPaginacion"></div>
+  <!-- ══ PANEL: NOTICIAS ══ -->
+  <div id="panel-noticias" class="panel" style="display:none">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
+      <select id="filtro-noticias" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+        <option value="">🌎 Ver Todo el Mundial</option>
+      </select>
+    </div>
+    <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
+      Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
+    </p>
+    <div id="grid-noticias" class="cards-grid"></div>
   </div>
-
   <!-- ══ PANEL: TIENDA ══ -->
   <div id="panel-tienda" class="panel" style="display:none">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
