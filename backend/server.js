@@ -310,56 +310,55 @@ app.get('/api/categorias', async (req, res) => {
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/noticias', async (req, res) => {
     const { pais } = req.query;
-    
-    // Armamos la búsqueda base para GNews
     let queryBusqueda = '"Mundial" AND "FIFA"';
-    
-    // Si el usuario seleccionó un país (o si llega por el websocket), lo agregamos
     if (pais && pais !== 'Todos' && pais !== '') {
         queryBusqueda += ` AND "${pais}"`;
     }
 
     try {
-        // Hacemos la petición a GNews
         const response = await axios.get('https://gnews.io/api/v4/search', {
             params: {
                 q: queryBusqueda,
-                lang: 'es',       // Noticias en español
-                max: 6,           // Traemos 6 para mantener el diseño prolijo
-                token: process.env.GNEWS_API_KEY // Tu clave desde el .env
+                lang: 'es',
+                max: 6,
+                token: process.env.GNEWS_API_KEY
             }
         });
 
-        // "Traducimos" los datos de GNews al formato que espera tu Frontend
-        const noticiasFormateadas = response.data.articles.map(apiArt => ({
+        const noticias = (response.data.articles || []).map(apiArt => ({
             titulo: apiArt.title,
             imagen: apiArt.image,
             link: apiArt.url
         }));
 
-        res.json(noticiasFormateadas);
-
-    } catch (error) { 
-        console.error("Error consultando GNews:", error.message);
-        res.status(500).json({ error: 'Error al obtener noticias de GNews' }); 
+        res.json(noticias);
+    } catch (error) {
+        if (error.response && error.response.status === 429) {
+            console.warn('GNews rate limit (429) – usando datos de ejemplo en frontend');
+        } else if (error.response && error.response.status === 403) {
+            console.warn('GNews API key inválida o bloqueada (403)');
+        } else {
+            console.error('Error GNews:', error.message);
+        }
+        res.json([]);
     }
 });
 
 // ══════════════════════════════════════════════════════════════════
-// 3. ENDPOINT DE PRODUCTOS (Tabla: productos_ml)
+// 3. ENDPOINT DE PRODUCTOS (Tabla: products_url)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/productos', async (req, res) => {
     const { pais } = req.query;
     
-    // Si no hay país seleccionado, o si eligió "Todos", no mostramos productos.
+    // Si no hay país seleccionado, devolvemos vacío
     if (!pais || pais === '' || pais === 'Todos') return res.json([]); 
 
     try {
         const { data, error } = await supabase
-            .from('productos_ml')
+            .from('products_url')   // ← nombre correcto
             .select('*')
-            .eq('categoria_relacionada', pais)
-            .eq('activo', true);
+            .eq('categoria_relacionada', pais);
+            // Si tenés columna "activo", agregá: .eq('activo', true)
 
         if (error) throw error;
         res.json(data || []);
