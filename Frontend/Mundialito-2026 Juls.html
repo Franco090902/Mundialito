@@ -308,10 +308,10 @@
   </div>
 
   <!-- ══ PANEL: NOTICIAS ══ -->
-  <div id="panel-noticias" class="panel" style="display:none">
+  <div id="panel-noticias" class="panel">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
       <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
-      <select id="filtro-noticias" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+      <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
         <option value="">🌎 Ver Todo el Mundial</option>
       </select>
     </div>
@@ -321,10 +321,10 @@
     <div id="grid-noticias" class="cards-grid"></div>
   </div>
   <!-- ══ PANEL: TIENDA ══ -->
-  <div id="panel-tienda" class="panel" style="display:none">
+  <div id="panel-tienda" class="panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
       <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
-      <select id="filtro-tienda" onchange="window.actualizarPaneles(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
+      <select id="filtro-tienda" onchange="window.cargarProductos(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
         <option value="">🌎 Todo el Mundial</option>
       </select>
     </div>

@@ -271,7 +271,8 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('uncaughtException', (error) => {
   console.error('💥 Uncaught Exception:', error);
-  process.exit(1); // PM2 / Render lo reinicia automáticamente
+  // NO hacer process.exit(1) en desarrollo — mata el servidor
+  // En producción con PM2/Render, descomentar: process.exit(1);
 });
 
 
@@ -279,8 +280,13 @@ process.on('uncaughtException', (error) => {
 // --- AL FINAL DE TU SERVER.JS ACTUAL ---
 
 const app = express();
-app.use(cors()); // Permite que tu frontend haga peticiones sin bloqueos
+app.use(cors({ origin: '*' })); // Permite TODOS los orígenes (Live Server, localhost, etc)
 app.use(express.json());
+
+// Health check — para verificar que el servidor está vivo
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+});
 
 // ══════════════════════════════════════════════════════════════════
 // 1. ENDPOINT DE CATEGORÍAS (Para el filtro HTML)
@@ -305,65 +311,154 @@ app.get('/api/categorias', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
-// 2. ENDPOINT DE NOTICIAS (Conectado a la API de GNews)
+// 2. ENDPOINT DE NOTICIAS
+//    Estrategia: Consulta GNews y devuelve directo al frontend.
+//    En paralelo, guarda en 'articulos' como caché (sin bloquear la respuesta).
+//    Si GNews falla, sirve desde la tabla 'articulos'.
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/noticias', async (req, res) => {
     const { pais } = req.query;
-    let queryBusqueda = '"Mundial" AND "FIFA"';
-    if (pais && pais !== 'Todos' && pais !== '') {
-        queryBusqueda += ` AND "${pais}"`;
-    }
+    const categoria = (pais && pais !== '' && pais !== 'Todos') ? pais : null;
 
+    console.log(`📰 [NOTICIAS] Pedido recibido — país: ${categoria || 'Todos'}`);
+
+    // ── 1. Intentar GNews directamente ──
     try {
+        let queryBusqueda = 'Mundial FIFA 2026';
+        if (categoria) queryBusqueda += ` ${categoria}`;
+
+        console.log(`   🔍 Buscando en GNews: "${queryBusqueda}"`);
+
         const response = await axios.get('https://gnews.io/api/v4/search', {
             params: {
                 q: queryBusqueda,
                 lang: 'es',
                 max: 6,
                 token: process.env.GNEWS_API_KEY
-            }
+            },
+            timeout: 8000
         });
 
-        const noticias = (response.data.articles || []).map(apiArt => ({
-            titulo: apiArt.title,
-            imagen: apiArt.image,
-            link: apiArt.url
+        console.log(`   ✅ GNews respondió: ${response.data.totalArticles} artículos encontrados`);
+
+        const noticias = (response.data.articles || []).map(a => ({
+            titulo:  a.title,
+            imagen:  a.image || null,
+            link:    a.url || '#',
+            fuente:  a.source?.name || '',
         }));
 
+        // Enviar respuesta al frontend INMEDIATAMENTE
         res.json(noticias);
+
+        // Guardar en BD en segundo plano (sin bloquear respuesta)
+        guardarArticulosEnBD(noticias, categoria).catch(err =>
+            console.warn('   ⚠️ Error guardando en caché:', err.message)
+        );
+
+        return; // Ya respondimos, no seguir
+
     } catch (error) {
-        if (error.response && error.response.status === 429) {
-            console.warn('GNews rate limit (429) – usando datos de ejemplo en frontend');
-        } else if (error.response && error.response.status === 403) {
-            console.warn('GNews API key inválida o bloqueada (403)');
+        const status = error.response?.status;
+        if (status === 429) {
+            console.warn('   ⚠️ GNews rate limit (429)');
+        } else if (status === 403) {
+            console.warn('   ⚠️ GNews API key inválida (403)');
         } else {
-            console.error('Error GNews:', error.message);
+            console.warn('   ⚠️ GNews error:', error.message);
         }
-        res.json([]);
+    }
+
+    // ── 2. Fallback: servir desde tabla 'articulos' ──
+    console.log('   📦 Sirviendo noticias desde caché en BD...');
+    try {
+        let query = supabase
+            .from('articulos')
+            .select('titulo, contenido, categoria, imagen_url')
+            .eq('publicado', true)
+            .order('created_at', { ascending: false })
+            .limit(12);
+
+        if (categoria) {
+            query = query.eq('categoria', categoria);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const noticias = (data || []).map(n => ({
+            titulo:  n.titulo,
+            imagen:  n.imagen_url,
+            link:    '#',
+        }));
+
+        console.log(`   📦 ${noticias.length} noticias desde BD`);
+        return res.json(noticias);
+    } catch (error) {
+        console.error('   ❌ Error BD:', error.message);
+        return res.json([]);
+    }
+});
+
+// Función auxiliar: guarda artículos en la tabla 'articulos' (en background)
+async function guardarArticulosEnBD(noticias, categoria) {
+    for (const n of noticias) {
+        try {
+            const { data: existing } = await supabase
+                .from('articulos')
+                .select('id')
+                .eq('titulo', n.titulo)
+                .limit(1);
+
+            if (!existing || existing.length === 0) {
+                await supabase.from('articulos').insert({
+                    titulo:     n.titulo,
+                    contenido:  n.titulo, // Usamos titulo como contenido mínimo
+                    categoria:  categoria || 'General',
+                    imagen_url: n.imagen,
+                    publicado:  true,
+                });
+            }
+        } catch (e) {
+            // Silenciar errores individuales de insert
+        }
+    }
+    console.log('   💾 Caché de artículos actualizado');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 3. ENDPOINT DE PRODUCTOS (Tabla: productos_ml)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/productos', async (req, res) => {
+    const { pais } = req.query;
+
+    try {
+        let query = supabase
+            .from('productos_ml')
+            .select('*')
+            .eq('activo', true);
+
+        // Filtrar por país/selección si se especifica
+        if (pais && pais !== '' && pais !== 'Todos') {
+            query = query.eq('categoria_relacionada', pais);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        res.json(data || []);
+    } catch (error) {
+        console.error('Error en productos:', error.message);
+        res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
 
 // ══════════════════════════════════════════════════════════════════
-// 3. ENDPOINT DE PRODUCTOS (Tabla: products_url)
+// MIDDLEWARE DE ERRORES (Express 5 — atrapa errores de rutas async)
 // ══════════════════════════════════════════════════════════════════
-app.get('/api/productos', async (req, res) => {
-    const { pais } = req.query;
-    
-    // Si no hay país seleccionado, devolvemos vacío
-    if (!pais || pais === '' || pais === 'Todos') return res.json([]); 
-
-    try {
-        const { data, error } = await supabase
-            .from('products_url')   // ← nombre correcto
-            .select('*')
-            .eq('categoria_relacionada', pais);
-            // Si tenés columna "activo", agregá: .eq('activo', true)
-
-        if (error) throw error;
-        res.json(data || []);
-    } catch (error) { 
-        console.error("Error en productos:", error.message);
-        res.status(500).json({ error: 'Error al obtener productos' }); 
+app.use((err, req, res, next) => {
+    console.error('💥 Error en ruta:', err.message);
+    if (!res.headersSent) {
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
@@ -373,5 +468,7 @@ app.get('/api/productos', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 API de Mundialito escuchando peticiones en puerto ${PORT}`);
+    console.log(`   📡 Probar: http://localhost:${PORT}/api/health`);
+    console.log(`   📰 Noticias: http://localhost:${PORT}/api/noticias`);
+    console.log(`   🛒 Productos: http://localhost:${PORT}/api/productos`);
 });
-

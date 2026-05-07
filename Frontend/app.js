@@ -137,10 +137,10 @@ function switchTab(id, btn) {
   if (id === 'cards')   renderCards();
   if (id === 'history') renderHistory();
   if (id === 'noticias') {
-    window.actualizarPaneles(document.getElementById('filtro-noticias')?.value || '');
+    window.cargarNoticias(document.getElementById('filtro-noticias')?.value || '');
   }
   if (id === 'tienda') {
-    window.actualizarPaneles(document.getElementById('filtro-noticias')?.value || '');
+    window.cargarProductos(document.getElementById('filtro-tienda')?.value || '');
   }
 }
 
@@ -387,7 +387,16 @@ setInterval(() => {
 // Funciones Globales para Noticias y Tienda
 const API_URL = 'http://localhost:3000/api';
 
-// 1. Carga los países en el selector basándose en lo que hay en la tienda
+/* ── Utilidad: debounce ── */
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// 1. Carga los países en ambos selectores basándose en los productos activos
 window.cargarFiltrosDinamicos = async function() {
   try {
     const res = await fetch(`${API_URL}/categorias`);
@@ -408,107 +417,124 @@ window.cargarFiltrosDinamicos = async function() {
   } catch (e) { console.error("Error cargando filtros:", e); }
 };
 
-// ── Caché simple para noticias y productos ──
+// ── Caché simple ──
 const noticiasCache = {};
 const productosCache = {};
 
-// 2. Busca noticias en GNews y Productos en Supabase (con debounce y caché)
-window.actualizarPaneles = debounce(async function(pais = "") {
+// ── Imagen placeholder (SVG inline, no depende de servicios externos) ──
+const PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
+
+// Función global para fallback de imágenes con 403 o error de carga
+window.imgFallback = function(img) {
+  img.onerror = null; // evitar loop infinito
+  img.src = PLACEHOLDER_IMG;
+};
+
+// ══════════════════════════════════════
+// 2. NOTICIAS — función independiente
+// ══════════════════════════════════════
+window.cargarNoticias = debounce(async function(pais = "") {
   const label = document.getElementById('label-pais-noticias');
-  const tiendaLabel = document.getElementById('tienda-pais-nombre');
   if (label) label.innerText = pais || "Todo el Mundial";
+
+  const grid = document.getElementById('grid-noticias');
+  if (!grid) return;
+
+  // Usar caché si ya se cargó
+  if (noticiasCache[pais]) {
+    grid.innerHTML = noticiasCache[pais];
+    return;
+  }
+
+  grid.innerHTML = '<p style="color: var(--text3); padding: 20px;">Buscando noticias...</p>';
+  try {
+    const res = await fetch(`${API_URL}/noticias?pais=${encodeURIComponent(pais)}`);
+    const data = await res.json();
+    let noticias = Array.isArray(data) ? data : [];
+
+    // Fallback con ejemplos si no hay noticias
+    if (noticias.length === 0) {
+      noticias = [
+        { titulo: "⚽ Preparativos para el Mundial 2026 en marcha", imagen: null, link: "#" },
+        { titulo: "🌟 Las selecciones ajustan sus plantillas", imagen: null, link: "#" },
+        { titulo: "🏟️ Sedes del Mundial 2026: conoce las ciudades anfitrionas", imagen: null, link: "#" }
+      ];
+    }
+
+    const html = noticias.map(n => `
+      <div class="card-item">
+        <img src="${n.imagen || PLACEHOLDER_IMG}" class="card-img" onerror="window.imgFallback(this)" />
+        <div class="card-body">
+          <div class="card-title">${n.titulo}</div>
+          ${n.fuente ? `<div style="color: var(--text4); font-size: 12px; margin-bottom: 8px;">📰 ${n.fuente}</div>` : ''}
+          <a href="${n.link}" target="_blank" class="btn-card">${n.link && n.link !== '#' ? 'Leer Noticia' : 'Ver más'}</a>
+        </div>
+      </div>
+    `).join('');
+
+    noticiasCache[pais] = html;
+    grid.innerHTML = html;
+  } catch (e) {
+    console.error("Error noticias:", e);
+    grid.innerHTML = '<p style="color: var(--text3); padding: 20px;">Error al cargar noticias.</p>';
+  }
+}, 500);
+
+// ══════════════════════════════════════
+// 3. PRODUCTOS — función independiente
+// ══════════════════════════════════════
+window.cargarProductos = debounce(async function(pais = "") {
+  const tiendaLabel = document.getElementById('tienda-pais-nombre');
   if (tiendaLabel) tiendaLabel.innerText = pais || "Mundial 2026";
 
-  // ── Noticias ──
-  const gridNoticias = document.getElementById('grid-noticias');
-  if (gridNoticias) {
-    if (noticiasCache[pais]) {
-      gridNoticias.innerHTML = noticiasCache[pais];
-    } else {
-      gridNoticias.innerHTML = '<p style="color: var(--text3); padding: 20px;">Buscando noticias...</p>';
-      try {
-        const res = await fetch(`${API_URL}/noticias?pais=${encodeURIComponent(pais)}`);
-        const data = await res.json();
-        const noticias = Array.isArray(data) ? data : [];
+  const grid = document.getElementById('grid-productos');
+  if (!grid) return;
 
-        // Si no hay noticias, cargamos de ejemplo
-        if (noticias.length === 0) {
-          noticias.push(
-            { titulo: "⚽ Preparativos para el Mundial 2026 en marcha", imagen: null, link: "#" },
-            { titulo: "🌟 Las selecciones ajustan sus plantillas", imagen: null, link: "#" },
-            { titulo: "🏟️ Sedes del Mundial 2026: conoce las ciudades anfitrionas", imagen: null, link: "#" }
-          );
-        }
-
-        const html = noticias.map(n => `
-          <div class="card-item">
-            <img src="${n.imagen || 'https://via.placeholder.com/300x150'}" class="card-img" />
-            <div class="card-body">
-              <div class="card-title">${n.titulo}</div>
-              <a href="${n.link}" target="_blank" class="btn-card">Leer Noticia</a>
-            </div>
-          </div>
-        `).join('');
-
-        noticiasCache[pais] = html;
-        gridNoticias.innerHTML = html;
-      } catch (e) {
-        console.error("Error noticias:", e);
-        gridNoticias.innerHTML = '<p style="color: var(--text3); padding: 20px;">Error al cargar noticias.</p>';
-      }
-    }
+  // Usar caché si ya se cargó
+  if (productosCache[pais]) {
+    grid.innerHTML = productosCache[pais];
+    return;
   }
 
-  // ── Productos ──
-  const gridProductos = document.getElementById('grid-productos');
-  if (gridProductos) {
-    if (productosCache[pais]) {
-      gridProductos.innerHTML = productosCache[pais];
-    } else {
-      gridProductos.innerHTML = '<p style="color: var(--text3); padding: 20px;">Buscando productos...</p>';
-      try {
-        const res = await fetch(`${API_URL}/productos?pais=${encodeURIComponent(pais)}`);
-        const productos = await res.json();
-        const html = productos.length > 0 ? productos.map(p => `
-          <div class="card-item">
-            <img src="${p.imagen}" class="card-img">
-            <div class="card-body">
-              <div class="card-title">${p.nombre}</div>
-              <div style="color: #00ff88; font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">$${p.precio}</div>
-              <a href="${p.link}" target="_blank" class="btn-card">Comprar</a>
-            </div>
-          </div>
-        `).join('') : '<p style="color: var(--text3); padding: 20px;">No hay productos para esta selección.</p>';
+  grid.innerHTML = '<p style="color: var(--text3); padding: 20px;">Buscando productos...</p>';
+  try {
+    const res = await fetch(`${API_URL}/productos?pais=${encodeURIComponent(pais)}`);
+    const productos = await res.json();
+    const html = productos.length > 0 ? productos.map(p => `
+      <div class="card-item">
+        <img src="${p.imagen_url || PLACEHOLDER_IMG}" class="card-img" onerror="window.imgFallback(this)">
+        <div class="card-body">
+          <div class="card-title">${p.nombre}</div>
+          <div style="color: #00ff88; font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">$${p.precio || 'Consultar'}</div>
+          <a href="${p.link_afiliado}" target="_blank" class="btn-card">Comprar</a>
+        </div>
+      </div>
+    `).join('') : '<p style="color: var(--text3); padding: 20px;">No hay productos para esta selección.</p>';
 
-        productosCache[pais] = html;
-        gridProductos.innerHTML = html;
-      } catch (e) {
-        console.error("Error tienda:", e);
-        gridProductos.innerHTML = '<p style="color: var(--text3); padding: 20px;">Error al cargar productos.</p>';
-      }
-    }
+    productosCache[pais] = html;
+    grid.innerHTML = html;
+  } catch (e) {
+    console.error("Error tienda:", e);
+    grid.innerHTML = '<p style="color: var(--text3); padding: 20px;">Error al cargar productos.</p>';
   }
-}, 500); // 500 ms de espera después del último cambio
+}, 500);
+
+// Mantener compatibilidad con la función anterior
+window.actualizarPaneles = function(pais) {
+  window.cargarNoticias(pais);
+  window.cargarProductos(pais);
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-    buildTicker();
+  buildTicker();
   // Inicializar paneles base
   renderGroups('A');
   renderFixtures();
   renderScorers();
   renderCards();
   
-  // Cargar noticias, tienda y filtros dinámicos
+  // Cargar filtros dinámicos y contenido inicial
   window.cargarFiltrosDinamicos();
-  window.actualizarPaneles("");
-});
-
-
-/* ── Utilidad: debounce ── */
-function debounce(fn, delay) {
-  let timer;
-  return function(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}   
+  window.cargarNoticias('');
+  window.cargarProductos('');
+});   
