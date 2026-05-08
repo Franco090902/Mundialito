@@ -396,24 +396,36 @@ function debounce(fn, delay) {
   };
 }
 
-// 1. Carga los países en ambos selectores basándose en los productos activos
+// 1. Carga los países en los selectores correspondientes
 window.cargarFiltrosDinamicos = async function() {
   try {
-    const res = await fetch(`${API_URL}/categorias`);
-    const paises = await res.json();
+    // A) Países para el filtro de Noticias (Todos los posibles del Mundial 2026)
     const selectNoticias = document.getElementById('filtro-noticias');
+    if (selectNoticias) {
+      const paisesMundial = [
+        "Alemania", "Arabia Saudita", "Argelia", "Argentina", "Australia", "Bélgica", "Brasil", "Camerún", "Canadá", "Colombia", "Corea del Sur", "Costa Rica", "Costa de Marfil", "Croacia", "Dinamarca", "Ecuador", "Egipto", "Emiratos Árabes Unidos", "España", "Estados Unidos", "Francia", "Gales", "Ghana", "Honduras", "Inglaterra", "Irán", "Italia", "Jamaica", "Japón", "Marruecos", "México", "Nigeria", "Nueva Zelanda", "Países Bajos", "Panamá", "Perú", "Polonia", "Portugal", "Qatar", "Senegal", "Serbia", "Suecia", "Suiza", "Turquía", "Túnez", "Ucrania", "Uruguay", "Venezuela"
+      ];
+      paisesMundial.forEach(pais => {
+        const opt = document.createElement('option');
+        opt.value = pais;
+        opt.textContent = `📍 ${pais}`;
+        selectNoticias.appendChild(opt);
+      });
+    }
+
+    // B) Países para el filtro de la Tienda (Solo los que tienen productos activos)
+    const res = await fetch(`${API_URL}/categorias`);
+    const paisesTienda = await res.json();
     const selectTienda = document.getElementById('filtro-tienda');
     
-    [selectNoticias, selectTienda].forEach(select => {
-      if (select && paises.length > 0) {
-        paises.forEach(pais => {
-          const opt = document.createElement('option');
-          opt.value = pais;
-          opt.textContent = `📍 ${pais}`;
-          select.appendChild(opt);
-        });
-      }
-    });
+    if (selectTienda && paisesTienda.length > 0) {
+      paisesTienda.forEach(pais => {
+        const opt = document.createElement('option');
+        opt.value = pais;
+        opt.textContent = `📍 ${pais}`;
+        selectTienda.appendChild(opt);
+      });
+    }
   } catch (e) { console.error("Error cargando filtros:", e); }
 };
 
@@ -452,13 +464,20 @@ window.cargarNoticias = debounce(async function(pais = "") {
     const data = await res.json();
     let noticias = Array.isArray(data) ? data : [];
 
-    // Fallback con ejemplos si no hay noticias
+    // Mensaje estático si no hay noticias para ese país
     if (noticias.length === 0) {
-      noticias = [
-        { titulo: "⚽ Preparativos para el Mundial 2026 en marcha", imagen: null, link: "#" },
-        { titulo: "🌟 Las selecciones ajustan sus plantillas", imagen: null, link: "#" },
-        { titulo: "🏟️ Sedes del Mundial 2026: conoce las ciudades anfitrionas", imagen: null, link: "#" }
-      ];
+      const emptyHtml = `
+        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: var(--navy2); border-radius: 8px; border: 1px dashed var(--border4); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;">📰</div>
+          <h3 style="color: var(--white); margin: 0 0 8px 0; font-size: 1.2rem;">Noticias no disponibles</h3>
+          <p style="color: var(--text3); font-size: 0.95rem; margin: 0; max-width: 400px;">
+            En este momento no hay noticias recientes sobre <strong>${pais || 'el Mundial'}</strong>. ¡Intentá más tarde o buscá otra selección!
+          </p>
+        </div>
+      `;
+      noticiasCache[pais] = emptyHtml;
+      grid.innerHTML = emptyHtml;
+      return;
     }
 
     const html = noticias.map(n => `
@@ -467,7 +486,7 @@ window.cargarNoticias = debounce(async function(pais = "") {
         <div class="card-body">
           <div class="card-title">${n.titulo}</div>
           ${n.fuente ? `<div style="color: var(--text4); font-size: 12px; margin-bottom: 8px;">📰 ${n.fuente}</div>` : ''}
-          <a href="${n.link}" target="_blank" class="btn-card">${n.link && n.link !== '#' ? 'Leer Noticia' : 'Ver más'}</a>
+          <a href="${n.link}" target="_blank" class="btn-card">Leer Noticia</a>
         </div>
       </div>
     `).join('');
