@@ -33,64 +33,7 @@ window.CARDS = [];
 /* ─────────────────────────────────────
    DATOS: Historial de Mundiales
 ───────────────────────────────────── */
-window.EDITIONS = [
-  {
-    year:1970, host:"México", dates:"31 May – 21 Jun", champion:"Brasil", champFlag:"🇧🇷",
-    scorers:[{name:"Gerd Müller",flag:"🇩🇪",goals:10},{name:"Jairzinho",flag:"🇧🇷",goals:7},{name:"Teofilo Cubillas",flag:"🇵🇪",goals:5}],
-    finalists:[{team:"Brasil",flag:"🇧🇷",note:"Campeón"},{team:"Italia",flag:"🇮🇹",note:"Subcampeón"},{team:"Alemania",flag:"🇩🇪",note:"3er lugar"},{team:"Uruguay",flag:"🇺🇾",note:"4to lugar"}],
-    records:[{cat:"Goles totales",val:"95",desc:"En 32 partidos jugados"},{cat:"Récord histórico",val:"4–1",desc:"Brasil vs Italia en la final"},{cat:"Debutantes",val:"3",desc:"El Salvador, Marruecos, Israel"}],
-    facts:["⚽ Pelé disputó su último Mundial y ganó su 3er título","🎨 Considerado el torneo más bello de la historia por muchos","📺 Primer Mundial transmitido en color"],
-  },
-  {
-    year:1986, host:"México", dates:"31 May – 29 Jun", champion:"Argentina", champFlag:"🇦🇷",
-    scorers:[{name:"Gary Lineker",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",goals:6},{name:"Diego Maradona",flag:"🇦🇷",goals:5},{name:"Emilio Butragueño",flag:"🇪🇸",goals:5}],
-    finalists:[{team:"Argentina",flag:"🇦🇷",note:"Campeón"},{team:"Alemania Occ.",flag:"🇩🇪",note:"Subcampeón"},{team:"Francia",flag:"🇫🇷",note:"3er lugar"},{team:"Bélgica",flag:"🇧🇪",note:"4to lugar"}],
-    records:[{cat:"El gol del siglo",val:"11 jun",desc:"Maradona vs Inglaterra – el mejor gol de la historia"},{cat:"Primer Hat-trick",val:"x3",desc:"Emilio Butragueño marcó 4 goles a Dinamarca"},{cat:"Equipos",val:"24",desc:"El formato amplió a 24 selecciones"}],
-    facts:["🙌 Maradona marcó 'La Mano de Dios' y 'El Gol del Siglo' en el mismo partido","🏟️ El Estadio Azteca fue sede de la final por segunda vez","🌡️ Partidos jugados con +40°C de temperatura"],
-  },
-  {
-    year:1998, host:"Francia", dates:"10 Jun – 12 Jul", champion:"Francia", champFlag:"🇫🇷",
-    scorers:[{name:"Davor Šuker",flag:"🇭🇷",goals:6},{name:"Gabriel Batistuta",flag:"🇦🇷",goals:5},{name:"Ronaldo",flag:"🇧🇷",goals:4}],
-    finalists:[{team:"Francia",flag:"🇫🇷",note:"Campeón"},{team:"Brasil",flag:"🇧🇷",note:"Subcampeón"},{team:"Croacia",flag:"🇭🇷",note:"3er lugar"},{team:"Países Bajos",flag:"🇳🇱",note:"4to lugar"}],
-    records:[{cat:"Equipos",val:"32",desc:"Primera edición con 32 selecciones"},{cat:"Goles en la final",val:"3–0",desc:"Francia vs Brasil: Zidane marcó dos cabezazos"},{cat:"Debutante histórico",val:"🇭🇷",desc:"Croacia llegó a 3er puesto en su primer Mundial"}],
-    facts:["🏆 Francia ganó su primer Mundial siendo local","😱 Ronaldo tuvo un episodio médico horas antes de la final","🎯 Zinedine Zidane fue elegido mejor jugador del torneo"],
-  },
-  {
-    year:2002, host:"Corea/Japón", dates:"31 May – 30 Jun", champion:"Brasil", champFlag:"🇧🇷",
-    scorers:[{name:"Ronaldo",flag:"🇧🇷",goals:8},{name:"Miroslav Klose",flag:"🇩🇪",goals:5},{name:"Jon Dahl Tomasson",flag:"🇩🇰",goals:4}],
-    finalists:[{team:"Brasil",flag:"🇧🇷",note:"Campeón"},{team:"Alemania",flag:"🇩🇪",note:"Subcampeón"},{team:"Turquía",flag:"🇹🇷",note:"3er lugar"},{team:"Corea del Sur",flag:"🇰🇷",note:"4to lugar"}],
-    records:[{cat:"Primera vez en Asia",val:"2002",desc:"Primer Mundial celebrado en el continente asiático"},{cat:"Sorpresa histórica",val:"🇰🇷",desc:"Corea del Sur llegó a semifinales como local"},{cat:"Ronaldo",val:"8",desc:"Ronaldo terminó como máximo goleador histórico del torneo"}],
-    facts:["⚽ Ronaldo redimió el desastre de 1998 con 8 goles y el título","🌍 Primer Mundial organizado por dos países simultáneamente","🇫🇷 Francia, campeón defensor, fue eliminada en fase de grupos sin anotar"],
-  },
-  {
-    year:2010, host:"Sudáfrica", dates:"11 Jun – 11 Jul", champion:"España", champFlag:"🇪🇸",
-    scorers:[{name:"Thomas Müller",flag:"🇩🇪",goals:5},{name:"David Villa",flag:"🇪🇸",goals:5},{name:"Wesley Sneijder",flag:"🇳🇱",goals:5}],
-    finalists:[{team:"España",flag:"🇪🇸",note:"Campeón"},{team:"Países Bajos",flag:"🇳🇱",note:"Subcampeón"},{team:"Alemania",flag:"🇩🇪",note:"3er lugar"},{team:"Uruguay",flag:"🇺🇾",note:"4to lugar"}],
-    records:[{cat:"Primer Mundial en África",val:"2010",desc:"Africa debutó como anfitrión de la Copa del Mundo"},{cat:"Gol de la final",val:"116'",desc:"Andrés Iniesta marcó el gol más tarde en una final"},{cat:"Vuvuzela",val:"∞",desc:"El instrumento se hizo viral en todo el mundo"}],
-    facts:["🦑 El pulpo Paul predijo todos los resultados de Alemania","🏆 España ganó su primer Mundial con el estilo Tiki-Taka","🎵 El sonido de la vuvuzela marcó una era"],
-  },
-  {
-    year:2014, host:"Brasil", dates:"12 Jun – 13 Jul", champion:"Alemania", champFlag:"🇩🇪",
-    scorers:[{name:"James Rodríguez",flag:"🇨🇴",goals:6},{name:"Thomas Müller",flag:"🇩🇪",goals:5},{name:"Neymar",flag:"🇧🇷",goals:4}],
-    finalists:[{team:"Alemania",flag:"🇩🇪",note:"Campeón"},{team:"Argentina",flag:"🇦🇷",note:"Subcampeón"},{team:"Países Bajos",flag:"🇳🇱",note:"3er lugar"},{team:"Brasil",flag:"🇧🇷",note:"4to lugar"}],
-    records:[{cat:"Goleada histórica",val:"7–1",desc:"Alemania goleó al local Brasil en semifinales (el Mineirazo)"},{cat:"Gol más rápido",val:"18''",desc:"Hakan Şükür sigue siendo el más rápido (Turquía 2002)"},{cat:"Gol dorado",val:"113'",desc:"Mario Götze definió la final vs Argentina en alargue"}],
-    facts:["💥 El 7-1 de Alemania a Brasil es el resultado más impactante de la historia","🥇 Alemania se convirtió en el primer equipo europeo en ganar en América","🇦🇷 Messi ganó el Balón de Oro del torneo pese a perder la final"],
-  },
-  {
-    year:2018, host:"Rusia", dates:"14 Jun – 15 Jul", champion:"Francia", champFlag:"🇫🇷",
-    scorers:[{name:"Harry Kane",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",goals:6},{name:"Romelu Lukaku",flag:"🇧🇪",goals:4},{name:"Cristiano Ronaldo",flag:"🇵🇹",goals:4}],
-    finalists:[{team:"Francia",flag:"🇫🇷",note:"Campeón"},{team:"Croacia",flag:"🇭🇷",note:"Subcampeón"},{team:"Bélgica",flag:"🇧🇪",note:"3er lugar"},{team:"Inglaterra",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",note:"4to lugar"}],
-    records:[{cat:"Goles en propia meta",val:"12",desc:"Récord: 12 autogoles en el mismo torneo"},{cat:"VAR debut mundial",val:"2018",desc:"Primera Copa del Mundo con tecnología VAR"},{cat:"Croacia",val:"3",desc:"Croacia ganó 3 partidos en penaltis para llegar a la final"}],
-    facts:["🤖 Fue el primer Mundial con VAR (árbitro asistente de video)","🇭🇷 Croacia (4 millones de habitantes) llegó a la final","🇲🇦 Marruecos fue el mejor equipo africano, llegó a cuartos"],
-  },
-  {
-    year:2022, host:"Qatar", dates:"20 Nov – 18 Dic", champion:"Argentina", champFlag:"🇦🇷",
-    scorers:[{name:"Kylian Mbappé",flag:"🇫🇷",goals:8},{name:"Lionel Messi",flag:"🇦🇷",goals:7},{name:"Olivier Giroud",flag:"🇫🇷",goals:4}],
-    finalists:[{team:"Argentina",flag:"🇦🇷",note:"Campeón"},{team:"Francia",flag:"🇫🇷",note:"Subcampeón"},{team:"Croacia",flag:"🇭🇷",note:"3er lugar"},{team:"Marruecos",flag:"🇲🇦",note:"4to lugar"}],
-    records:[{cat:"Final más épica",val:"3–3",desc:"Argentina vs Francia – la mejor final de la historia"},{cat:"Hat-trick en final",val:"3",desc:"Mbappé marcó 3 goles en la final y casi da la vuelta"},{cat:"1ª semifinalista africana",val:"🇲🇦",desc:"Marruecos fue la primera selección africana en semifinales"}],
-    facts:["🏆 Messi ganó el único título que le faltaba a los 35 años","⚽ La final Argentina-Francia es considerada la mejor de la historia","🌟 Mbappé marcó 8 goles, el récord más alto de un jugador eliminado"],
-  },
-];
+window.EDITIONS = [];
 
 /* ─────────────────────────────────────
    TICKER: construir y duplicar para loop infinito
@@ -240,12 +183,18 @@ function renderFixtures() {
    GOLEADORES
 ───────────────────────────────────── */
 function renderScorers() {
-  const max = SCORERS[0].goals;
+  const container = document.getElementById('scorersBody');
+  if (!container) return;
+  if (!SCORERS || SCORERS.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos de goleadores aún.</div>';
+    return;
+  }
+  const max = SCORERS[0].goals || 1;
   const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)','var(--text4)','var(--text4)','var(--text4)'];
-  document.getElementById('scorersBody').innerHTML = SCORERS.map((s,i) => `
+  container.innerHTML = SCORERS.map((s,i) => `
     <div class="sc-row">
-      <span class="sc-rank" style="color:${colors[i]}">${i+1}</span>
-      <span class="sc-flag">${s.flag}</span>
+      <span class="sc-rank" style="color:${colors[i] || 'var(--text4)'}">${i+1}</span>
+      <span class="sc-flag">${s.flag || (s.escudo ? `<img src="${s.escudo}" style="width:24px;height:24px;object-fit:contain">` : '🏳️')}</span>
       <div><div class="sc-name">${s.name}</div><div class="sc-team">${s.team}</div></div>
       <span class="sc-team" style="font-size:13px">${s.team}</span>
       <div class="sc-goals-cell">
@@ -260,14 +209,20 @@ function renderScorers() {
    TARJETAS
 ───────────────────────────────────── */
 function renderCards() {
-  document.getElementById('cardsBody').innerHTML = CARDS.map((c,i) => `
+  const container = document.getElementById('cardsBody');
+  if (!container) return;
+  if (!CARDS || CARDS.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos de tarjetas aún.</div>';
+    return;
+  }
+  container.innerHTML = CARDS.map((c,i) => `
     <div class="cd-row">
       <span class="cd-rank">${i+1}</span>
-      <span class="cd-flag">${c.flag}</span>
+      <span class="cd-flag">${c.flag || '🏳️'}</span>
       <div><div class="cd-name">${c.name}</div><div class="cd-team">${c.team}</div></div>
       <span class="cd-team" style="font-size:12px">${c.team}</span>
-      <div class="cd-cards">${Array(c.yellow).fill('<span class="cy"></span>').join('')}${c.yellow===0?'<span class="c-none">—</span>':''}</div>
-      <div class="cd-cards">${Array(c.red).fill('<span class="cr"></span>').join('')}${c.red===0?'<span class="c-none">—</span>':''}</div>
+      <div class="cd-cards">${Array(c.yellow || 0).fill('<span class="cy"></span>').join('')}${(c.yellow||0)===0?'<span class="c-none">—</span>':''}</div>
+      <div class="cd-cards">${Array(c.red || 0).fill('<span class="cr"></span>').join('')}${(c.red||0)===0?'<span class="c-none">—</span>':''}</div>
     </div>`).join('');
 }
 
@@ -278,12 +233,38 @@ function renderHistory() {
   const sel = document.getElementById('editionSelector');
   const cards = document.getElementById('editionCards');
 
-  sel.innerHTML = EDITIONS.map(e =>
-    `<button class="ed-btn ${e.year===2022?'active':''}" onclick="showEdition(${e.year})">${e.year}</button>`
-  ).join('');
+  if (!window.EDITIONS || window.EDITIONS.length === 0) {
+    sel.innerHTML = '';
+    cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Cargando archivo histórico...</div>';
+    return;
+  }
 
-  cards.innerHTML = EDITIONS.map(e => `
-    <div class="ed-card ${e.year===2022?'active':''}" id="ed-${e.year}">
+  try {
+    // Ordenamos de más reciente a más antiguo
+    window.EDITIONS.sort((a,b) => b.year - a.year);
+    const selectedYear = window.EDITIONS[0].year;
+
+    sel.innerHTML = window.EDITIONS.map(e =>
+      `<button class="ed-btn ${e.year===selectedYear?'active':''}" onclick="showEdition(${e.year})">${e.year}</button>`
+    ).join('');
+
+    cards.innerHTML = window.EDITIONS.map(e => {
+      // Transformar finalist info si runnersUp existe en lugar del viejo arreglo finalists
+      const finalistsHtml = e.runnersUp ? `
+      <div class="finalist-row">
+        <span class="fn-flag">${e.champFlag}</span>
+        <span class="fn-team">${e.champion}</span>
+        <span style="font-size:11px;color:var(--text4)">Campeón</span>
+      </div>
+      <div class="finalist-row">
+        <span class="fn-flag">${e.runnersUpFlag}</span>
+        <span class="fn-team">${e.runnersUp}</span>
+        <span style="font-size:11px;color:var(--text4)">Subcampeón</span>
+      </div>
+    ` : '';
+
+    return `
+    <div class="ed-card ${e.year===selectedYear?'active':''}" id="ed-${e.year}">
       <div class="ed-header">
         <div class="ed-year">${e.year}</div>
         <div class="ed-info-main">
@@ -296,6 +277,31 @@ function renderHistory() {
           <div class="ed-champion-name">${e.champion}</div>
         </div>
       </div>
+      
+      <!-- Videos Destacados -->
+      ${e.videos && e.videos.length > 0 ? `
+      <div class="ed-video-section" style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border3);">
+        <div class="ed-section-title" style="margin-bottom: 15px;">▶️ Momentos Destacados</div>
+        <div style="display:flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+          ${e.videos.map(v => `
+            <div style="flex: 1; min-width: 300px; max-width: 500px; background: var(--navy1); border-radius: 8px; overflow: hidden; border: 1px solid var(--border3); margin-bottom: 15px;">
+              ${v.url ? `
+              <div style="aspect-ratio: 16/9; background: #000;">
+                <iframe data-src="${getYouTubeEmbedUrl(v.url)}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              </div>
+              ` : `
+              <div style="aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; font-style: italic; color: var(--text4);">Video no disponible</div>
+              `}
+              <div style="padding: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text1); font-size: 16px;">${v.title}</h4>
+                <p style="margin: 0; color: var(--text3); font-size: 14px; line-height: 1.4;">${v.description}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+
       <div class="ed-body">
 
         <!-- Columna 1: Goleadores -->
@@ -308,13 +314,8 @@ function renderHistory() {
               <span class="hsr-name">${s.name}</span>
               <span class="hsr-goals">${s.goals}</span>
             </div>`).join('')}
-          <div class="ed-section-title" style="margin-top:20px">Clasificación final</div>
-          ${e.finalists.map(f => `
-            <div class="finalist-row">
-              <span class="fn-flag">${f.flag}</span>
-              <span class="fn-team">${f.team}</span>
-              <span style="font-size:11px;color:var(--text4)">${f.note}</span>
-            </div>`).join('')}
+          <div class="ed-section-title" style="margin-top:20px">La Gran Final</div>
+          ${finalistsHtml}
         </div>
 
         <!-- Columna 2: Récords -->
@@ -331,38 +332,91 @@ function renderHistory() {
         <!-- Columna 3: Datos curiosos -->
         <div>
           <div class="ed-section-title">Curiosidades</div>
-          ${e.facts.map(f => `
+          ${e.facts.map(f => {
+             // El viejo arreglo tenía emojis en los primeros 2 caracteres, ahora no hace falta si no hay emoji
+             const hasEmoji = /^[^\w\s]/.test(f.slice(0,2));
+             const emoji = hasEmoji ? f.slice(0,2) : '⚽';
+             const text = hasEmoji ? f.slice(2) : f;
+             return `
             <div class="fact-item">
-              <span class="fact-emoji">${f.slice(0,2)}</span>
-              <div class="fact-text">${f.slice(2)}</div>
-            </div>`).join('')}
+              <span class="fact-emoji">${emoji}</span>
+              <div class="fact-text">${text}</div>
+            </div>`;
+          }).join('')}
         </div>
 
       </div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
+
+    // Activar los iframes de la primera edición visible
+    const firstCard = document.getElementById('ed-' + selectedYear);
+    if (firstCard) {
+      firstCard.querySelectorAll('iframe[data-src]').forEach(ifr => {
+        ifr.src = ifr.getAttribute('data-src');
+        ifr.removeAttribute('data-src');
+      });
+    }
+
+  } catch (error) {
+    console.error("Error en renderHistory:", error);
+    cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error al renderizar el historial: ${error.message}</div>`;
+  }
 }
 
 function showEdition(year) {
+  // Desactivar todas las tarjetas
   document.querySelectorAll('.ed-card').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.ed-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('ed-' + year).classList.add('active');
-  event.target.classList.add('active');
+  
+  // Activar la seleccionada
+  const targetCard = document.getElementById('ed-' + year);
+  if (targetCard) {
+    targetCard.classList.add('active');
+    // Cargar iframes (Lazy Load) para evitar colapsar los contextos WebGL
+    targetCard.querySelectorAll('iframe[data-src]').forEach(ifr => {
+      ifr.src = ifr.getAttribute('data-src');
+      ifr.removeAttribute('data-src');
+    });
+  }
+  
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+}
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return '';
+  let videoId = '';
+  if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1].split('?')[0];
+  } else if (url.includes('watch?v=')) {
+    videoId = url.split('watch?v=')[1].split('&')[0];
+  } else if (url.includes('embed/')) {
+    return url;
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
 }
 
 /* ─────────────────────────────────────
    SIDEBAR: goleadores en vivo
 ───────────────────────────────────── */
 function renderLiveScorers() {
+  const container = document.getElementById('liveScorers');
+  if (!container) return;
+  if (!SCORERS || SCORERS.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>';
+    return;
+  }
   const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)'];
-  document.getElementById('liveScorers').innerHTML = SCORERS.slice(0,5).map((s,i) => `
+  container.innerHTML = SCORERS.slice(0,5).map((s,i) => `
     <div class="srow">
-      <span class="srow-rank" style="color:${colors[i]}">${i+1}</span>
-      <span class="srow-flag">${s.flag}</span>
+      <span class="srow-rank" style="color:${colors[i] || 'var(--text4)'}">${i+1}</span>
+      <span class="srow-flag">${s.flag || (s.escudo ? `<img src="${s.escudo}" style="width:18px;height:18px;object-fit:contain">` : '🏳️')}</span>
       <div style="flex:1"><div class="srow-name">${s.name}</div><div class="srow-sub">${s.team}</div></div>
       <div style="text-align:right"><div class="srow-num">${s.goals}</div><div class="srow-unit">GOLES</div></div>
     </div>`).join('');
 }
-renderLiveScorers();
 
 /* ─────────────────────────────────────
    TIEMPO REAL: minutos del partido
@@ -709,6 +763,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarScorersDesdeAPI();
   await cargarPartidosEnVivo();
 
-  // Refrescar partidos en vivo cada 60 segundos
-  setInterval(cargarPartidosEnVivo, 60000);
+  // 🛑 ELIMINADO: Refrescar partidos en vivo cada 60 segundos (Ahora usamos Supabase Realtime)
+  // setInterval(cargarPartidosEnVivo, 60000);
 });   

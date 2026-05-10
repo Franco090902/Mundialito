@@ -633,36 +633,46 @@
   }
 
   async function cargarHistoriaBD() {
-    console.log("⏳ Cargando historia desde Supabase...");
-    const { data, error } = await supabase.from('historia_ediciones').select('*');
-    if (error) return console.error('Error cargando historia:', error);
+    console.log("⏳ Cargando historia detallada desde Supabase...");
+    const cards = document.getElementById('editionCards');
+    if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
+
+    const res = await fetch('http://localhost:3000/api/historia');
+    
+    if (!res.ok) {
+      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
+      return console.error('Error cargando historia desde API:', res.statusText);
+    }
+    
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Supabase respondió bien, pero la tabla está vacía. Data length: ${data ? data.length : 'N/A'}</div>`;
+      return;
+    }
 
     if (data && data.length > 0) {
-      let edicionesReales = {};
-      data.forEach(h => {
-        let year = parseInt(h.temporada);
-        if(!edicionesReales[year]) {
-          edicionesReales[year] = {
-            year: year, host: "Edición " + year, dates: "Consultado de BD",
-            champion: "Ver Detalles", champFlag: "🏆",
-            scorers: [], finalists: [], records: [],
-            facts: [{slice: () => "💡", slice: () => "Partido importado: " + h.nombre}],
-            matches: []
-          };
-        }
-        edicionesReales[year].records.push({
-          cat: h.nombre, val: `${h.goles_local || 0} - ${h.goles_visitante || 0}`, desc: `${h.equipo_local} vs ${h.equipo_visitante}`
-        });
-      });
-      window.EDITIONS = Object.values(edicionesReales).sort((a,b) => b.year - a.year);
+      window.EDITIONS = data.map(h => ({
+        year: h.año,
+        host: h.sede,
+        dates: h.fechas,
+        champion: h.campeon,
+        champFlag: h.campeon_bandera || "🏆",
+        runnersUp: h.subcampeon,
+        runnersUpFlag: h.subcampeon_bandera || "🏳️",
+        scorers: h.goleadores || [],
+        records: h.records || [],
+        facts: h.datos_curiosos || [],
+        videos: h.videos || []
+      }));
       renderHistory();
     }
   }
 
   // ─── 4. INICIALIZACIÓN FINAL ───
-  document.addEventListener('DOMContentLoaded', async () => {
-    await cargarFixtureBD();
-    await cargarHistoriaBD();
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarFixtureBD().catch(e => console.error(e));
+    cargarHistoriaBD().catch(e => console.error(e));
   });
 </script>
  <script src="app.js"></script>

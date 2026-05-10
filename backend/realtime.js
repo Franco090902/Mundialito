@@ -737,6 +737,50 @@ function escapeHtml(str) {
 
 
 // ──────────────────────────────────────────────────────────────────
+// HELPER: Refrescar data global desde API Node y Supabase
+// ──────────────────────────────────────────────────────────────────
+let fetchingData = false;
+async function recargarDataGlobal() {
+  if (fetchingData) return;
+  fetchingData = true;
+  try {
+    if (window.cargarFixtureDesdeAPI) await window.cargarFixtureDesdeAPI();
+    if (window.cargarScorersDesdeAPI) await window.cargarScorersDesdeAPI();
+    
+    // Cargar tarjetas directo desde Supabase
+    const { data: tarjetas, error } = await supabase.from('tarjetas').select('*').order('amarillas', { ascending: false }).limit(20);
+    if (tarjetas) {
+       window.CARDS = tarjetas.map(t => ({
+          name: t.nombre,
+          team: t.equipo_short || t.equipo,
+          flag: t.escudo ? `<img src="${t.escudo}" style="width:20px;height:20px;object-fit:contain;border-radius:2px">` : '🏳️',
+          yellow: t.amarillas,
+          red: t.rojas
+       }));
+    }
+    
+    // Re-renderizar si las pestañas están activas
+    if (document.getElementById('panel-groups')?.classList.contains('active')) {
+       const primerGrupo = Object.keys(window.GROUPS)[0];
+       if (primerGrupo && window.renderGroups) window.renderGroups(primerGrupo);
+    }
+    if (document.getElementById('panel-fixtures')?.classList.contains('active') && window.renderFixtures) {
+       window.renderFixtures();
+    }
+    if (document.getElementById('panel-scorers')?.classList.contains('active') && window.renderScorers) {
+       window.renderScorers();
+    }
+    if (document.getElementById('panel-cards')?.classList.contains('active') && window.renderCards) {
+       window.renderCards();
+    }
+  } catch (err) {
+    console.error('Error recargando data global:', err);
+  } finally {
+    fetchingData = false;
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
 // INICIALIZACIÓN GLOBAL
 // ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -758,6 +802,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       minEl.textContent = `${partidoActualizado.minuto}'`;
     }
   });
+
+  // Suscribirse a cambios en tablas secundarias (Posiciones, Goleadores, Tarjetas)
+  supabase.channel('public:db_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'partidos' }, () => {
+       console.log('🔄 Cambio en partidos detectado via Realtime');
+       recargarDataGlobal();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'posiciones' }, () => {
+       console.log('🔄 Cambio en posiciones detectado via Realtime');
+       recargarDataGlobal();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'goleadores' }, () => {
+       console.log('🔄 Cambio en goleadores detectado via Realtime');
+       recargarDataGlobal();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tarjetas' }, () => {
+       console.log('🔄 Cambio en tarjetas detectado via Realtime');
+       recargarDataGlobal();
+    })
+    .subscribe((status) => {
+       console.log('📡 Realtime global status:', status);
+    });
 
   // Cargar ranking si estamos en el panel del prode
   if (document.getElementById('ranking-container')) {

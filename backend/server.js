@@ -241,8 +241,149 @@ async function actualizarEnVivo() {
 }
 
 // Cada 3 minutos — 30 req por partido de 90 min, te sobran para el día
+// Cada 3 minutos — 30 req por partido de 90 min, te sobran para el día
 cron.schedule('*/3 * * * *', actualizarEnVivo);
 
+// ══════════════════════════════════════════════════════════════════
+// ACTUALIZACIÓN DE TABLAS DE APOYO (Posiciones, Goleadores, Tarjetas)
+// ══════════════════════════════════════════════════════════════════
+
+async function actualizarPosiciones() {
+  console.log('\n📊 [POSICIONES] Actualizando posiciones...');
+  try {
+    const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/standings`);
+    const standings = data.standings || [];
+    const rows = [];
+    
+    standings.forEach(s => {
+      const grupo = s.group || s.stage;
+      (s.table || []).forEach(t => {
+        rows.push({
+          id: `${grupo}-${t.team?.shortName || t.team?.tla || t.team?.name}`,
+          grupo: grupo,
+          posicion: t.position,
+          equipo: t.team?.name || '',
+          equipo_short: t.team?.shortName || t.team?.tla || '',
+          escudo: t.team?.crest || null,
+          pj: t.playedGames || 0,
+          g: t.won || 0,
+          e: t.draw || 0,
+          p: t.lost || 0,
+          gf: t.goalsFor || 0,
+          gc: t.goalsAgainst || 0,
+          dg: t.goalDifference || 0,
+          pts: t.points || 0,
+          updated_at: new Date().toISOString()
+        });
+      });
+    });
+
+    if (rows.length > 0) {
+      const { error } = await supabase.from('posiciones').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+      console.log(`   ✅ ${rows.length} posiciones actualizadas.`);
+    }
+  } catch (err) {
+    console.error('   ❌ Error en actualizarPosiciones:', err.message);
+  }
+}
+
+async function actualizarGoleadores() {
+  console.log('\n👟 [GOLEADORES] Actualizando goleadores...');
+  try {
+    const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/scorers?limit=20`);
+    const scorers = data.scorers || [];
+    const rows = scorers.map(s => ({
+      id: `${s.player?.name}-${s.team?.name}`,
+      nombre: s.player?.name || '',
+      equipo: s.team?.name || '',
+      equipo_short: s.team?.shortName || s.team?.tla || '',
+      escudo: s.team?.crest || null,
+      goles: s.goals || 0,
+      asistencias: s.assists || 0,
+      penales: s.penalties || 0,
+      partidos: s.playedMatches || 0,
+      updated_at: new Date().toISOString()
+    }));
+
+    if (rows.length > 0) {
+      const { error } = await supabase.from('goleadores').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+      console.log(`   ✅ ${rows.length} goleadores actualizados.`);
+    }
+  } catch (err) {
+    console.error('   ❌ Error en actualizarGoleadores:', err.message);
+  }
+}
+
+async function actualizarTarjetas() {
+  console.log('\n🟨 [TARJETAS] Actualizando tarjetas...');
+  try {
+    // Para modo TEST (Libertadores), forzamos la temporada 2024 para asegurarnos de tener datos.
+    // Para el Mundial 2026, usamos 2026.
+    const currentSeason = TEST_MODE ? 2024 : 2026;
+    
+    const [yellow, red] = await Promise.all([
+      apiFootball.get('/players/topyellowcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } })),
+      apiFootball.get('/players/topredcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } }))
+    ]);
+
+    const cardsMap = new Map();
+
+    const processCards = (response, type) => {
+      (response || []).forEach(item => {
+        const p = item.player;
+        const stat = item.statistics?.[0] || {};
+        const team = stat.team || {};
+        const id = `${p.name}-${team.name}`;
+        
+        if (!cardsMap.has(id)) {
+          cardsMap.set(id, {
+            id,
+            nombre: p.name,
+            equipo: team.name,
+            equipo_short: team.name,
+            escudo: team.logo,
+            amarillas: 0,
+            rojas: 0,
+            updated_at: new Date().toISOString()
+          });
+        }
+        
+        const current = cardsMap.get(id);
+        if (type === 'yellow') current.amarillas = stat.cards?.yellow || 0;
+        if (type === 'red') current.rojas = stat.cards?.red || 0;
+      });
+    };
+
+    processCards(yellow.data?.response, 'yellow');
+    processCards(red.data?.response, 'red');
+
+    const rows = Array.from(cardsMap.values());
+    
+    if (rows.length > 0) {
+      const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+      console.log(`   ✅ ${rows.length} jugadores con tarjetas actualizados.`);
+    } else {
+      console.log('   Sin tarjetas reportadas aún.');
+    }
+  } catch (err) {
+    console.error('   ❌ Error en actualizarTarjetas:', err.message);
+  }
+}
+
+// Programar crons de apoyo cada 1 hora
+cron.schedule('15 * * * *', actualizarPosiciones);
+cron.schedule('30 * * * *', actualizarGoleadores);
+cron.schedule('45 * * * *', actualizarTarjetas);
+
+// Ejecutar una vez al inicio
+setTimeout(() => {
+  actualizarPosiciones();
+  actualizarGoleadores();
+  actualizarTarjetas();
+}, 5000);
 
 // ══════════════════════════════════════════════════════════════════
 // ESTRATEGIA 3: HISTORIA (TheSportsDB)
@@ -674,6 +815,18 @@ app.get('/api/productos', async (req, res) => {
         console.error('Error en productos:', error.message);
         res.status(500).json({ error: 'Error al obtener productos' });
     }
+});
+
+// ─── ENDPOINT: Historia de Mundiales ───
+app.get('/api/historia', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('mundiales_historicos').select('*').order('año', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error("❌ Error en endpoint historia:", err.message);
+    res.status(500).json({ error: "Error obteniendo la historia" });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
