@@ -1,40 +1,34 @@
 
 /* ─────────────────────────────────────
-   DATOS: Grupos (Mundial 2022 / base 2026)
+   DATOS: Grupos (Mundial 2026 — 48 equipos, 12 grupos)
+   Se sobreescriben con datos de la API al cargar
 ───────────────────────────────────── */
 window.GROUPS = {
-  A:{teams:["Qatar","Ecuador","Senegal","Países Bajos"],matches:[{home:"Qatar",away:"Ecuador",hs:0,as:2,date:"20 Nov"},{home:"Senegal",away:"Países Bajos",hs:0,as:2,date:"21 Nov"},{home:"Qatar",away:"Senegal",hs:1,as:3,date:"25 Nov"},{home:"Países Bajos",away:"Ecuador",hs:1,as:1,date:"25 Nov"},{home:"Ecuador",away:"Senegal",hs:1,as:2,date:"29 Nov"},{home:"Países Bajos",away:"Qatar",hs:2,as:0,date:"29 Nov"}]},
-  B:{teams:["Inglaterra","Iran","EEUU","Gales"],matches:[{home:"Inglaterra",away:"Iran",hs:6,as:2,date:"21 Nov"},{home:"EEUU",away:"Gales",hs:1,as:1,date:"21 Nov"},{home:"Gales",away:"Iran",hs:0,as:2,date:"25 Nov"},{home:"Inglaterra",away:"EEUU",hs:0,as:0,date:"25 Nov"},{home:"Gales",away:"Inglaterra",hs:0,as:3,date:"29 Nov"},{home:"Iran",away:"EEUU",hs:0,as:1,date:"29 Nov"}]},
-  C:{teams:["Argentina","Arabia Saudita","México","Polonia"],matches:[{home:"Argentina",away:"Arabia Saudita",hs:1,as:2,date:"22 Nov"},{home:"México",away:"Polonia",hs:0,as:0,date:"22 Nov"},{home:"Polonia",away:"Arabia Saudita",hs:2,as:0,date:"26 Nov"},{home:"Argentina",away:"México",hs:2,as:0,date:"26 Nov"},{home:"Polonia",away:"Argentina",hs:0,as:2,date:"30 Nov"},{home:"Arabia Saudita",away:"México",hs:1,as:2,date:"30 Nov"}]},
-  D:{teams:["Francia","Australia","Túnez","Dinamarca"],matches:[{home:"Dinamarca",away:"Túnez",hs:0,as:0,date:"22 Nov"},{home:"Francia",away:"Australia",hs:4,as:1,date:"22 Nov"},{home:"Túnez",away:"Australia",hs:0,as:1,date:"26 Nov"},{home:"Francia",away:"Dinamarca",hs:2,as:1,date:"26 Nov"},{home:"Australia",away:"Dinamarca",hs:1,as:0,date:"30 Nov"},{home:"Túnez",away:"Francia",hs:1,as:0,date:"30 Nov"}]},
+  A:{teams:["México","Sudáfrica","Corea del Sur","Chequia"],matches:[{home:"México",away:"Sudáfrica",hs:"-",as:"-",date:"11 Jun"},{home:"Corea del Sur",away:"Chequia",hs:"-",as:"-",date:"12 Jun"},{home:"México",away:"Corea del Sur",hs:"-",as:"-",date:"16 Jun"},{home:"Sudáfrica",away:"Chequia",hs:"-",as:"-",date:"16 Jun"},{home:"Chequia",away:"México",hs:"-",as:"-",date:"20 Jun"},{home:"Sudáfrica",away:"Corea del Sur",hs:"-",as:"-",date:"20 Jun"}]},
+  B:{teams:["Canadá","Suiza","Qatar","Bosnia-Herzegovina"],matches:[{home:"Canadá",away:"Suiza",hs:"-",as:"-",date:"12 Jun"},{home:"Qatar",away:"Bosnia-Herzegovina",hs:"-",as:"-",date:"12 Jun"},{home:"Canadá",away:"Qatar",hs:"-",as:"-",date:"17 Jun"},{home:"Suiza",away:"Bosnia-Herzegovina",hs:"-",as:"-",date:"17 Jun"},{home:"Bosnia-Herzegovina",away:"Canadá",hs:"-",as:"-",date:"21 Jun"},{home:"Suiza",away:"Qatar",hs:"-",as:"-",date:"21 Jun"}]},
+  C:{teams:["Brasil","Marruecos","Escocia","Haití"],matches:[{home:"Brasil",away:"Marruecos",hs:"-",as:"-",date:"13 Jun"},{home:"Escocia",away:"Haití",hs:"-",as:"-",date:"13 Jun"},{home:"Brasil",away:"Escocia",hs:"-",as:"-",date:"17 Jun"},{home:"Marruecos",away:"Haití",hs:"-",as:"-",date:"17 Jun"},{home:"Haití",away:"Brasil",hs:"-",as:"-",date:"21 Jun"},{home:"Marruecos",away:"Escocia",hs:"-",as:"-",date:"21 Jun"}]},
+  D:{teams:["EEUU","Paraguay","Australia","Turquía"],matches:[{home:"EEUU",away:"Paraguay",hs:"-",as:"-",date:"13 Jun"},{home:"Australia",away:"Turquía",hs:"-",as:"-",date:"13 Jun"},{home:"EEUU",away:"Australia",hs:"-",as:"-",date:"18 Jun"},{home:"Paraguay",away:"Turquía",hs:"-",as:"-",date:"18 Jun"},{home:"Turquía",away:"EEUU",hs:"-",as:"-",date:"22 Jun"},{home:"Paraguay",away:"Australia",hs:"-",as:"-",date:"22 Jun"}]},
+  E:{teams:["Alemania","Ecuador","Costa de Marfil","Curazao"],matches:[{home:"Alemania",away:"Ecuador",hs:"-",as:"-",date:"14 Jun"},{home:"Costa de Marfil",away:"Curazao",hs:"-",as:"-",date:"14 Jun"},{home:"Alemania",away:"Costa de Marfil",hs:"-",as:"-",date:"18 Jun"},{home:"Ecuador",away:"Curazao",hs:"-",as:"-",date:"18 Jun"},{home:"Curazao",away:"Alemania",hs:"-",as:"-",date:"22 Jun"},{home:"Ecuador",away:"Costa de Marfil",hs:"-",as:"-",date:"22 Jun"}]},
+  F:{teams:["Países Bajos","Japón","Túnez","Suecia"],matches:[{home:"Países Bajos",away:"Japón",hs:"-",as:"-",date:"14 Jun"},{home:"Túnez",away:"Suecia",hs:"-",as:"-",date:"14 Jun"},{home:"Países Bajos",away:"Túnez",hs:"-",as:"-",date:"19 Jun"},{home:"Japón",away:"Suecia",hs:"-",as:"-",date:"19 Jun"},{home:"Suecia",away:"Países Bajos",hs:"-",as:"-",date:"23 Jun"},{home:"Japón",away:"Túnez",hs:"-",as:"-",date:"23 Jun"}]},
+  G:{teams:["Bélgica","Irán","Egipto","Nueva Zelanda"],matches:[{home:"Bélgica",away:"Irán",hs:"-",as:"-",date:"15 Jun"},{home:"Egipto",away:"Nueva Zelanda",hs:"-",as:"-",date:"15 Jun"},{home:"Bélgica",away:"Egipto",hs:"-",as:"-",date:"19 Jun"},{home:"Irán",away:"Nueva Zelanda",hs:"-",as:"-",date:"19 Jun"},{home:"Nueva Zelanda",away:"Bélgica",hs:"-",as:"-",date:"23 Jun"},{home:"Irán",away:"Egipto",hs:"-",as:"-",date:"23 Jun"}]},
+  H:{teams:["España","Uruguay","Arabia Saudita","Cabo Verde"],matches:[{home:"España",away:"Uruguay",hs:"-",as:"-",date:"15 Jun"},{home:"Arabia Saudita",away:"Cabo Verde",hs:"-",as:"-",date:"15 Jun"},{home:"España",away:"Arabia Saudita",hs:"-",as:"-",date:"20 Jun"},{home:"Uruguay",away:"Cabo Verde",hs:"-",as:"-",date:"20 Jun"},{home:"Cabo Verde",away:"España",hs:"-",as:"-",date:"24 Jun"},{home:"Uruguay",away:"Arabia Saudita",hs:"-",as:"-",date:"24 Jun"}]},
+  I:{teams:["Francia","Senegal","Noruega","Irak"],matches:[{home:"Francia",away:"Senegal",hs:"-",as:"-",date:"16 Jun"},{home:"Noruega",away:"Irak",hs:"-",as:"-",date:"16 Jun"},{home:"Francia",away:"Noruega",hs:"-",as:"-",date:"20 Jun"},{home:"Senegal",away:"Irak",hs:"-",as:"-",date:"20 Jun"},{home:"Irak",away:"Francia",hs:"-",as:"-",date:"24 Jun"},{home:"Senegal",away:"Noruega",hs:"-",as:"-",date:"24 Jun"}]},
+  J:{teams:["Argentina","Argelia","Austria","Jordania"],matches:[{home:"Argentina",away:"Argelia",hs:"-",as:"-",date:"16 Jun"},{home:"Austria",away:"Jordania",hs:"-",as:"-",date:"16 Jun"},{home:"Argentina",away:"Austria",hs:"-",as:"-",date:"21 Jun"},{home:"Argelia",away:"Jordania",hs:"-",as:"-",date:"21 Jun"},{home:"Jordania",away:"Argentina",hs:"-",as:"-",date:"25 Jun"},{home:"Argelia",away:"Austria",hs:"-",as:"-",date:"25 Jun"}]},
+  K:{teams:["Portugal","Colombia","Uzbekistán","R.D. Congo"],matches:[{home:"Portugal",away:"Colombia",hs:"-",as:"-",date:"17 Jun"},{home:"Uzbekistán",away:"R.D. Congo",hs:"-",as:"-",date:"17 Jun"},{home:"Portugal",away:"Uzbekistán",hs:"-",as:"-",date:"21 Jun"},{home:"Colombia",away:"R.D. Congo",hs:"-",as:"-",date:"21 Jun"},{home:"R.D. Congo",away:"Portugal",hs:"-",as:"-",date:"25 Jun"},{home:"Colombia",away:"Uzbekistán",hs:"-",as:"-",date:"25 Jun"}]},
+  L:{teams:["Inglaterra","Croacia","Ghana","Panamá"],matches:[{home:"Inglaterra",away:"Croacia",hs:"-",as:"-",date:"17 Jun"},{home:"Ghana",away:"Panamá",hs:"-",as:"-",date:"17 Jun"},{home:"Inglaterra",away:"Ghana",hs:"-",as:"-",date:"22 Jun"},{home:"Croacia",away:"Panamá",hs:"-",as:"-",date:"22 Jun"},{home:"Panamá",away:"Inglaterra",hs:"-",as:"-",date:"26 Jun"},{home:"Croacia",away:"Ghana",hs:"-",as:"-",date:"26 Jun"}]},
 };
 
 /* ─────────────────────────────────────
    DATOS: Goleadores
 ───────────────────────────────────── */
-window.SCORERS = [
-  {name:"Kylian Mbappé",    team:"Francia",      goals:8, assists:2, flag:"🇫🇷"},
-  {name:"Lionel Messi",     team:"Argentina",    goals:7, assists:3, flag:"🇦🇷"},
-  {name:"Olivier Giroud",   team:"Francia",      goals:4, assists:1, flag:"🇫🇷"},
-  {name:"Marcus Rashford",  team:"Inglaterra",   goals:3, assists:0, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-  {name:"Cody Gakpo",       team:"Países Bajos", goals:3, assists:1, flag:"🇳🇱"},
-  {name:"Richarlison",      team:"Brasil",       goals:3, assists:0, flag:"🇧🇷"},
-  {name:"Bukayo Saka",      team:"Inglaterra",   goals:3, assists:2, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-  {name:"Raheem Sterling",  team:"Inglaterra",   goals:3, assists:1, flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-];
+window.SCORERS = [];
+// Se llenan desde /api/scorers cuando el torneo esté en curso
 
 /* ─────────────────────────────────────
    DATOS: Tarjetas
 ───────────────────────────────────── */
-window.CARDS = [
-  {name:"Sofyan Amrabat",   team:"Marruecos",  yellow:3,red:0,flag:"🇲🇦"},
-  {name:"Mason Mount",      team:"Inglaterra", yellow:2,red:0,flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
-  {name:"Adrien Rabiot",    team:"Francia",    yellow:2,red:0,flag:"🇫🇷"},
-  {name:"Idrissa Gueye",    team:"Senegal",    yellow:1,red:1,flag:"🇸🇳"},
-  {name:"Gonçalo Ramos",    team:"Portugal",   yellow:2,red:0,flag:"🇵🇹"},
-  {name:"Granit Xhaka",     team:"Suiza",      yellow:2,red:0,flag:"🇨🇭"},
-  {name:"A.F. Zambo",       team:"Camerún",    yellow:1,red:1,flag:"🇨🇲"},
-];
+window.CARDS = [];
+// Se llenan desde la API cuando el torneo esté en curso
 
 /* ─────────────────────────────────────
    DATOS: Historial de Mundiales
@@ -230,14 +224,14 @@ function renderFixtures() {
         <span class="fix-grp-teams">${g.teams.join(' · ')}</span>
       </div>
       ${g.matches.map(m => `
-        <div class="fix-match">
+        <div class="fix-match" ${m.id ? `onclick="abrirDetallePartido(${m.id})" style="cursor:pointer"` : ''}>
           <span class="fix-date">${m.date}</span>
           <div class="fix-teams">
             <span class="fix-home">${m.home}</span>
             <span class="fix-score">${m.hs}–${m.as}</span>
             <span class="fix-away">${m.away}</span>
           </div>
-          <span class="fix-ft">FT</span>
+          <span class="fix-ft">${m.estado === 'finalizado' ? 'FT' : m.estado === 'en_curso' ? '🔴' : '—'}</span>
         </div>`).join('')}
     </div>`).join('');
 }
@@ -538,22 +532,183 @@ window.cargarProductos = debounce(async function(pais = "") {
   }
 }, 500);
 
-// Mantener compatibilidad con la función anterior
-window.actualizarPaneles = function(pais) {
-  window.cargarNoticias(pais);
-  window.cargarProductos(pais);
+// ══════════════════════════════════════
+// 4. CARGA DESDE API — fixture, standings, scorers, live
+// ══════════════════════════════════════
+async function cargarFixtureDesdeAPI() {
+  try {
+    const res = await fetch(`${API_URL}/fixture`);
+    const partidos = await res.json();
+    if (!partidos.length) return;
+
+    // Agrupar por grupo para alimentar GROUPS
+    const gruposAPI = {};
+    partidos.forEach(p => {
+      if (!p.grupo) return;
+      const letra = p.grupo.replace('GROUP_', '');
+      if (!gruposAPI[letra]) gruposAPI[letra] = { teams: [], matches: [] };
+      const g = gruposAPI[letra];
+      if (p.equipo_local && !g.teams.includes(p.equipo_local_short || p.equipo_local)) {
+        g.teams.push(p.equipo_local_short || p.equipo_local);
+      }
+      if (p.equipo_visitante && !g.teams.includes(p.equipo_visitante_short || p.equipo_visitante)) {
+        g.teams.push(p.equipo_visitante_short || p.equipo_visitante);
+      }
+      const fecha = new Date(p.fecha_utc);
+      g.matches.push({
+        id: p.id,
+        home: p.equipo_local_short || p.equipo_local,
+        away: p.equipo_visitante_short || p.equipo_visitante,
+        hs: p.goles_local ?? '-', as: p.goles_visitante ?? '-',
+        date: fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }),
+        estado: p.estado, estadio: p.estadio,
+        fecha_utc: p.fecha_utc,
+        escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
+      });
+    });
+
+    if (Object.keys(gruposAPI).length > 0) {
+      window.GROUPS = gruposAPI;
+      const primerGrupo = Object.keys(gruposAPI)[0];
+      renderGroups(primerGrupo);
+      renderFixtures();
+      console.log('✅ Fixture cargado desde API:', Object.keys(gruposAPI).length, 'grupos');
+    }
+  } catch (e) {
+    console.warn('⚠️ API fixture no disponible, usando datos estáticos:', e.message);
+  }
+}
+
+async function cargarScorersDesdeAPI() {
+  try {
+    const res = await fetch(`${API_URL}/scorers`);
+    const data = await res.json();
+    if (!data.length) return;
+    window.SCORERS = data.map(s => ({
+      name: s.nombre, team: s.equipo_short || s.equipo,
+      goals: s.goles, assists: s.asistencias, flag: '',
+      escudo: s.escudo,
+    }));
+    renderScorers();
+    renderLiveScorers();
+    console.log('✅ Goleadores cargados:', data.length);
+  } catch (e) { console.warn('⚠️ Goleadores no disponibles:', e.message); }
+}
+
+async function cargarPartidosEnVivo() {
+  try {
+    const res = await fetch(`${API_URL}/live`);
+    const partidos = await res.json();
+    renderLivePanel(partidos);
+  } catch (e) { console.warn('⚠️ Live no disponible:', e.message); }
+}
+
+// ══════════════════════════════════════
+// 5. PANEL EN VIVO — dinámico desde API
+// ══════════════════════════════════════
+function renderLivePanel(partidos) {
+  const container = document.getElementById('live-matches-container');
+  if (!container) return;
+
+  if (!partidos || partidos.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:30px;color:var(--text3)">
+        <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+        <div style="font-size:14px">No hay partidos en vivo en este momento</div>
+        <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = partidos.map(p => `
+    <div class="match-live" onclick="abrirDetallePartido(${p.id})" style="cursor:pointer">
+      <div class="team-block home">
+        ${p.escudo_local ? `<img src="${p.escudo_local}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
+        <div class="team-name">${p.equipo_local}</div>
+      </div>
+      <div class="score-block">
+        <div class="score-main">${p.goles_local}<span class="score-sep">–</span>${p.goles_visitante}</div>
+        <div class="min-badge"><span class="min-dot"></span><span class="min-text">${p.minuto}'</span></div>
+      </div>
+      <div class="team-block away">
+        ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
+        <div class="team-name">${p.equipo_visitante}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+// 6. MODAL DETALLE DE PARTIDO
+// ══════════════════════════════════════
+window.abrirDetallePartido = async function(matchId) {
+  const modal = document.getElementById('match-detail-modal');
+  const content = document.getElementById('match-detail-content');
+  if (!modal || !content) return;
+
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando partido...</div>';
+  modal.classList.add('active');
+
+  try {
+    const res = await fetch(`${API_URL}/fixture/${matchId}`);
+    const p = await res.json();
+    const fecha = new Date(p.fecha_utc);
+    const fechaLocal = fecha.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const horaLocal = fecha.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+    const estadoTexto = { programado:'Programado', en_curso:'En Vivo', finalizado:'Finalizado', suspendido:'Suspendido' };
+
+    content.innerHTML = `
+      <div class="md-header">
+        <div class="md-comp">${p.competicion || 'Mundial 2026'} ${p.grupo ? '· ' + p.grupo.replace('GROUP_','Grupo ') : ''}</div>
+        <div class="md-status md-status--${p.estado}">${estadoTexto[p.estado] || p.estado}</div>
+      </div>
+      <div class="md-teams">
+        <div class="md-team">
+          ${p.escudo_local ? `<img src="${p.escudo_local}" class="md-escudo" onerror="this.style.display='none'">` : ''}
+          <div class="md-team-name">${p.equipo_local}</div>
+        </div>
+        <div class="md-score">
+          <div class="md-score-num">${p.goles_local ?? '-'} – ${p.goles_visitante ?? '-'}</div>
+        </div>
+        <div class="md-team">
+          ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" class="md-escudo" onerror="this.style.display='none'">` : ''}
+          <div class="md-team-name">${p.equipo_visitante}</div>
+        </div>
+      </div>
+      <div class="md-info-grid">
+        <div class="md-info-item"><span class="md-info-icon">📅</span><span>${fechaLocal}</span></div>
+        <div class="md-info-item"><span class="md-info-icon">🕐</span><span>${horaLocal} (hora local)</span></div>
+        ${p.estadio ? `<div class="md-info-item"><span class="md-info-icon">🏟️</span><span>${p.estadio}</span></div>` : ''}
+        ${p.arbitro ? `<div class="md-info-item"><span class="md-info-icon">🟨</span><span>Árbitro: ${p.arbitro}</span></div>` : ''}
+        ${p.fase ? `<div class="md-info-item"><span class="md-info-icon">📋</span><span>Fase: ${p.fase.replace(/_/g,' ')}</span></div>` : ''}
+      </div>`;
+  } catch (e) {
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Error al cargar el partido</div>';
+  }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+window.cerrarDetallePartido = function() {
+  document.getElementById('match-detail-modal')?.classList.remove('active');
+};
+
+// ══════════════════════════════════════
+// INICIALIZACIÓN
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
   buildTicker();
-  // Inicializar paneles base
   renderGroups('A');
   renderFixtures();
   renderScorers();
   renderCards();
-  
-  // Cargar filtros dinámicos y contenido inicial
+
   window.cargarFiltrosDinamicos();
   window.cargarNoticias('');
   window.cargarProductos('');
+
+  // Intentar cargar datos reales desde la API
+  await cargarFixtureDesdeAPI();
+  await cargarScorersDesdeAPI();
+  await cargarPartidosEnVivo();
+
+  // Refrescar partidos en vivo cada 60 segundos
+  setInterval(cargarPartidosEnVivo, 60000);
 });   

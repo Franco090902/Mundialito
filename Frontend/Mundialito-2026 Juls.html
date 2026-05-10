@@ -119,73 +119,12 @@
     <div class="live-grid">
       <div>
         <p class="section-label">Partidos en curso</p>
-
-        <div class="match-live">
-          <div class="team-block home">
-            <div class="team-name">España</div>
-            <div class="team-role">Local</div>
+        <div id="live-matches-container">
+          <div style="text-align:center;padding:30px;color:var(--text3)">
+            <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+            <div style="font-size:14px">No hay partidos en vivo en este momento</div>
+            <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026</div>
           </div>
-          <div class="score-block">
-            <div class="score-main" id="live1-score">1<span class="score-sep">–</span>1</div>
-            <div class="min-badge">
-              <span class="min-dot"></span>
-              <span class="min-text" id="live1-min">67'</span>
-            </div>
-          </div>
-          <div class="team-block away">
-            <div class="team-name">Alemania</div>
-            <div class="team-role">Visitante</div>
-          </div>
-          <span class="grp-tag">GRP E</span>
-        </div>
-
-        <div class="match-live">
-          <div class="team-block home">
-            <div class="team-name">Brasil</div>
-            <div class="team-role">Local</div>
-          </div>
-          <div class="score-block">
-            <div class="score-main" id="live2-score">0<span class="score-sep">–</span>0</div>
-            <div class="min-badge">
-              <span class="min-dot"></span>
-              <span class="min-text" id="live2-min">23'</span>
-            </div>
-          </div>
-          <div class="team-block away">
-            <div class="team-name">Suiza</div>
-            <div class="team-role">Visitante</div>
-          </div>
-          <span class="grp-tag">GRP G</span>
-        </div>
-
-        <p class="section-label" style="margin-top:30px;">Próximos partidos hoy</p>
-
-        <div class="match-next">
-          <div class="next-teams">
-            <span class="next-team" style="text-align:right;flex:1">Croacia</span>
-            <span class="next-vs">vs</span>
-            <span class="next-team" style="text-align:left;flex:1">Marruecos</span>
-          </div>
-          <span class="next-time">20:00</span>
-          <span class="next-grp">GRP F</span>
-        </div>
-        <div class="match-next">
-          <div class="next-teams">
-            <span class="next-team" style="text-align:right;flex:1">Bélgica</span>
-            <span class="next-vs">vs</span>
-            <span class="next-team" style="text-align:left;flex:1">Canadá</span>
-          </div>
-          <span class="next-time">20:00</span>
-          <span class="next-grp">GRP F</span>
-        </div>
-        <div class="match-next">
-          <div class="next-teams">
-            <span class="next-team" style="text-align:right;flex:1">Portugal</span>
-            <span class="next-vs">vs</span>
-            <span class="next-team" style="text-align:left;flex:1">Uruguay</span>
-          </div>
-          <span class="next-time">23:00</span>
-          <span class="next-grp">GRP H</span>
         </div>
       </div>
 
@@ -204,20 +143,8 @@
             <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
             <span class="sidebar-hdr-text">Últimas Tarjetas</span>
           </div>
-          <div class="srow">
-            <span class="srow-flag">🇲🇦</span>
-            <div style="flex:1"><div class="srow-name">Sofyan Amrabat</div><div class="srow-sub">Marruecos</div></div>
-            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cy"></span><span class="cy"></span></div>
-          </div>
-          <div class="srow">
-            <span class="srow-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-            <div style="flex:1"><div class="srow-name">Mason Mount</div><div class="srow-sub">Inglaterra</div></div>
-            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cy"></span></div>
-          </div>
-          <div class="srow">
-            <span class="srow-flag">🇸🇳</span>
-            <div style="flex:1"><div class="srow-name">Idrissa Gueye</div><div class="srow-sub">Senegal</div></div>
-            <div style="display:flex;gap:3px"><span class="cy"></span><span class="cr"></span></div>
+          <div id="liveCards">
+            <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
           </div>
         </div>
       </div>
@@ -575,6 +502,15 @@
 </footer>
 
 
+
+
+<!-- ══ MODAL: DETALLE DE PARTIDO ══ -->
+<div id="match-detail-modal" class="modal-overlay" onclick="if(event.target===this)cerrarDetallePartido()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="cerrarDetallePartido()">✕</button>
+    <div id="match-detail-content"></div>
+  </div>
+</div>
 
 
 </div><!-- /app-wrapper -->

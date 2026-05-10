@@ -41,12 +41,59 @@ const apiFootball = axios.create({
   timeout: 10000,
 });
 
-// ID del Mundial 2026 en football-data.org
-// ⚠️  Confirmar este ID cuando la competición esté disponible en la API
-const WC_2026_ID = 2000;
+// ──────────────────────────────────────────────────────────────────
+// CONFIGURACIÓN DE COMPETICIÓN
+// TEST_MODE=true  → usa Copa Libertadores (para probar en vivo)
+// TEST_MODE=false → usa FIFA World Cup 2026
+// ──────────────────────────────────────────────────────────────────
+const TEST_MODE = process.env.TEST_MODE === 'true';
+
+// Football-Data.org IDs
+const WC_2026_ID = 2000;           // FIFA World Cup 2026
+const LIBERTADORES_FD_ID = 2152;   // Copa Libertadores en football-data.org
+const COMPETITION_ID = TEST_MODE ? LIBERTADORES_FD_ID : WC_2026_ID;
+
+// API-Football (api-sports.io) IDs
+const LIBERTADORES_AF_ID = 13;     // Copa Libertadores en API-Football
+const WC_AF_ID = 1;                // FIFA World Cup en API-Football
+const LIVE_LEAGUE_ID = TEST_MODE ? LIBERTADORES_AF_ID : WC_AF_ID;
+
+// ──────────────────────────────────────────────────────────────────
+// CACHE EN MEMORIA — evitar exceder 10 req/min de Football-Data
+// ──────────────────────────────────────────────────────────────────
+const cache = {
+  fixture:    { data: null, ts: 0 },
+  standings:  { data: null, ts: 0 },
+  scorers:    { data: null, ts: 0 },
+  live:       { data: null, ts: 0 },
+};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+function getCached(key) {
+  if (cache[key].data && (Date.now() - cache[key].ts < CACHE_TTL)) return cache[key].data;
+  return null;
+}
+function setCache(key, data) {
+  cache[key] = { data, ts: Date.now() };
+}
 
 console.log('⚽ Worker Mundialito iniciado —', new Date().toLocaleString('es-AR'));
+console.log(`📡 Modo: ${TEST_MODE ? '🧪 TEST (Copa Libertadores)' : '🏆 PRODUCCIÓN (Mundial 2026)'}`);
 console.log('📡 Supabase URL:', process.env.SUPABASE_URL);
+
+// ──────────────────────────────────────────────────────────────────
+// HELPER: mapear estado de Football-Data a nuestro formato
+// ──────────────────────────────────────────────────────────────────
+function mapearEstado(status) {
+  const map = {
+    'SCHEDULED': 'programado', 'TIMED': 'programado',
+    'IN_PLAY': 'en_curso', 'PAUSED': 'en_curso',
+    'FINISHED': 'finalizado',
+    'POSTPONED': 'suspendido', 'SUSPENDED': 'suspendido',
+    'CANCELLED': 'cancelado', 'AWARDED': 'finalizado',
+  };
+  return map[status] || 'programado';
+}
 
 
 // ══════════════════════════════════════════════════════════════════
@@ -57,7 +104,7 @@ console.log('📡 Supabase URL:', process.env.SUPABASE_URL);
 async function actualizarFixture() {
   console.log('\n🗓️  [FIXTURE] Actualizando desde Football-Data...');
   try {
-    const { data } = await footballData.get(`/competitions/${WC_2026_ID}/matches`);
+    const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/matches`);
     const partidos  = data.matches;
 
     if (!partidos?.length) {
@@ -285,7 +332,184 @@ app.use(express.json());
 
 // Health check — para verificar que el servidor está vivo
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() });
+    res.json({ status: 'ok', mode: TEST_MODE ? 'test_libertadores' : 'mundial_2026', time: new Date().toISOString() });
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: FIXTURE COMPLETO (cacheado desde Football-Data.org)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/fixture', async (req, res) => {
+    try {
+        let cached = getCached('fixture');
+        if (cached) return res.json(cached);
+
+        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/matches`);
+        const partidos = (data.matches || []).map(p => ({
+            id: p.id,
+            grupo: p.group || null,
+            fase: p.stage || '',
+            jornada: p.matchday,
+            fecha_utc: p.utcDate,
+            equipo_local: p.homeTeam?.name || 'Por definir',
+            equipo_local_short: p.homeTeam?.shortName || p.homeTeam?.tla || '',
+            equipo_visitante: p.awayTeam?.name || 'Por definir',
+            equipo_visitante_short: p.awayTeam?.shortName || p.awayTeam?.tla || '',
+            escudo_local: p.homeTeam?.crest || null,
+            escudo_visitante: p.awayTeam?.crest || null,
+            goles_local: p.score?.fullTime?.home,
+            goles_visitante: p.score?.fullTime?.away,
+            estado: mapearEstado(p.status),
+            estadio: p.venue || null,
+        }));
+
+        setCache('fixture', partidos);
+        res.json(partidos);
+    } catch (err) {
+        console.error('Error /api/fixture:', err.message);
+        res.status(500).json({ error: 'Error obteniendo fixture' });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: DETALLE DE UN PARTIDO
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/fixture/:id', async (req, res) => {
+    try {
+        const { data } = await footballData.get(`/matches/${req.params.id}`);
+        const p = data;
+        res.json({
+            id: p.id,
+            grupo: p.group || null,
+            fase: p.stage || '',
+            jornada: p.matchday,
+            fecha_utc: p.utcDate,
+            equipo_local: p.homeTeam?.name || 'Por definir',
+            equipo_local_short: p.homeTeam?.shortName || p.homeTeam?.tla || '',
+            equipo_visitante: p.awayTeam?.name || 'Por definir',
+            equipo_visitante_short: p.awayTeam?.shortName || p.awayTeam?.tla || '',
+            escudo_local: p.homeTeam?.crest || null,
+            escudo_visitante: p.awayTeam?.crest || null,
+            goles_local: p.score?.fullTime?.home,
+            goles_visitante: p.score?.fullTime?.away,
+            estado: mapearEstado(p.status),
+            estadio: p.venue || null,
+            arbitro: p.referees?.map(r => r.name).join(', ') || null,
+            competicion: p.competition?.name || '',
+        });
+    } catch (err) {
+        console.error('Error /api/fixture/:id:', err.message);
+        res.status(500).json({ error: 'Error obteniendo partido' });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: STANDINGS / POSICIONES POR GRUPO
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/standings', async (req, res) => {
+    try {
+        let cached = getCached('standings');
+        if (cached) return res.json(cached);
+
+        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/standings`);
+        const standings = (data.standings || []).map(s => ({
+            grupo: s.group || s.stage,
+            tipo: s.type,
+            tabla: (s.table || []).map(t => ({
+                posicion: t.position,
+                equipo: t.team?.name || '',
+                equipo_short: t.team?.shortName || t.team?.tla || '',
+                escudo: t.team?.crest || null,
+                pj: t.playedGames,
+                g: t.won,
+                e: t.draw,
+                p: t.lost,
+                gf: t.goalsFor,
+                gc: t.goalsAgainst,
+                dg: t.goalDifference,
+                pts: t.points,
+            })),
+        }));
+
+        setCache('standings', standings);
+        res.json(standings);
+    } catch (err) {
+        console.error('Error /api/standings:', err.message);
+        res.status(500).json({ error: 'Error obteniendo standings' });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: GOLEADORES DEL TORNEO
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/scorers', async (req, res) => {
+    try {
+        let cached = getCached('scorers');
+        if (cached) return res.json(cached);
+
+        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/scorers?limit=20`);
+        const scorers = (data.scorers || []).map(s => ({
+            nombre: s.player?.name || '',
+            equipo: s.team?.name || '',
+            equipo_short: s.team?.shortName || s.team?.tla || '',
+            escudo: s.team?.crest || null,
+            goles: s.goals || 0,
+            asistencias: s.assists || 0,
+            penales: s.penalties || 0,
+            partidos: s.playedMatches || 0,
+        }));
+
+        setCache('scorers', scorers);
+        res.json(scorers);
+    } catch (err) {
+        console.error('Error /api/scorers:', err.message);
+        res.json([]); // Devolver vacío si el torneo no empezó
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: PARTIDOS EN VIVO (API-Football — solo cuando hay acción)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/live', async (req, res) => {
+    try {
+        let cached = getCached('live');
+        if (cached) return res.json(cached);
+
+        const { data } = await apiFootball.get('/fixtures', {
+            params: { league: LIVE_LEAGUE_ID, season: 2026, live: 'all' }
+        });
+
+        const partidos = (data.response || []).map(f => ({
+            id: f.fixture.id,
+            equipo_local: f.teams.home.name,
+            equipo_visitante: f.teams.away.name,
+            escudo_local: f.teams.home.logo,
+            escudo_visitante: f.teams.away.logo,
+            goles_local: f.goals.home,
+            goles_visitante: f.goals.away,
+            minuto: f.fixture.status.elapsed,
+            estado_corto: f.fixture.status.short,
+            estado_largo: f.fixture.status.long,
+            estadio: f.fixture.venue?.name || '',
+            ciudad: f.fixture.venue?.city || '',
+            eventos: (f.events || []).map(e => ({
+                minuto: e.time?.elapsed,
+                extra: e.time?.extra,
+                equipo: e.team?.name,
+                jugador: e.player?.name,
+                asistencia: e.assist?.name,
+                tipo: e.type,
+                detalle: e.detail,
+            })),
+        }));
+
+        setCache('live', partidos);
+        // Cache de live dura solo 30 segundos
+        cache.live.ts = Date.now() - CACHE_TTL + 30000;
+        res.json(partidos);
+    } catch (err) {
+        console.error('Error /api/live:', err.message);
+        res.json([]);
+    }
 });
 
 // ══════════════════════════════════════════════════════════════════
