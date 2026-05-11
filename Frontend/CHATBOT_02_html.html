@@ -1,0 +1,163 @@
+<!-- ══════════════════════════════════════════════════════════════════
+     CHATBOT_02_html.html
+     DÓNDE PEGARLO: dentro del <div class="main">, junto a los otros paneles
+
+     HAY 2 PARTES:
+       PARTE A: El botón del tab (va en el <div class="tabs">)
+       PARTE B: El panel del chatbot (va junto a panel-guide, etc.)
+       PARTE C: El widget flotante (va justo antes del </body>)
+══════════════════════════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════
+     PARTE A: TAB BUTTON
+     Pegalo dentro del <div class="tabs">, con los demás botones.
+     Buscá la línea del botón de "Guía de Código" y pegá esto ANTES.
+══════════════════ -->
+<button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PARTE B: PANEL DEL CHATBOT
+     Pegalo dentro del <div class="main">, junto a los otros paneles
+     (después del panel-tienda o panel-guide, donde quieras).
+══════════════════════════════════════════════════════════════════ -->
+<div id="panel-chatbot" class="panel">
+
+  <!-- Encabezado del panel -->
+  <div class="chatbot-panel-header">
+    <div class="chatbot-panel-title">
+      <span class="chatbot-panel-icon">🤖</span>
+      <div>
+        <div class="chatbot-panel-name">Mundialito Bot</div>
+        <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
+      </div>
+    </div>
+    <div class="chatbot-status-badge">
+      <span class="chatbot-status-dot"></span>
+      En línea
+    </div>
+  </div>
+
+  <!-- Layout de dos columnas: chat + sidebar de productos -->
+  <div class="chatbot-layout">
+
+    <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
+    <div class="chatbot-main">
+
+      <!-- Mensajes del chat -->
+      <div class="chatbot-mensajes" id="chatbot-mensajes">
+        <!-- Mensaje inicial del bot -->
+        <div class="chatbot-msg chatbot-msg--bot">
+          <div class="chatbot-msg-avatar">⚽</div>
+          <div class="chatbot-msg-contenido">
+            <div class="chatbot-msg-texto">
+              ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
+              Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial. También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+            </div>
+            <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
+            <div class="chatbot-sugerencias">
+              <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el Mundial?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos participan?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para ganar?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input del usuario -->
+      <div class="chatbot-input-area">
+        <div class="chatbot-input-wrap">
+          <textarea
+            id="chatbot-input"
+            class="chatbot-textarea"
+            placeholder="Preguntame sobre el Mundial 2026..."
+            rows="1"
+            maxlength="500"
+            onkeydown="chatbotKeydown(event)"
+            oninput="autoResizeTextarea(this)"
+          ></textarea>
+          <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="chatbot-input-footer">
+          <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
+          <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
+    <div class="chatbot-sidebar">
+      <div class="chatbot-sidebar-titulo">
+        <span>🛒</span> Productos sugeridos
+      </div>
+      <div id="chatbot-productos" class="chatbot-productos-lista">
+        <!-- Estado vacío inicial -->
+        <div class="chatbot-sidebar-empty">
+          <span>⚽</span>
+          <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
+        </div>
+      </div>
+
+      <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
+      <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
+        <div class="chatbot-sidebar-titulo" style="margin-top:20px">
+          <span>📅</span> Agendar en Google Calendar
+        </div>
+        <div id="chatbot-calendario-info" class="chatbot-calendario-info">
+          <!-- Información del evento se inyecta dinámicamente -->
+        </div>
+        <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
+          📅 Agregar a mi Google Calendar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PARTE C: BOTÓN FLOTANTE (opcional pero recomendado)
+     Pegalo justo ANTES del </body>, FUERA del #app-wrapper.
+     Permite abrir el chat desde cualquier solapa sin tener que
+     ir al panel de chatbot.
+══════════════════════════════════════════════════════════════════ -->
+<div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
+  <span class="chatbot-fab-icon">⚽</span>
+  <span class="chatbot-fab-badge" id="chatbot-fab-badge" style="display:none">1</span>
+</div>
+
+<!-- Widget flotante (mini-versión del chat para usar desde cualquier panel) -->
+<div id="chatbot-widget" class="chatbot-widget" style="display:none">
+  <div class="chatbot-widget-header">
+    <div class="chatbot-widget-title">
+      <span>⚽</span> Mundialito Bot
+    </div>
+    <button class="chatbot-widget-close" onclick="toggleChatbotWidget()">✕</button>
+  </div>
+  <div class="chatbot-widget-mensajes" id="chatbot-widget-mensajes">
+    <div class="chatbot-msg chatbot-msg--bot" style="padding:12px">
+      <div class="chatbot-msg-avatar" style="width:28px;height:28px;font-size:14px">⚽</div>
+      <div class="chatbot-msg-texto" style="font-size:13px">
+        ¡Hola! Preguntame sobre el Mundial 2026. 🏆
+      </div>
+    </div>
+  </div>
+  <div class="chatbot-widget-input">
+    <input
+      type="text"
+      id="chatbot-widget-input"
+      placeholder="Preguntá sobre el Mundial..."
+      maxlength="300"
+      onkeydown="widgetKeydown(event)"
+    />
+    <button onclick="widgetEnviar()">↑</button>
+  </div>
+</div>
