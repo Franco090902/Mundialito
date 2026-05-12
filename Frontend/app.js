@@ -38,18 +38,28 @@ window.EDITIONS = [];
 /* ─────────────────────────────────────
    TICKER: construir y duplicar para loop infinito
 ───────────────────────────────────── */
-function buildTicker() {
+function buildTicker(matches = []) {
   const track = document.getElementById('tickerTrack');
-  const LIVE = [
-    {home:"España",away:"Alemania",hg:1,ag:1,min:67,group:"E"},
-    {home:"Brasil",away:"Suiza",hg:0,ag:0,min:23,group:"G"},
-    {home:"México",away:"Polonia",hg:1,ag:0,min:44,group:"C"},
-  ];
-  const items = [
-    ...LIVE.map(m => `<div class="ticker-item"><span class="t-dot"></span><span class="t-min">${m.min}'</span><span class="t-team">${m.home}</span><span class="t-score">${m.hg} — ${m.ag}</span><span class="t-team">${m.away}</span><span class="t-grp">GRP ${m.group}</span></div>`),
-    `<div class="ticker-item"><span class="t-info">+12 PARTIDOS HOY &nbsp;·&nbsp; MUNDIAL 2026 &nbsp;·&nbsp; TODO FÚTBOL</span></div>`,
-    `<div class="ticker-item"><span class="t-dot"></span><span class="t-min">52'</span><span class="t-team">Croacia</span><span class="t-score">0 — 0</span><span class="t-team">Marruecos</span><span class="t-grp">GRP F</span></div>`,
-  ];
+  
+  let items = [];
+  
+  if (matches.length > 0) {
+    items = matches.map(m => {
+      const isLive = m.estado === 'en_curso';
+      const minText = isLive ? `${m.minuto}'` : (m.date || '');
+      const hg = m.goles_local !== null && m.goles_local !== undefined ? m.goles_local : '-';
+      const ag = m.goles_visitante !== null && m.goles_visitante !== undefined ? m.goles_visitante : '-';
+      const grpText = m.grupo ? m.grupo.replace('GROUP_', 'GRP ') : '';
+      
+      return `<div class="ticker-item">${isLive ? '<span class="t-dot"></span>' : ''}<span class="t-min">${minText}</span><span class="t-team">${m.equipo_local || m.home}</span><span class="t-score">${hg} — ${ag}</span><span class="t-team">${m.equipo_visitante || m.away}</span><span class="t-grp">${grpText}</span></div>`;
+    });
+  } else {
+    items = [
+      `<div class="ticker-item"><span class="t-info">MUNDIAL 2026 &nbsp;·&nbsp; TODO FÚTBOL</span></div>`,
+      `<div class="ticker-item"><span class="t-info">ESPERANDO PARTIDOS...</span></div>`
+    ];
+  }
+  
   const html = items.join('');
   track.innerHTML = html + html;
 }
@@ -66,7 +76,7 @@ function switchTab(id, btn) {
   
   if (id === 'groups') {
     // 🛑 EL ARREGLO: Buscamos el primer grupo que exista en la base de datos en vez de forzar la 'A'
-    const primerGrupo = Object.keys(window.GROUPS)[0];
+    const primerGrupo = Object.keys(window.GROUPS).sort()[0];
     if (primerGrupo) renderGroups(primerGrupo);
   }
   if (id === 'fixtures') renderFixtures();
@@ -105,7 +115,8 @@ function computeStandings(key) {
 
 function renderGroups(key) {
   const sel = document.getElementById('grpSelector');
-  sel.innerHTML = Object.keys(GROUPS).map(g =>
+  const sortedKeys = Object.keys(GROUPS).sort();
+  sel.innerHTML = sortedKeys.map(g =>
     `<button class="grp-btn ${g===key?'active':''}" onclick="renderGroups('${g}')">Grupo ${g}</button>`
   ).join('');
 
@@ -160,7 +171,8 @@ function renderGroups(key) {
    FIXTURE
 ───────────────────────────────────── */
 function renderFixtures() {
-  document.getElementById('fixtureContent').innerHTML = Object.entries(GROUPS).map(([key,g]) => `
+  const sortedEntries = Object.entries(GROUPS).sort((a,b) => a[0].localeCompare(b[0]));
+  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key,g]) => `
     <div class="fix-card">
       <div class="fix-hdr">
         <span class="fix-grp-name">GRUPO ${key}</span>
@@ -209,21 +221,34 @@ function renderScorers() {
    TARJETAS
 ───────────────────────────────────── */
 function renderCards() {
-  const container = document.getElementById('cardsBody');
-  if (!container) return;
-  if (!CARDS || CARDS.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos de tarjetas aún.</div>';
+  const containerYellow = document.getElementById('cardsBodyYellow');
+  const containerRed = document.getElementById('cardsBodyRed');
+  if (!containerYellow || !containerRed) return;
+  
+  if (!window.CARDS || window.CARDS.length === 0) {
+    containerYellow.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos aún.</div>';
+    containerRed.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos aún.</div>';
     return;
   }
-  container.innerHTML = CARDS.map((c,i) => `
-    <div class="cd-row">
-      <span class="cd-rank">${i+1}</span>
-      <span class="cd-flag">${c.flag || '🏳️'}</span>
-      <div><div class="cd-name">${c.name}</div><div class="cd-team">${c.team}</div></div>
-      <span class="cd-team" style="font-size:12px">${c.team}</span>
-      <div class="cd-cards">${Array(c.yellow || 0).fill('<span class="cy"></span>').join('')}${(c.yellow||0)===0?'<span class="c-none">—</span>':''}</div>
-      <div class="cd-cards">${Array(c.red || 0).fill('<span class="cr"></span>').join('')}${(c.red||0)===0?'<span class="c-none">—</span>':''}</div>
-    </div>`).join('');
+
+  // Filtrar y ordenar
+  const yellowCards = [...window.CARDS].filter(c => c.yellow > 0).sort((a,b) => b.yellow - a.yellow);
+  const redCards = [...window.CARDS].filter(c => c.red > 0).sort((a,b) => b.red - a.red);
+
+  // Renderizador genérico
+  const renderRows = (cardsList, type) => {
+    if (cardsList.length === 0) return '<div style="text-align:center;padding:20px;color:var(--text4)">No hay tarjetas registradas</div>';
+    return cardsList.map((c,i) => `
+      <div class="cd-row" style="grid-template-columns: 36px 36px 1fr 110px;">
+        <span class="cd-rank">${i+1}</span>
+        <span class="cd-flag">${c.flag || (c.escudo ? `<img src="${c.escudo}" style="width:18px;height:18px;object-fit:contain">` : '🏳️')}</span>
+        <div><div class="cd-name">${c.name}</div><div class="cd-team" style="font-size:11px;color:var(--text4)">${c.team}</div></div>
+        <div class="cd-cards" style="justify-content:center">${Array(c[type] || 0).fill(`<span class="c${type === 'yellow' ? 'y' : 'r'}"></span>`).join('')}</div>
+      </div>`).join('');
+  };
+
+  containerYellow.innerHTML = renderRows(yellowCards, 'yellow');
+  containerRed.innerHTML = renderRows(redCards, 'red');
 }
 
 /* ─────────────────────────────────────
@@ -649,12 +674,55 @@ async function cargarScorersDesdeAPI() {
   } catch (e) { console.warn('⚠️ Goleadores no disponibles:', e.message); }
 }
 
+async function cargarCardsDesdeAPI() {
+  try {
+    const res = await fetch(`${API_URL}/tarjetas`);
+    const data = await res.json();
+    if (!data.length) return;
+    window.CARDS = data.map(c => ({
+      name: c.nombre, team: c.equipo_short || c.equipo,
+      yellow: c.amarillas, red: c.rojas, flag: '',
+      escudo: c.escudo,
+    }));
+    renderCards();
+    console.log('✅ Tarjetas cargadas:', data.length);
+  } catch (e) { console.warn('⚠️ Tarjetas no disponibles:', e.message); }
+}
+
 async function cargarPartidosEnVivo() {
   try {
     const res = await fetch(`${API_URL}/live`);
     const partidos = await res.json();
     renderLivePanel(partidos);
+    
+    if (partidos && partidos.length > 0) {
+      buildTicker(partidos);
+    } else {
+      updateTickerWithUpcoming();
+    }
   } catch (e) { console.warn('⚠️ Live no disponible:', e.message); }
+}
+
+window.updateTickerWithUpcoming = function() {
+  if (!window.GROUPS) return;
+  const allMatches = [];
+  Object.entries(window.GROUPS).forEach(([letra, g]) => {
+    g.matches.forEach(m => allMatches.push({...m, grupo: `Grupo ${letra}`}));
+  });
+  
+  const upcoming = allMatches.filter(m => m.estado === 'programado' || m.hs === '-').slice(0, 5);
+  
+  if (upcoming.length > 0) {
+    const formatted = upcoming.map(m => ({
+      ...m,
+      equipo_local: m.home,
+      equipo_visitante: m.away,
+      goles_local: m.hs,
+      goles_visitante: m.as,
+      estado: 'programado'
+    }));
+    buildTicker(formatted);
+  }
 }
 
 // ══════════════════════════════════════
@@ -735,6 +803,62 @@ window.abrirDetallePartido = async function(matchId) {
         ${p.arbitro ? `<div class="md-info-item"><span class="md-info-icon">🟨</span><span>Árbitro: ${p.arbitro}</span></div>` : ''}
         ${p.fase ? `<div class="md-info-item"><span class="md-info-icon">📋</span><span>Fase: ${p.fase.replace(/_/g,' ')}</span></div>` : ''}
       </div>`;
+
+    let golesHtml = '';
+    if (p.goles_detalle && p.goles_detalle.length > 0) {
+      golesHtml = `
+        <div style="margin-top:20px; padding: 15px; background: var(--navy1); border-radius: 8px; border: 1px solid var(--border2);">
+          <h4 style="margin: 0 0 10px 0; color: var(--text1); font-size: 15px; text-align: center;">⚽ Goles</h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${p.goles_detalle.map(g => {
+              return `<div style="display:flex; justify-content: space-between; font-size: 14px;">
+                <span style="color: var(--text2)">${g.minute}'</span>
+                <span style="color: var(--gold); font-weight: bold;">${g.scorer?.name || 'Desconocido'}</span>
+                <span style="color: var(--text3); font-size: 12px;">(${g.team?.name || ''})</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    content.innerHTML += golesHtml;
+
+    content.innerHTML += `
+      <div style="margin-top:25px;">
+        <h4 style="margin: 0 0 15px 0; color: var(--text1); font-size: 16px;">🛒 Productos Relacionados</h4>
+        <div id="md-productos-grid" class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+          <p style="color: var(--text3); padding: 10px;">Buscando productos...</p>
+        </div>
+      </div>
+    `;
+
+    try {
+      const resLocal = await fetch(`${API_URL}/productos?pais=${encodeURIComponent(p.equipo_local)}`);
+      const resVisitante = await fetch(`${API_URL}/productos?pais=${encodeURIComponent(p.equipo_visitante)}`);
+      const prodLocal = await resLocal.json();
+      const prodVisitante = await resVisitante.json();
+      
+      const todosProductos = [...prodLocal, ...prodVisitante];
+      const prodContainer = document.getElementById('md-productos-grid');
+      
+      if (todosProductos.length > 0) {
+        prodContainer.innerHTML = todosProductos.slice(0,4).map(prod => `
+          <div class="card-item" style="min-height: auto;">
+            <img src="${prod.imagen_url || PLACEHOLDER_IMG}" class="card-img" style="height:120px;" onerror="window.imgFallback(this)">
+            <div class="card-body" style="padding: 10px;">
+              <div class="card-title" style="font-size:13px;">${prod.nombre}</div>
+              <div style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin-bottom: 8px;">$${prod.precio || 'Consultar'}</div>
+              <a href="${prod.link_afiliado}" target="_blank" class="btn-card" style="padding: 6px; font-size:12px;">Comprar</a>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        prodContainer.innerHTML = '<p style="color: var(--text4); font-size: 13px; grid-column: 1 / -1;">No hay productos disponibles para estos equipos en este momento.</p>';
+      }
+    } catch (e) {
+      document.getElementById('md-productos-grid').innerHTML = '<p style="color: var(--red); font-size: 13px; grid-column: 1 / -1;">Error cargando productos.</p>';
+    }
+
   } catch (e) {
     content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Error al cargar el partido</div>';
   }
@@ -761,6 +885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Intentar cargar datos reales desde la API
   await cargarFixtureDesdeAPI();
   await cargarScorersDesdeAPI();
+  await cargarCardsDesdeAPI();
   await cargarPartidosEnVivo();
 
   // 🛑 ELIMINADO: Refrescar partidos en vivo cada 60 segundos (Ahora usamos Supabase Realtime)
@@ -943,8 +1068,23 @@ function agregarMensajeChatbot(rol, texto) {
   const div        = document.createElement('div');
   div.className    = `chatbot-msg ${esUsuario ? 'chatbot-msg--user' : 'chatbot-msg--bot'}`;
 
+  // Procesar el texto para evitar problemas con etiquetas HTML (ej: <think>)
+  let textoProcesado = texto || '';
+  
+  // Remover bloque <think> completo si existe
+  textoProcesado = textoProcesado.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  // Por si el modelo fue interrumpido por tokens y quedó abierto
+  textoProcesado = textoProcesado.replace(/<think>[\s\S]*/gi, '');
+  
+  textoProcesado = textoProcesado.trim();
+  if (!textoProcesado) {
+    textoProcesado = "..."; 
+  }
+
   // Convertir saltos de línea y texto bold básico en HTML
-  const textoHtml  = texto
+  const textoHtml  = textoProcesado
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 

@@ -536,6 +536,7 @@ app.get('/api/fixture/:id', async (req, res) => {
             estadio: p.venue || null,
             arbitro: p.referees?.map(r => r.name).join(', ') || null,
             competicion: p.competition?.name || '',
+            goles_detalle: p.goals || [],
         });
     } catch (err) {
         console.error('Error /api/fixture/:id:', err.message);
@@ -604,6 +605,24 @@ app.get('/api/scorers', async (req, res) => {
     } catch (err) {
         console.error('Error /api/scorers:', err.message);
         res.json([]); // Devolver vacío si el torneo no empezó
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: TARJETAS (API-Football vía Supabase)
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/tarjetas', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('tarjetas')
+            .select('*');
+
+        if (error) throw error;
+        const sorted = data.sort((a,b) => (b.rojas || 0) - (a.rojas || 0) || (b.amarillas || 0) - (a.amarillas || 0));
+        res.json(sorted);
+    } catch (err) {
+        console.error('Error /api/tarjetas:', err.message);
+        res.json([]);
     }
 });
 
@@ -885,13 +904,8 @@ REGLAS DE COMPORTAMIENTO:
 1. SIEMPRE respondé en español rioplatense (usás "vos", "che", etc.)
 2. Respondé preguntas de fútbol con precisión y entusiasmo
 3. Sé conciso: máximo 3-4 párrafos por respuesta
-4. DESPUÉS de responder, buscá UNA excusa natural para mencionar
-   un producto de la tienda. Ejemplos de excusas:
-   - Si preguntan por Argentina → "Y si sos hincha, fijate que en nuestra tienda tenemos..."
-   - Si preguntan por el Mundial en general → "Para vivir el Mundial de la mejor manera..."
-   - Si preguntan de historia → "Los coleccionistas van a querer..."
-   La mención del producto debe ser NATURAL, no forzada. No la hagas
-   en TODAS las respuestas, solo cuando tenga sentido (aprox 60% de las veces).
+4. CUANDO RECOMIENDES PRODUCTOS: - Usá SIEMPRE los productos reales que te pasamos en el contexto. - Mencioná el nombre exacto y el precio real. - Ejemplo correcto: "Y si sos hincha, en nuestra tienda tenemos  
+la 'Camiseta Argentina 2026' por $45.000." - NUNCA inventes productos, precios o links que no estén en el contexto. - Si no hay productos disponibles, decilo honestamente. - Hacelo de forma natural, no forzada, en aprox el 60% de las respuestas
 
 5. DETECCIÓN DE FECHAS Y PARTIDOS:
    Si el usuario pregunta por un partido, fecha, o quiere saber cuándo
@@ -963,7 +977,7 @@ async function llamarGemini(historial, mensajeNuevo) {
       contents,
       generationConfig: {
         temperature: 0.8,      // Creatividad (0=robótico, 1=creativo)
-        maxOutputTokens: 600,  // Límite de longitud de respuesta
+        maxOutputTokens: 4000, // Aumentado para evitar que se corte la respuesta
         topP: 0.9,
       }
     })
@@ -1069,45 +1083,84 @@ function parsearCalendario(textoRespuesta) {
 //     }
 //   }
 // ══════════════════════════════════════════════════════════════════
-app.post('/api/chat', async (req, res) => {
-  const { mensaje, historial = [] } = req.body;
-
-  // Validación básica
-  if (!mensaje || typeof mensaje !== 'string' || mensaje.trim().length === 0) {
-    return res.status(400).json({ error: 'El campo "mensaje" es requerido.' });
-  }
-
-  if (mensaje.trim().length > 500) {
-    return res.status(400).json({ error: 'El mensaje es demasiado largo (máx 500 caracteres).' });
-  }
-
-  try {
-    // 1. Llamar a Gemini con el historial y el nuevo mensaje
-    const respuestaCompleta = await llamarGemini(historial, mensaje.trim());
-
-    // 2. Separar el texto de respuesta del posible bloque de calendario
-    const { texto, calendario } = parsearCalendario(respuestaCompleta);
-
-    // 3. Buscar productos relevantes basados en la respuesta de Gemini
-    //    (esto enriquece la respuesta con datos reales de tu BD)
-    const productos = await buscarProductosRelevantes(texto + ' ' + mensaje);
-
-    // 4. Devolver todo al frontend
-    res.json({
-      respuesta: texto,
-      productos,        // Array (puede estar vacío si no hay productos)
-      calendario,       // Objeto o null
-    });
-
-  } catch (err) {
-    console.error('❌ [/api/chat] Error:', err.message);
-
-    // Mensaje de error amigable para el usuario
-    res.status(500).json({
-      error: 'No pude procesar tu pregunta. Intentá de nuevo en un momento.',
-      respuesta: '¡Ups! Tuve un problema técnico. Intentá de nuevo. ⚽'
-    });
-  }
+app.post('/api/chat', async (req, res) => { 
+  const { mensaje, historial = [] } = req.body; 
+ 
+  if (!mensaje || typeof mensaje !== 'string' || mensaje.trim().length === 0) { 
+    return res.status(400).json({ error: 'El campo "mensaje" es requerido.' }); 
+  } 
+ 
+  try { 
+    // ── PASO 1: Buscar productos relevantes ANTES de llamar a Gemini ── 
+    // Detectamos qué selección menciona el usuario en su mensaje 
+    const selecciones = [ 
+      'Argentina', 'Brasil', 'Francia', 'España', 'Alemania', 
+      'Inglaterra', 'Uruguay', 'México', 'Colombia', 'Portugal', 
+      'Croacia', 'Marruecos', 'Países Bajos', 'Holanda', 'Portugal' 
+    ]; 
+ 
+    const seleccionDetectada = selecciones.find(s => 
+      mensaje.toLowerCase().includes(s.toLowerCase()) 
+    ); 
+ 
+    // Traemos productos de Supabase según la selección detectada 
+    // Si no hay selección específica, traemos productos generales (los primeros 3) 
+    let productosParaGemini = []; 
+    let queryProductos = supabase 
+      .from('productos_ml') 
+      .select('nombre, precio, link_afiliado, imagen_url, categoria_relacionada') 
+      .eq('activo', true) 
+      .limit(3); 
+ 
+    if (seleccionDetectada) { 
+      queryProductos = queryProductos.eq('categoria_relacionada', seleccionDetectada); 
+    } 
+ 
+    const { data: productosDB } = await queryProductos; 
+    productosParaGemini = productosDB || []; 
+ 
+    // ── PASO 2: Construir el contexto de productos para Gemini ── 
+    // Le "mostramos" los productos reales a Gemini antes de que responda 
+    let contextoProductos = ''; 
+    if (productosParaGemini.length > 0) { 
+      contextoProductos = ` 
+PRODUCTOS DISPONIBLES EN NUESTRA TIENDA (usá estos datos reales al 
+recomendar): 
+${productosParaGemini.map((p, i) => 
+  `${i + 1}. "${p.nombre}" — $${p.precio} — Link: ${p.link_afiliado}` 
+).join('\n')} 
+ 
+Cuando recomiendes productos, mencioná el nombre exacto y el precio real de la lista 
+anterior. 
+`; 
+    } else { 
+      contextoProductos = ` 
+No hay productos disponibles en la tienda para esta selección por el momento. 
+Si querés recomendar algo, hacelo de forma genérica sin inventar precios ni links. 
+`; 
+    } 
+ 
+    // ── PASO 3: Llamar a Gemini con el contexto de productos ── 
+    const mensajeConContexto = `${contextoProductos}\n\nPREGUNTA DEL USUARIO: 
+${mensaje.trim()}`; 
+    const respuestaCompleta  = await llamarGemini(historial, mensajeConContexto); 
+ 
+    // ── PASO 4: Parsear calendario y devolver respuesta ── 
+    const { texto, calendario } = parsearCalendario(respuestaCompleta); 
+ 
+    res.json({ 
+      respuesta:  texto, 
+      productos:  productosParaGemini,  // productos reales de la BD 
+      calendario, 
+    }); 
+ 
+  } catch (err) { 
+    console.error('❌[/api/chat] Error:', err.message); 
+    res.status(500).json({ 
+      error:     'No pude procesar tu pregunta.', 
+      respuesta: '¡Ups! Tuve un problema técnico. Intentá de nuevo. ⚽' 
+    }); 
+  } 
 });
 
 // ══════════════════════════════════════════════════════════════════

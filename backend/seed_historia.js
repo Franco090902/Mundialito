@@ -35,7 +35,7 @@ const ediciones = [
       "Héctor Castro, quien marcó para Uruguay, no tenía el antebrazo derecho."
     ],
     videos: [
-      { title: "Final Uruguay vs Argentina (1930)", url: "https://www.youtube.com/watch?v=1DkKkS7_d0M", description: "Imágenes históricas del primer partido final de una Copa del Mundo." }
+      { title: "Final Uruguay vs Argentina (1930)", url: "https://youtu.be/wN21I_F7MN0?si=_m0PvvBHgEYskwO-", description: "Imágenes históricas del primer partido final de una Copa del Mundo." }
     ]
   },
   {
@@ -58,7 +58,7 @@ const ediciones = [
       "Fue un torneo de eliminación directa desde el principio (octavos de final)."
     ],
     videos: [
-      { title: "Resumen Mundial 1934", url: "https://www.youtube.com/watch?v=FqS-9lF8g3c", description: "Italia se corona campeona en casa." }
+      { title: "Resumen Mundial 1934", url: "https://youtu.be/evpu3Jr3Txk?si=7gh6y_kdIgsbs7Hf", description: "Italia se corona campeona en casa." }
     ]
   },
   {
@@ -81,7 +81,7 @@ const ediciones = [
       "Austria clasificó pero no jugó debido al Anschluss (anexión por parte de Alemania nazi)."
     ],
     videos: [
-      { title: "Goles del Mundial 1938", url: "https://www.youtube.com/watch?v=P9UHTy-eGv0", description: "Leônidas deslumbra en Francia." }
+      { title: "Final del Mundial 1938 Italia 4-2 Hungria", url: "https://youtu.be/UUyhSCYCCOo?si=VLbznIY8WeYixj2f", description: "Italia domina" }
     ]
   },
   {
@@ -105,7 +105,7 @@ const ediciones = [
       "India se retiró supuestamente porque la FIFA no les permitió jugar descalzos."
     ],
     videos: [
-      { title: "El Maracanazo", url: "https://www.youtube.com/watch?v=VjG8UjJ1_t4", description: "El legendario partido donde Uruguay venció a Brasil en 1950." }
+      { title: "El Maracanazo", url: "https://youtu.be/FH6rFY_6Ym0?si=8K23SPXqvWcvV7yC", description: "El legendario partido donde Uruguay venció a Brasil en 1950." }
     ]
   },
   {
@@ -129,7 +129,7 @@ const ediciones = [
       "Primera Copa del Mundo televisada."
     ],
     videos: [
-      { title: "El Milagro de Berna", url: "https://www.youtube.com/watch?v=F_fG2U0P6fQ", description: "Resumen de la increíble final de 1954." }
+      { title: "El Milagro de Berna", url: "https://youtu.be/YTwwOmLmGm8?si=toqq8EvnxmXpX1ZW", description: "Resumen de la increíble final de 1954." }
     ]
   },
   {
@@ -153,7 +153,7 @@ const ediciones = [
       "Primera vez que un equipo (Brasil) ganó el Mundial fuera de su continente."
     ],
     videos: [
-      { title: "El surgimiento de Pelé", url: "https://www.youtube.com/watch?v=q6O7vYx-w2k", description: "Los mejores momentos del joven Pelé en 1958." }
+      { title: "El surgimiento de Pelé", url: "https://youtu.be/jYbVf2HXKsw?si=8UNrN5d_KbnoWH4O", description: "Los mejores momentos del joven Pelé en 1958." }
     ]
   },
   {
@@ -176,7 +176,7 @@ const ediciones = [
       "La Batalla de Santiago: El violento partido entre Chile e Italia."
     ],
     videos: [
-      { title: "La Magia de Garrincha", url: "https://www.youtube.com/watch?v=1F3d12P5nEQ", description: "Garrincha guía a Brasil al bicampeonato." }
+      { title: "La Magia de Garrincha", url: "https://youtu.be/cHu5yoOsQlU?si=_diaYtIpfZklrX4b", description: "Garrincha guía a Brasil al bicampeonato." }
     ]
   },
   {
@@ -199,7 +199,7 @@ const ediciones = [
       "El polémico 'Gol fantasma' de Geoff Hurst en la final."
     ],
     videos: [
-      { title: "Inglaterra vs Alemania Occidental 1966", url: "https://www.youtube.com/watch?v=BqK2gM10G6U", description: "La polémica final en Wembley." }
+      { title: "Inglaterra vs Alemania Occidental 1966", url: "https://youtu.be/C0aK2IgORGA?si=pkNTx7UsAHPXphks", description: "La polémica final en Wembley." }
     ]
   },
   {
@@ -223,7 +223,7 @@ const ediciones = [
       "Jairzinho anotó en todos los partidos de Brasil en el torneo."
     ],
     videos: [
-      { title: "Brasil de 1970", url: "https://www.youtube.com/watch?v=E_P-sN3mKGI", description: "El mejor equipo de la historia en color." }
+      { title: "Brasil de 1970", url: "https://youtu.be/0lo6aW0EYM0?si=F3AZrI-WhVKdzGcF", description: "El mejor equipo de la historia en color." }
     ]
   },
   {
@@ -246,7 +246,7 @@ const ediciones = [
       "Países Bajos marcó a los 2 minutos de la final sin que Alemania tocara el balón antes del penal."
     ],
     videos: [
-      { title: "El Fútbol Total de 1974", url: "https://www.youtube.com/watch?v=kYJ6B9XpD7I", description: "Cruyff y la Naranja Mecánica." }
+      { title: "El Fútbol Total de 1974", url: "https://youtu.be/7ySk4KZHEnY?si=adQUQHn0fZpfIJDk", description: "Cruyff y la Naranja Mecánica." }
     ]
   },
   {
@@ -269,7 +269,7 @@ const ediciones = [
       "El polémico 6-0 de Argentina a Perú que le dio el pase a la final."
     ],
     videos: [
-      { title: "Argentina Campeón 1978", url: "https://www.youtube.com/watch?v=P6Yy2eG1qV4", description: "Los goles de Kempes en la final." }
+      { title: "Argentina Campeón 1978", url: "https://youtu.be/7aZ7GV8T2mk?si=tnNjWvzoQklyoQml", description: "Los goles de Kempes en la final." }
     ]
   },
   {
@@ -292,7 +292,7 @@ const ediciones = [
       "La primera vez que se utilizó la tanda de penales (Alemania vs Francia)."
     ],
     videos: [
-      { title: "El Renacer de Paolo Rossi", url: "https://www.youtube.com/watch?v=5z6B1i4xSxw", description: "Los goles de Rossi que le dieron el título a Italia." }
+      { title: "El Renacer de Paolo Rossi", url: "https://youtu.be/4Br3lHOrMCs?si=8WgEXCEpTbkqbE7x", description: "Los goles de Rossi que le dieron el título a Italia." }
     ]
   },
   {
@@ -316,7 +316,7 @@ const ediciones = [
       "La Mano de Dios: Maradona anotó con la mano frente a los ingleses."
     ],
     videos: [
-      { title: "El Gol del Siglo", url: "https://www.youtube.com/watch?v=-sNawL9-dYQ", description: "Maradona contra todos los ingleses." }
+      { title: "El Gol del Siglo", url: "https://youtu.be/ZN3jcfJSJMY?si=yzS2voH_kHbp8nn5", description: "Maradona contra todos los ingleses." }
     ]
   },
   {
@@ -340,7 +340,7 @@ const ediciones = [
       "Camerún, guiado por Roger Milla (38 años), se convirtió en el primer africano en cuartos."
     ],
     videos: [
-      { title: "Alemania 1990", url: "https://www.youtube.com/watch?v=0tS6nU_t870", description: "Alemania se consagra tricampeón en Italia." }
+      { title: "Alemania 1990", url: "https://youtu.be/Jh3IpG5GuzI?si=uQTUWN6gjB4_SbVu", description: "Alemania se consagra tricampeón en Italia." }
     ]
   },
   {
@@ -365,7 +365,7 @@ const ediciones = [
       "Asesinato del jugador colombiano Andrés Escobar por marcar un autogol."
     ],
     videos: [
-      { title: "Penales de la Final 1994", url: "https://www.youtube.com/watch?v=wX-y0vF0lKk", description: "Baggio falla y Brasil es tetracampeón." }
+      { title: "Penales de la Final 1994", url: "https://youtu.be/8pdHAGjKt2w?si=sFz-5fPoOLjzOgUj", description: "Baggio falla y Brasil es tetracampeón." }
     ]
   },
   {
@@ -388,7 +388,7 @@ const ediciones = [
       "Ronaldo sufrió convulsiones horas antes de la final."
     ],
     videos: [
-      { title: "Zidane en la Final de 1998", url: "https://www.youtube.com/watch?v=kYJ6B9XpD7I", description: "Los dos cabezazos de Zidane contra Brasil." }
+      { title: "Zidane en la Final de 1998", url: "https://youtu.be/ZREZNjhSwJU?si=x2wwP_5OVdMxYh9q", description: "Los dos cabezazos de Zidane contra Brasil." }
     ]
   },
   {
@@ -411,9 +411,36 @@ const ediciones = [
       "Sorpresivo éxito de Corea del Sur llegando a semifinales en medio de polémicas arbitrales."
     ],
     videos: [
-      { title: "Ronaldo en 2002", url: "https://www.youtube.com/watch?v=P6Yy2eG1qV4", description: "Los 8 goles de Ronaldo 'El Fenómeno'." }
+      { title: "Ronaldo en 2002", url: "https://youtu.be/B0YLm9oC8nw?si=l8m2yMlWAwPmki-a", description: "Los 8 goles de Ronaldo 'El Fenómeno'." }
     ]
   },
+{
+  año: 2006,
+  sede: "Alemania",
+  fechas: "9 Jun – 9 Jul",
+  campeon: "Italia", campeon_bandera: "🇮🇹",
+  subcampeon: "Francia", subcampeon_bandera: "🇫🇷",
+  tercero: "Alemania", cuarto: "Portugal",
+  goleadores: [
+    { name: "Miroslav Klose", flag: "🇩🇪", goals: 5 },
+    { name: "Hernán Crespo", flag: "🇦🇷", goals: 3 },
+    { name: "Ronaldo", flag: "🇧🇷", goals: 3 },
+    { name: "Zinedine Zidane", flag: "🇫🇷", goals: 3 }
+  ],
+  records: [
+    { cat: "Cuarto Título", val: "🇮🇹", desc: "Italia ganó su cuarta Copa del Mundo igualando a Alemania." },
+    { cat: "Máximo Goleador Histórico", val: "15 goles", desc: "Ronaldo superó a Gerd Müller como máximo goleador histórico (luego superado en 2014)." }
+  ],
+  datos_curiosos: [
+    "La final terminó 1-1 y se definió por penales (Italia 5-3 Francia).",
+    "Zidane fue expulsado en la final por un cabezazo a Materazzi.",
+    "Fue el último Mundial de Zidane, que aun así ganó el Balón de Oro del torneo.",
+    "Alemania, como anfitrión, logró el tercer puesto con gran rendimiento ofensivo."
+  ],
+  videos: [
+    { title: "Final Italia vs Francia 2006", url: "https://youtu.be/a7O9cd-QMBg?si=Rwc2RvXktzOXBxot", description: "Resumen de la final y definición por penales." }
+  ]
+},
   {
     año: 2010,
     sede: "Sudáfrica",
@@ -436,7 +463,7 @@ const ediciones = [
       "El Pulpo Paul se hizo famoso al predecir correctamente 8 partidos."
     ],
     videos: [
-      { title: "El gol de Iniesta", url: "https://www.youtube.com/watch?v=0tS6nU_t870", description: "El histórico gol que le dio el mundial a España." }
+      { title: "El gol de Iniesta", url: "https://youtu.be/6-EqlQMPmDI?si=55qbiaP4MvB2zQil", description: "El histórico gol que le dio el mundial a España." }
     ]
   },
   {
@@ -460,7 +487,7 @@ const ediciones = [
       "Alemania fue la primera selección europea en ganar un mundial en América."
     ],
     videos: [
-      { title: "El Mineirazo 7-1", url: "https://www.youtube.com/watch?v=wX-y0vF0lKk", description: "Resumen de la histórica goleada." }
+      { title: "El Mineirazo 7-1", url: "https://youtu.be/n2yqljP8J6s?si=ndJ7R3tcUHRtMREB", description: "Resumen de la histórica goleada." }
     ]
   },
   {
@@ -484,7 +511,7 @@ const ediciones = [
       "Mbappé, con 19 años, se convirtió en el adolescente más joven en marcar en una final desde Pelé."
     ],
     videos: [
-      { title: "Francia Campeón 2018", url: "https://www.youtube.com/watch?v=1DkKkS7_d0M", description: "Los mejores momentos de Francia en Rusia." }
+      { title: "Francia Campeón 2018", url: "https://youtu.be/hqFD2MXDaiU?si=nhUE5d2g7X1xDoj9", description: "Los mejores momentos de Francia en Rusia." }
     ]
   },
   {
@@ -510,7 +537,7 @@ const ediciones = [
       "Mbappé marcó un hat-trick en la final, algo que no pasaba desde 1966."
     ],
     videos: [
-      { title: "La Final Más Épica: ARG vs FRA", url: "https://youtu.be/DDWYR9Oi_wI?si=NmWalgJNWpgLUbFK", description: "Resumen de la dramática final definida en penales." }
+      { title: "La Final Más Épica: ARG vs FRA", url: "https://youtu.be/DDWYR9Oi_wI?si=ISCJxucPFWsxyMg8", description: "Resumen de la dramática final definida en penales." }
     ]
   }
 ];

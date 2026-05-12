@@ -177,13 +177,30 @@
 
   <!-- ══ PANEL: TARJETAS ══ -->
   <div id="panel-cards" class="panel">
-    <p class="section-label">Disciplina — Tarjetas por jugador</p>
-    <div class="cd-tbl">
-      <div class="cd-hdr">
-        <span>#</span><span></span><span>JUGADOR</span>
-        <span>EQUIPO</span><span style="text-align:center">🟨 AMARILLAS</span><span style="text-align:center">🟥 ROJAS</span>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+      
+      <!-- Panel: Amarillas -->
+      <div>
+        <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
+        <div class="cd-tbl">
+          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+          </div>
+          <div id="cardsBodyYellow"></div>
+        </div>
       </div>
-      <div id="cardsBody"></div>
+
+      <!-- Panel: Rojas -->
+      <div>
+        <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
+        <div class="cd-tbl">
+          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+          </div>
+          <div id="cardsBodyRed"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
