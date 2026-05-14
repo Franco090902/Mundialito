@@ -516,27 +516,134 @@ app.get('/api/fixture', async (req, res) => {
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/fixture/:id', async (req, res) => {
     try {
-        const { data } = await footballData.get(`/matches/${req.params.id}`);
-        const p = data;
+        const partidoId = req.params.id;
+        
+        // Determinar si es UUID o un ID entero (id_football_data)
+        const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partidoId);
+        
+        // 1. Obtener de Supabase
+        const { data: dbMatch, error } = await supabase
+            .from('partidos')
+            .select('*')
+            .eq(esUUID ? 'id' : 'id_football_data', partidoId)
+            .maybeSingle();
+
+        if (error || !dbMatch) {
+            return res.status(404).json({ error: 'Partido no encontrado en BD' });
+        }
+
+        let footballDataMatch = null;
+        // 2. Si tenemos el id_football_data, traemos detalles extra (goles, arbitro)
+        if (dbMatch.id_football_data) {
+            try {
+                const { data } = await footballData.get(`/matches/${dbMatch.id_football_data}`);
+                footballDataMatch = data;
+            } catch (err) {
+                console.warn('No se pudo traer detalles de football-data para partido', dbMatch.id_football_data);
+            }
+        }
+
+        // 3. FALLBACK: Si no hay estadísticas, buscamos en API-Football on-demand
+        if (Object.keys(dbMatch.estadisticas || {}).length === 0) {
+            console.log(`Buscando estadísticas históricas para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante} en API-Football...`);
+            const normalize = s => s ? s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') : '';
+            
+            try {
+                // Como las fechas en la BD están adelantadas a 2026 para simular, buscamos por temporada real
+                const currentSeason = process.env.TEST_MODE === 'true' ? 2024 : 2026;
+                const LIVE_LEAGUE_ID = process.env.TEST_MODE === 'true' ? 13 : 1;
+                
+                const { data: afData } = await apiFootball.get('/fixtures', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } });
+                const fixtures = afData.response || [];
+                
+                // Buscar coincidencia por nombres de ambos equipos
+                const eqLocal = normalize(dbMatch.equipo_local);
+                const eqVis = normalize(dbMatch.equipo_visitante);
+                
+                const fixtureSummary = fixtures.find(f => {
+                    const home = normalize(f.teams.home.name);
+                    const away = normalize(f.teams.away.name);
+                    return (home.includes(eqLocal) && away.includes(eqVis)) ||
+                           (home.includes(eqVis) && away.includes(eqLocal));
+                });
+
+                if (fixtureSummary) {
+                    // Para obtener estadísticas y eventos, necesitamos consultar el ID específico
+                    const { data: detailData } = await apiFootball.get('/fixtures', { params: { id: fixtureSummary.fixture.id } });
+                    const fixture = detailData.response?.[0];
+
+                    if (fixture) {
+                        const statsHome = fixture.statistics?.[0]?.statistics || [];
+                        const statsAway = fixture.statistics?.[1]?.statistics || [];
+
+                        const getStat = (arr, type) => {
+                            const s = arr.find(x => x.type === type);
+                            return s ? (parseInt(s.value) || 0) : 0;
+                        };
+
+                        const estadisticas = {
+                            posesion_local:      getStat(statsHome, 'Ball Possession'),
+                            posesion_visitante:  getStat(statsAway, 'Ball Possession'),
+                            tiros_local:         getStat(statsHome, 'Total Shots'),
+                            tiros_visitante:     getStat(statsAway, 'Total Shots'),
+                            tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
+                            tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
+                            corners_local:       getStat(statsHome, 'Corner Kicks'),
+                            corners_visitante:   getStat(statsAway, 'Corner Kicks'),
+                            faltas_local:        getStat(statsHome, 'Fouls'),
+                            faltas_visitante:    getStat(statsAway, 'Fouls'),
+                            amarillas_local:     getStat(statsHome, 'Yellow Cards'),
+                            amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
+                        };
+                        
+                        dbMatch.estadisticas = estadisticas;
+
+                        // Si no tenemos los goles por football-data, los sacamos de los eventos de API-Football
+                        if (fixture.events && fixture.events.length > 0) {
+                            const golesEventos = fixture.events.filter(e => e.type === 'Goal');
+                            if (golesEventos.length > 0 && (!footballDataMatch?.goals || footballDataMatch.goals.length === 0)) {
+                                footballDataMatch = footballDataMatch || {};
+                                footballDataMatch.goals = golesEventos.map(e => ({
+                                    minute: e.time.elapsed,
+                                    scorer: { name: e.player.name },
+                                    team: { name: e.team.name }
+                                }));
+                            }
+                        }
+
+                        // Guardar en la DB para futuras consultas (persistencia)
+                        await supabase.from('partidos').update({
+                            estadisticas,
+                            id_api_football: fixture.fixture.id
+                        }).eq('id', dbMatch.id);
+                        console.log('✅ Estadísticas guardadas correctamente.');
+                    }
+                } else {
+                    console.warn(`⚠️ No se encontró el partido en API-Football: ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}`);
+                }
+            } catch (err) {
+                console.warn('⚠️ Fallback a API-Football falló:', err.message);
+            }
+        }
+
         res.json({
-            id: p.id,
-            grupo: p.group || null,
-            fase: p.stage || '',
-            jornada: p.matchday,
-            fecha_utc: p.utcDate,
-            equipo_local: p.homeTeam?.name || 'Por definir',
-            equipo_local_short: p.homeTeam?.shortName || p.homeTeam?.tla || '',
-            equipo_visitante: p.awayTeam?.name || 'Por definir',
-            equipo_visitante_short: p.awayTeam?.shortName || p.awayTeam?.tla || '',
-            escudo_local: p.homeTeam?.crest || null,
-            escudo_visitante: p.awayTeam?.crest || null,
-            goles_local: p.score?.fullTime?.home,
-            goles_visitante: p.score?.fullTime?.away,
-            estado: mapearEstado(p.status),
-            estadio: p.venue || null,
-            arbitro: p.referees?.map(r => r.name).join(', ') || null,
-            competicion: p.competition?.name || '',
-            goles_detalle: p.goals || [],
+            id: dbMatch.id,
+            grupo: dbMatch.fase,
+            fase: dbMatch.fase,
+            fecha_utc: dbMatch.fecha_utc,
+            equipo_local: dbMatch.equipo_local,
+            equipo_visitante: dbMatch.equipo_visitante,
+            escudo_local: dbMatch.escudo_local,
+            escudo_visitante: dbMatch.escudo_visitante,
+            goles_local: dbMatch.goles_local,
+            goles_visitante: dbMatch.goles_visitante,
+            estado: dbMatch.estado,
+            minuto: dbMatch.minuto,
+            estadisticas: dbMatch.estadisticas || {},
+            estadio: footballDataMatch?.venue || null,
+            arbitro: footballDataMatch?.referees?.map(r => r.name).join(', ') || null,
+            competicion: footballDataMatch?.competition?.name || 'Mundial 2026',
+            goles_detalle: footballDataMatch?.goals || [],
         });
     } catch (err) {
         console.error('Error /api/fixture/:id:', err.message);

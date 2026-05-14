@@ -804,24 +804,70 @@ window.abrirDetallePartido = async function(matchId) {
         ${p.fase ? `<div class="md-info-item"><span class="md-info-icon">📋</span><span>Fase: ${p.fase.replace(/_/g,' ')}</span></div>` : ''}
       </div>`;
 
-    let golesHtml = '';
+    let golesHtml = `
+      <div style="margin-top:20px; padding: 15px; background: var(--navy1); border-radius: 8px; border: 1px solid var(--border2);">
+        <h4 style="margin: 0 0 10px 0; color: var(--text1); font-size: 15px; text-align: center;">⚽ Goles</h4>
+        <div style="display:flex; flex-direction:column; gap:8px;">`;
+
     if (p.goles_detalle && p.goles_detalle.length > 0) {
-      golesHtml = `
-        <div style="margin-top:20px; padding: 15px; background: var(--navy1); border-radius: 8px; border: 1px solid var(--border2);">
-          <h4 style="margin: 0 0 10px 0; color: var(--text1); font-size: 15px; text-align: center;">⚽ Goles</h4>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            ${p.goles_detalle.map(g => {
-              return `<div style="display:flex; justify-content: space-between; font-size: 14px;">
-                <span style="color: var(--text2)">${g.minute}'</span>
-                <span style="color: var(--gold); font-weight: bold;">${g.scorer?.name || 'Desconocido'}</span>
-                <span style="color: var(--text3); font-size: 12px;">(${g.team?.name || ''})</span>
-              </div>`;
-            }).join('')}
-          </div>
+      golesHtml += p.goles_detalle.map(g => {
+        return `<div style="display:flex; justify-content: space-between; font-size: 14px;">
+          <span style="color: var(--text2)">${g.minute}'</span>
+          <span style="color: var(--gold); font-weight: bold;">${g.scorer?.name || 'Desconocido'}</span>
+          <span style="color: var(--text3); font-size: 12px;">(${g.team?.name || ''})</span>
         </div>`;
+      }).join('');
+    } else {
+      golesHtml += `<div style="text-align:center; color: var(--text4); font-size: 13px;">No hay detalles de goles disponibles.</div>`;
     }
+    golesHtml += `</div></div>`;
 
     content.innerHTML += golesHtml;
+
+    const st = p.estadisticas || {};
+    const statsHtml = `
+      <div style="margin-top:20px; padding: 15px; background: var(--navy1); border-radius: 8px; border: 1px solid var(--border2);">
+        <h4 style="margin: 0 0 15px 0; color: var(--text1); font-size: 15px; text-align: center;">📊 Estadísticas</h4>
+        
+        <div style="display:flex; flex-direction:column; gap:12px; font-size: 14px;">
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; color: var(--gold); font-weight: bold;">${st.posesion_local ?? 0}%</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Posesión</span>
+            <span style="width: 30px; text-align: left; color: var(--gold); font-weight: bold;">${st.posesion_visitante ?? 0}%</span>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; font-weight: bold;">${st.tiros_local ?? 0}</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Tiros Totales</span>
+            <span style="width: 30px; text-align: left; font-weight: bold;">${st.tiros_visitante ?? 0}</span>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; font-weight: bold;">${st.tiros_al_arco_local ?? 0}</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Tiros al Arco</span>
+            <span style="width: 30px; text-align: left; font-weight: bold;">${st.tiros_al_arco_visit ?? 0}</span>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; font-weight: bold;">${st.corners_local ?? 0}</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Córners</span>
+            <span style="width: 30px; text-align: left; font-weight: bold;">${st.corners_visitante ?? 0}</span>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; font-weight: bold;">${st.faltas_local ?? 0}</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Faltas</span>
+            <span style="width: 30px; text-align: left; font-weight: bold;">${st.faltas_visitante ?? 0}</span>
+          </div>
+          
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <span style="width: 30px; text-align: right; color: #ffcc00; font-weight: bold;">${st.amarillas_local ?? 0} 🟨</span>
+            <span style="color: var(--text3); font-size: 12px; text-transform: uppercase;">Tarjetas Amarillas</span>
+            <span style="width: 30px; text-align: left; color: #ffcc00; font-weight: bold;">🟨 ${st.amarillas_visitante ?? 0}</span>
+          </div>
+        </div>
+      </div>`;
+    content.innerHTML += statsHtml;
 
     content.innerHTML += `
       <div style="margin-top:25px;">
