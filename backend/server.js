@@ -361,6 +361,9 @@ async function actualizarTarjetas() {
 
     const rows = Array.from(cardsMap.values());
     
+    // Limpiar tabla antes de insertar para no mezclar datos de Libertadores con el Mundial
+    await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
+    
     if (rows.length > 0) {
       const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
@@ -1204,9 +1207,43 @@ app.get('/api/productos', async (req, res) => {
             .select('*')
             .eq('activo', true);
 
+        // Diccionario de traducción para los equipos que vienen en inglés desde la API de fixtures
+        let searchTerm = pais;
+        if (pais) {
+            const mapNombres = {
+                'brazil': 'brasil', 'germany': 'alemania', 'france': 'francia',
+                'spain': 'españa', 'england': 'inglaterra', 'netherlands': 'países bajos',
+                'italy': 'italia', 'japan': 'japón', 'morocco': 'marruecos',
+                'croatia': 'croacia', 'belgium': 'bélgica', 'switzerland': 'suiza',
+                'united states': 'estados unidos', 'usa': 'estados unidos',
+                'scotland': 'escocia', 'wales': 'gales', 'ireland': 'irlanda',
+                'sweden': 'suecia', 'denmark': 'dinamarca', 'norway': 'noruega',
+                'finland': 'finlandia', 'poland': 'polonia', 'portugal': 'portugal',
+                'russia': 'rusia', 'ukraine': 'ucrania', 'turkey': 'turquía',
+                'greece': 'grecia', 'serbia': 'serbia', 'romania': 'rumania',
+                'hungary': 'hungría', 'austria': 'austria', 'czech republic': 'república checa',
+                'argentina': 'argentina', 'colombia': 'colombia', 'uruguay': 'uruguay',
+                'chile': 'chile', 'peru': 'perú', 'ecuador': 'ecuador',
+                'paraguay': 'paraguay', 'venezuela': 'venezuela', 'bolivia': 'bolivia',
+                'mexico': 'méxico', 'canada': 'canadá', 'costa rica': 'costa rica',
+                'senegal': 'senegal', 'cameroon': 'camerún', 'ghana': 'ghana',
+                'nigeria': 'nigeria', 'egypt': 'egipto', 'algeria': 'argelia',
+                'ivory coast': 'costa de marfil', 'tunisia': 'túnez', 'south korea': 'corea del sur',
+                'australia': 'australia', 'iran': 'irán', 'saudi arabia': 'arabia saudita'
+            };
+            const normalize = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            const normalizedPais = normalize(pais);
+            
+            // Buscar si hay traducción, sino usar el original
+            const translated = Object.keys(mapNombres).find(k => normalize(k) === normalizedPais);
+            if (translated) {
+                searchTerm = mapNombres[translated];
+            }
+        }
+
         // Filtrar por país/selección si se especifica
-        if (pais && pais !== '' && pais !== 'Todos') {
-            query = query.eq('categoria_relacionada', pais);
+        if (searchTerm && searchTerm !== '' && searchTerm !== 'Todos') {
+            query = query.ilike('categoria_relacionada', `%${searchTerm}%`);
         }
 
         const { data, error } = await query;
@@ -1229,6 +1266,84 @@ app.get('/api/historia', async (req, res) => {
     res.status(500).json({ error: "Error obteniendo la historia" });
   }
 });
+
+// ══════════════════════════════════════════════════════════════════
+// 4. ENDPOINT PERFIL DE EQUIPO (Promiedos Style)
+// ══════════════════════════════════════════════════════════════════
+const equipoCache = {};
+const EQUIPO_CACHE_TTL = 60 * 60 * 1000; // 1 hora
+
+app.get('/api/equipo/:nombre', async (req, res) => {
+    let { nombre } = req.params;
+    nombre = nombre.trim();
+    
+    // Verificar caché
+    const cacheKey = nombre.toLowerCase();
+    if (equipoCache[cacheKey] && (Date.now() - equipoCache[cacheKey].ts < EQUIPO_CACHE_TTL)) {
+        console.log(`   📦 Sirviendo perfil de ${nombre} desde caché`);
+        return res.json(equipoCache[cacheKey].data);
+    }
+    
+    try {
+        console.log(`\n🔍 [EQUIPO] Buscando información para: ${nombre}`);
+        
+        // 1. Mapeo a inglés si es necesario para api-football
+        const mapNombresEn = {
+            'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
+            'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
+            'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
+            'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
+            'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
+            'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
+            'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
+            'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
+            'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
+            'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
+            'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
+            'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
+            'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
+        };
+        const searchName = mapNombresEn[nombre.toLowerCase()] || nombre;
+        
+        // 2. Buscar ID del equipo
+        const { data: teamData } = await apiFootball.get('/teams', { params: { search: searchName } });
+        
+        if (!teamData.response || teamData.response.length === 0) {
+            return res.status(404).json({ error: 'Equipo no encontrado en API' });
+        }
+        
+        // Tomamos el primer resultado que sea selección nacional (o el primero)
+        const teamInfo = teamData.response.find(t => t.team.national === true) || teamData.response[0];
+        const teamId = teamInfo.team.id;
+        
+        console.log(`   ✅ Equipo encontrado: ${teamInfo.team.name} (ID: ${teamId})`);
+        
+        // 3. Consultas en paralelo (Próximos, Últimos, Plantel)
+        const [nextRes, lastRes, squadRes] = await Promise.all([
+            apiFootball.get('/fixtures', { params: { team: teamId, next: 5 } }).catch(() => ({ data: { response: [] } })),
+            apiFootball.get('/fixtures', { params: { team: teamId, last: 5 } }).catch(() => ({ data: { response: [] } })),
+            apiFootball.get('/players/squads', { params: { team: teamId } }).catch(() => ({ data: { response: [] } }))
+        ]);
+        
+        const responseData = {
+            info: teamInfo.team,
+            venue: teamInfo.venue,
+            next_matches: nextRes.data.response || [],
+            last_matches: lastRes.data.response || [],
+            squad: squadRes.data.response[0]?.players || []
+        };
+        
+        // Guardar en caché
+        equipoCache[cacheKey] = { data: responseData, ts: Date.now() };
+        
+        res.json(responseData);
+        
+    } catch (error) {
+        console.error('❌ Error obteniendo perfil de equipo:', error.message);
+        res.status(500).json({ error: 'Error interno obteniendo datos del equipo' });
+    }
+});
+
 
 // ══════════════════════════════════════════════════════════════════
 // MIDDLEWARE DE ERRORES (Express 5 — atrapa errores de rutas async)

@@ -111,7 +111,6 @@
     <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
     <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
     <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
-    <button class="tab-btn" onclick="switchTab('guide',this)">📖 Guía de Código</button>
   </div>
 
   <!-- ══ PANEL: EN VIVO ══ -->
@@ -374,247 +373,19 @@
 
   </div>
 </div>
-  <!-- ══ PANEL: GUÍA DE CÓDIGO ══ -->
-  <div id="panel-guide" class="panel">
-    <div class="guide-grid">
-
-      <!-- Índice sticky -->
-      <div class="guide-index">
-        <div class="guide-index-title">Contenido</div>
-        <a href="#g1">1. Estructura general</a>
-        <a href="#g2">2. Variables CSS (:root)</a>
-        <a href="#g3">3. Datos en JavaScript</a>
-        <a href="#g4">4. Sistema de tabs</a>
-        <a href="#g5">5. Render dinámico</a>
-        <a href="#g6">6. Ticker animado</a>
-        <a href="#g7">7. Tiempo real (minutos)</a>
-        <a href="#g8">8. Siguiente paso: APIs</a>
-      </div>
-
-      <!-- Secciones de guía -->
-      <div>
-
-        <div class="guide-section" id="g1">
-          <div class="guide-section-num">1</div>
-          <div class="guide-section-title">Estructura general del archivo</div>
-          <p class="guide-text">
-            Todo el proyecto vive en <strong>un solo archivo .html</strong>. Esto es ideal para una maqueta. El archivo tiene tres bloques grandes:
-          </p>
-          <div class="arch-diagram">
-            <div class="arch-row">
-              <div class="arch-box" style="background:#e34c2622;border:1px solid #e34c2644;color:#e34c26;width:120px">&lt;head&gt;</div>
-              <span class="arch-arrow">→</span>
-              <span style="font-size:13px;color:var(--text3)">Metadata, fuentes, y todo el <strong style="color:var(--text2)">CSS</strong> dentro de &lt;style&gt;</span>
-            </div>
-            <div class="arch-row">
-              <div class="arch-box" style="background:#e34c2622;border:1px solid #e34c2644;color:#e34c26;width:120px">&lt;body&gt;</div>
-              <span class="arch-arrow">→</span>
-              <span style="font-size:13px;color:var(--text3)">Todo el <strong style="color:var(--text2)">HTML visible</strong>: header, ticker, tabs, paneles, footer</span>
-            </div>
-            <div class="arch-row">
-              <div class="arch-box" style="background:#f7df1e22;border:1px solid #f7df1e44;color:#f7df1e;width:120px">&lt;script&gt;</div>
-              <span class="arch-arrow">→</span>
-              <span style="font-size:13px;color:var(--text3)">Los <strong style="color:var(--text2)">datos y funciones JS</strong> que construyen la UI dinámicamente</span>
-            </div>
-          </div>
-          <p class="guide-text">
-            Cuando el proyecto crezca, vas a <strong>separar</strong> esto en archivos distintos: <code style="color:var(--gold);font-size:12px">index.html</code>, <code style="color:var(--gold);font-size:12px">style.css</code> y <code style="color:var(--gold);font-size:12px">app.js</code>.
-          </p>
-        </div>
-
-        <div class="guide-section" id="g2">
-          <div class="guide-section-num">2</div>
-          <div class="guide-section-title">Variables CSS con :root</div>
-          <p class="guide-text">
-            Al inicio del CSS hay un bloque <span class="guide-badge badge-css">:root</span> con todas las variables de color y tipografía. Esto es lo que define la <strong>paleta del Mundial 2026</strong>. Si querés cambiar un color en toda la app, lo cambiás en un solo lugar.
-          </p>
-          <div class="code-block"><span class="cmt">/* Así se declaran las variables */</span>
-<span class="kw">:root</span> {
-  <span class="str">--navy</span>:  #0A2A4A;  <span class="cmt">/* azul marino principal */</span>
-  <span class="str">--red</span>:   #00AA55;  <span class="cmt">/* verde esmeralda */</span>
-  <span class="str">--gold</span>:  #FFD700;  <span class="cmt">/* dorado para rankings */</span>
-  <span class="str">--white</span>: #FFFFFF;
-}
-
-<span class="cmt">/* Así se usan en cualquier selector */</span>
-<span class="fn">.tab-btn.active</span> {
-  <span class="str">color</span>: <span class="fn">var</span>(--white);
-  <span class="str">border-bottom-color</span>: <span class="fn">var</span>(--red);
-}</div>
-          <p class="guide-text">
-            <strong>Ventaja enorme:</strong> si mañana querés probar con los colores de otro mundial, sólo editás las variables y toda la app cambia instantáneamente.
-          </p>
-        </div>
-
-        <div class="guide-section" id="g3">
-          <div class="guide-section-num">3</div>
-          <div class="guide-section-title">Los datos en JavaScript</div>
-          <p class="guide-text">
-            Los datos de los partidos, goleadores y tarjetas están guardados como <strong>objetos y arreglos de JavaScript</strong>. Esto simula lo que en el proyecto real vendría de una API REST.
-          </p>
-          <div class="code-block"><span class="cmt">/* Un grupo es un objeto con dos propiedades */</span>
-<span class="kw">const</span> GROUPS = {
-  <span class="str">A</span>: {
-    teams: [<span class="str">"Qatar"</span>, <span class="str">"Ecuador"</span>, ...],
-    matches: [
-      { home: <span class="str">"Qatar"</span>, away: <span class="str">"Ecuador"</span>, hs: <span class="num">0</span>, as: <span class="num">2</span>, date: <span class="str">"20 Nov"</span> },
-      <span class="cmt">// hs = home score, as = away score</span>
-    ]
-  }
-};
-
-<span class="cmt">/* Un goleador es un objeto simple */</span>
-<span class="kw">const</span> SCORERS = [
-  { name: <span class="str">"Kylian Mbappé"</span>, team: <span class="str">"Francia"</span>, goals: <span class="num">8</span>, assists: <span class="num">2</span>, flag: <span class="str">"🇫🇷"</span> }
-];</div>
-          <p class="guide-text">
-            Cuando conectes la API real, vas a reemplazar estos arreglos con datos que vienen de <code style="color:var(--gold);font-size:12px">fetch()</code>. La estructura de la UI no cambia.
-          </p>
-        </div>
-
-        <div class="guide-section" id="g4">
-          <div class="guide-section-num">4</div>
-          <div class="guide-section-title">El sistema de tabs (pestañas)</div>
-          <p class="guide-text">
-            El sistema de navegación usa una función simple: <strong>oculta todos los paneles</strong> y muestra solo el seleccionado. Cada botón tiene un atributo <span class="guide-badge badge-html">onclick</span> que llama a la función con el id del panel.
-          </p>
-          <div class="code-block"><span class="cmt">/* HTML: cada botón pasa su id y referencia a sí mismo */</span>
-&lt;<span class="kw">button</span> <span class="str">onclick</span>=<span class="fn">"switchTab('live', this)"</span>&gt;En Vivo&lt;/button&gt;
-
-<span class="cmt">/* JS: la función gestiona clases CSS para mostrar/ocultar */</span>
-<span class="kw">function</span> <span class="fn">switchTab</span>(id, btn) {
-  <span class="cmt">// 1. Quita 'active' de todos los paneles y botones</span>
-  document.<span class="fn">querySelectorAll</span>(<span class="str">'.panel'</span>).<span class="fn">forEach</span>(p => p.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
-  document.<span class="fn">querySelectorAll</span>(<span class="str">'.tab-btn'</span>).<span class="fn">forEach</span>(b => b.classList.<span class="fn">remove</span>(<span class="str">'active'</span>));
-  <span class="cmt">// 2. Agrega 'active' solo al seleccionado</span>
-  document.<span class="fn">getElementById</span>(<span class="str">'panel-'</span> + id).classList.<span class="fn">add</span>(<span class="str">'active'</span>);
-  btn.classList.<span class="fn">add</span>(<span class="str">'active'</span>);
-}</div>
-          <p class="guide-text">
-            En el CSS, <code style="color:var(--gold);font-size:12px">.panel</code> tiene <code style="color:var(--gold);font-size:12px">display: none</code> y <code style="color:var(--gold);font-size:12px">.panel.active</code> tiene <code style="color:var(--gold);font-size:12px">display: block</code>. Todo el sistema de navegación es solo eso.
-          </p>
-        </div>
-
-        <div class="guide-section" id="g5">
-          <div class="guide-section-num">5</div>
-          <div class="guide-section-title">Render dinámico con innerHTML</div>
-          <p class="guide-text">
-            En lugar de escribir el HTML de cada partido a mano, usamos <strong>template literals de JavaScript</strong> para generarlo desde los datos. La función <code style="color:var(--gold);font-size:12px">renderGroups()</code> toma el objeto de datos y construye el HTML como un string.
-          </p>
-          <div class="code-block"><span class="kw">function</span> <span class="fn">renderGroups</span>(key) {
-  <span class="kw">const</span> gData = GROUPS[key];
-
-  <span class="cmt">// Genera HTML para cada partido usando .map()</span>
-  <span class="kw">const</span> matchesHtml = gData.matches.<span class="fn">map</span>(m => <span class="str">`
-    &lt;div class="gmatch"&gt;
-      &lt;span&gt;${m.date}&lt;/span&gt;
-      &lt;span&gt;${m.home}&lt;/span&gt;
-      &lt;span&gt;${m.hs} — ${m.as}&lt;/span&gt;
-      &lt;span&gt;${m.away}&lt;/span&gt;
-    &lt;/div&gt;
-  `</span>).<span class="fn">join</span>(<span class="str">''</span>);
-
-  <span class="cmt">// Lo inyecta en el div correspondiente</span>
-  document.<span class="fn">getElementById</span>(<span class="str">'grpContent'</span>).innerHTML = matchesHtml;
-}</div>
-          <p class="guide-text">
-            Este patrón es el corazón de las apps web modernas. Frameworks como <strong>React o Vue</strong> hacen exactamente esto pero con más optimización. Acá lo hacés a mano para entender el concepto base.
-          </p>
-        </div>
-
-        <div class="guide-section" id="g6">
-          <div class="guide-section-num">6</div>
-          <div class="guide-section-title">El ticker (banda animada)</div>
-          <p class="guide-text">
-            El ticker de resultados en la parte superior usa solo <span class="guide-badge badge-css">CSS animation</span>. El truco es <strong>duplicar el contenido</strong> para que el loop sea infinito y sin saltos.
-          </p>
-          <div class="code-block"><span class="cmt">/* CSS: mueve el contenedor hacia la izquierda indefinidamente */</span>
-<span class="fn">@keyframes</span> ticker {
-  <span class="num">0%</span>   { <span class="str">transform</span>: <span class="fn">translateX</span>(0); }
-  <span class="num">100%</span> { <span class="str">transform</span>: <span class="fn">translateX</span>(-50%); }
-<span class="cmt">/* ↑ -50% porque el contenido está duplicado */</span>
-}
-<span class="fn">.ticker-track</span> { <span class="str">animation</span>: ticker 28s linear infinite; }
-
-<span class="cmt">/* JS: duplica el HTML para el loop perfecto */</span>
-<span class="kw">function</span> <span class="fn">buildTicker</span>() {
-  <span class="kw">const</span> html = items.<span class="fn">join</span>(<span class="str">''</span>);
-  track.innerHTML = html + html; <span class="cmt">// duplicado = loop sin salto</span>
-}</div>
-        </div>
-
-        <div class="guide-section" id="g7">
-          <div class="guide-section-num">7</div>
-          <div class="guide-section-title">Simulación de tiempo real (minutos)</div>
-          <p class="guide-text">
-            La app simula los minutos que avanzan en los partidos en vivo usando <code style="color:var(--gold);font-size:12px">setInterval()</code>. En el proyecto real, este dato vendría del <strong>WebSocket</strong>, no de un intervalo local.
-          </p>
-          <div class="code-block"><span class="cmt">/* Cada 5 segundos, incrementa el minuto y actualiza el DOM */</span>
-<span class="kw">const</span> liveData = [
-  { minEl: <span class="str">'live1-min'</span>, min: <span class="num">67</span>, max: <span class="num">90</span> },
-  { minEl: <span class="str">'live2-min'</span>, min: <span class="num">23</span>, max: <span class="num">90</span> },
-];
-
-<span class="fn">setInterval</span>(() => {
-  liveData.<span class="fn">forEach</span>(d => {
-    <span class="kw">if</span> (d.min < d.max) d.min++;
-    document.<span class="fn">getElementById</span>(d.minEl).textContent = d.min + <span class="str">"'"</span>;
-  });
-}, <span class="num">5000</span>); <span class="cmt">// cada 5000ms = 5 segundos</span>
-
-<span class="cmt">/* En producción con WebSocket sería así: */</span>
-<span class="cmt">// socket.on('match-update', (data) => {</span>
-<span class="cmt">//   document.getElementById('live1-min').textContent = data.minute + "'";</span>
-<span class="cmt">// });</span></div>
-        </div>
-
-        <div class="guide-section" id="g8">
-          <div class="guide-section-num">8</div>
-          <div class="guide-section-title">Siguiente paso: conectar a una API real</div>
-          <p class="guide-text">
-            Para pasar de maqueta a app real, hay <strong>tres cambios principales</strong>:
-          </p>
-          <div class="record-item" style="margin-bottom:10px">
-            <div class="record-cat">PASO 1 — API REST</div>
-            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Reemplazar datos hardcodeados</div>
-            <div class="record-desc">Cambiar los arreglos GROUPS, SCORERS, etc. por llamadas a <code style="color:var(--gold)">fetch('https://api-football.com/...')</code> y poblar el DOM con la respuesta.</div>
-          </div>
-          <div class="record-item" style="margin-bottom:10px">
-            <div class="record-cat">PASO 2 — WEBSOCKET</div>
-            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Conectar socket.io para tiempo real</div>
-            <div class="record-desc">Agregar <code style="color:var(--gold)">const socket = io('tu-servidor')</code> y escuchar eventos como <code style="color:var(--gold)">'match-update'</code> para actualizar scores y minutos sin recargar la página.</div>
-          </div>
-          <div class="record-item">
-            <div class="record-cat">PASO 3 — BACKEND</div>
-            <div class="record-val" style="font-size:16px;font-family:var(--font-ui)">Servidor Node.js + Express</div>
-            <div class="record-desc">El backend consulta la API de fútbol cada 30 segundos y emite los datos actualizados a todos los clientes conectados por WebSocket. Actúa como intermediario.</div>
-          </div>
-          <div class="arch-diagram" style="margin-top:16px">
-            <div class="arch-row">
-              <div class="arch-box" style="background:#6699ff22;border:1px solid #6699ff44;color:#6699ff">API Football</div>
-              <span class="arch-arrow">→</span>
-              <div class="arch-box" style="background:#ff996622;border:1px solid #ff996644;color:#ff9966">Node.js Backend</div>
-              <span class="arch-arrow">→</span>
-              <div class="arch-box" style="background:#44cc8822;border:1px solid #44cc8844;color:#44cc88">WebSocket</div>
-              <span class="arch-arrow">→</span>
-              <div class="arch-box" style="background:#00AA5522;border:1px solid #00AA5544;color:#00DD77">Este HTML</div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /guide sections -->
-    </div><!-- /guide-grid -->
+  <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
   </div>
 
 </div><!-- /main -->
 
 <!-- FOOTER -->
-<footer>
-  <span class="footer-brand">TODO FÚTBOL · 2026</span>
-  <div class="footer-info">
-    <span class="footer-tag">⚡ API EN TIEMPO REAL</span>
-    <span class="footer-tag">🔌 WEBSOCKET ACTIVO</span>
-    <span class="footer-tag pulse" style="color:var(--red)">● CONECTADO</span>
+<footer style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); background: var(--navy); margin-top: 40px;">
+  <span class="footer-brand" style="color: var(--white); font-weight: bold; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;">Mundialito 2026 © Todos los derechos reservados.</span>
+  <div class="footer-info" style="display: flex; gap: 15px; align-items: center;">
+    <a href="#" style="color: var(--gold); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); transition: color 0.2s;" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gold)'">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @Mundialito2026
+    </a>
   </div>
 </footer>
 

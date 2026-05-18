@@ -137,7 +137,7 @@ function renderGroups(key) {
           const dg = s.gf - s.ga;
           return `<div class="tbl-row ${i<2?'qualify':''}">
             <span style="font-weight:900;color:${i<2?'var(--red)':'var(--text4)'}">${i+1}</span>
-            <span style="font-weight:700;color:var(--text2)">${team}</span>
+            <span style="font-weight:700;color:var(--text2);cursor:pointer;" onclick="abrirPerfilEquipo('${team}')" title="Ver perfil de ${team}">${team}</span>
             <span class="cc" style="color:var(--text3)">${s.p}</span>
             <span class="cc" style="color:var(--text3)">${s.w}</span>
             <span class="cc" style="color:var(--text3)">${s.d}</span>
@@ -912,6 +912,161 @@ window.abrirDetallePartido = async function(matchId) {
 
 window.cerrarDetallePartido = function() {
   document.getElementById('match-detail-modal')?.classList.remove('active');
+};
+
+// ══════════════════════════════════════
+// MODAL PERFIL DE EQUIPO
+// ══════════════════════════════════════
+window.abrirPerfilEquipo = async function(teamName) {
+  let modal = document.getElementById('team-profile-modal');
+  let content = document.getElementById('team-profile-content');
+  
+  if (!modal) {
+    // Crear el modal si no existe en el DOM
+    modal = document.createElement('div');
+    modal.id = 'team-profile-modal';
+    modal.className = 'modal-overlay';
+    modal.onclick = function(e) { if(e.target===this) window.cerrarPerfilEquipo(); };
+    
+    modal.innerHTML = `
+      <div class="modal-card" style="max-width: 800px;">
+        <button class="modal-close" onclick="window.cerrarPerfilEquipo()">✕</button>
+        <div id="team-profile-content"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    content = document.getElementById('team-profile-content');
+  }
+
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando perfil de '+teamName+'...</div>';
+  modal.classList.add('active');
+
+  try {
+    const res = await fetch(`${API_URL}/equipo/${encodeURIComponent(teamName)}`);
+    if (!res.ok) throw new Error('No se encontró el equipo');
+    const data = await res.json();
+    
+    const team = data.info;
+    const next = data.next_matches || [];
+    const last = data.last_matches || [];
+    const squad = data.squad || [];
+
+    // Próximos partidos: Extraer del fixture local (para mantener actualizaciones en vivo del Mundial)
+    const localNext = [];
+    if (window.GROUPS) {
+      Object.values(window.GROUPS).forEach(g => {
+        g.matches.forEach(m => {
+          if ((m.home === teamName || m.away === teamName) && m.estado !== 'finalizado') {
+            localNext.push(m);
+          }
+        });
+      });
+    }
+
+    const renderLocalMatch = (m) => {
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--navy3); border:1px solid var(--border); border-radius:6px; margin-bottom:8px; font-size:13px; cursor:pointer;" onclick="window.abrirDetallePartido('${m.id}')">
+          <div style="flex:1;">${m.date}</div>
+          <div style="flex:3; text-align:center; font-weight:bold;">
+            ${m.home} ${m.hs} – ${m.as} ${m.away}
+          </div>
+          <div style="flex:1; text-align:right;">
+            <span style="color:var(--gold); font-size:11px;">${m.estado === 'en_curso' ? 'EN VIVO' : 'Prog.'}</span>
+          </div>
+        </div>
+      `;
+    };
+
+    // Funciones auxiliares para renderizar partidos pasados (de la API externa)
+    const renderMatch = (m) => {
+      const isHome = m.teams.home.id === team.id;
+      const resultColor = m.fixture.status.short === 'FT' ? 
+        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '#00AA5522' : 
+        (m.teams.home.winner === false && m.teams.away.winner === false) ? '#FFD70022' : '#D5001C22' 
+        : 'var(--navy3)';
+      const resultText = m.fixture.status.short === 'FT' ? 
+        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '<span style="color:#00DD77">G</span>' : 
+        (m.teams.home.winner === false && m.teams.away.winner === false) ? '<span style="color:var(--gold)">E</span>' : '<span style="color:#ff6680">P</span>' 
+        : '-';
+
+      const date = new Date(m.fixture.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:${resultColor}; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; font-size:13px;">
+          <div style="flex:1;">${date}</div>
+          <div style="flex:3; text-align:center; font-weight:bold;">
+            ${m.teams.home.name} ${m.goals.home ?? '-'} – ${m.goals.away ?? '-'} ${m.teams.away.name}
+          </div>
+          <div style="flex:1; text-align:right;">${resultText}</div>
+        </div>
+      `;
+    };
+
+    // Agrupar plantel por posición
+    const squadByPos = { 'Goalkeeper': [], 'Defender': [], 'Midfielder': [], 'Attacker': [] };
+    squad.forEach(p => { if (squadByPos[p.position]) squadByPos[p.position].push(p); });
+
+    const renderPlayers = (players, title) => {
+      if (players.length === 0) return '';
+      return `
+        <div style="margin-bottom: 15px;">
+          <div style="font-size:12px; font-weight:bold; color:var(--text4); margin-bottom:8px; text-transform:uppercase;">${title}</div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:8px;">
+            ${players.map(p => `
+              <div style="background:var(--navy3); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; align-items:center; gap:10px;">
+                <img src="${p.photo}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--navy2);" onerror="this.style.display='none'">
+                <div>
+                  <div style="font-size:12px; color:var(--text2); font-weight:bold; line-height:1.2;">${p.name}</div>
+                  ${p.age ? `<div style="font-size:10px; color:var(--text4);">${p.age} años</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    content.innerHTML = `
+      <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+        <img src="${team.logo}" style="width:60px; height:60px; object-fit:contain;">
+        <div>
+          <h2 style="margin:0; font-size:24px; color:var(--white);">${team.name}</h2>
+          <div style="font-size:13px; color:var(--text3);">${team.country || ''}</div>
+        </div>
+      </div>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <!-- Columna Izquierda: Partidos -->
+        <div>
+          <h3 style="font-size:16px; color:var(--white); margin-bottom:15px;">Partidos Anteriores</h3>
+          ${last.length > 0 ? last.map(renderMatch).join('') : '<div style="font-size:13px; color:var(--text4);">No hay resultados recientes.</div>'}
+          
+          <h3 style="font-size:16px; color:var(--white); margin-top:25px; margin-bottom:15px;">Fixture del Mundial</h3>
+          ${localNext.length > 0 ? localNext.map(renderLocalMatch).join('') : '<div style="font-size:13px; color:var(--text4);">No hay partidos pendientes en el fixture.</div>'}
+        </div>
+        
+        <!-- Columna Derecha: Plantel -->
+        <div>
+          <h3 style="font-size:16px; color:var(--white); margin-bottom:15px;">Plantel ${squad.length > 0 ? '' : '(No confirmado)'}</h3>
+          <div style="max-height:400px; overflow-y:auto; padding-right:5px;">
+            ${squad.length > 0 ? `
+              ${renderPlayers(squadByPos['Goalkeeper'], 'Arqueros')}
+              ${renderPlayers(squadByPos['Defender'], 'Defensores')}
+              ${renderPlayers(squadByPos['Midfielder'], 'Mediocampistas')}
+              ${renderPlayers(squadByPos['Attacker'], 'Delanteros')}
+            ` : '<div style="font-size:13px; color:var(--text4); padding:20px; text-align:center; background:var(--navy3); border-radius:8px;">La lista de convocados aún no está disponible para esta selección.</div>'}
+          </div>
+        </div>
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error(error);
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">Error al cargar los datos del equipo. Por favor, intenta de nuevo más tarde.</div>';
+  }
+};
+
+window.cerrarPerfilEquipo = function() {
+  document.getElementById('team-profile-modal')?.classList.remove('active');
 };
 
 // ══════════════════════════════════════

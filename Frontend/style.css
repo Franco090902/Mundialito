@@ -908,6 +908,8 @@
   position: relative;
   animation: fadeUp .3s ease;
   box-shadow: 0 20px 60px #00000088;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .modal-close {
   position: absolute; top: 12px; right: 16px;
