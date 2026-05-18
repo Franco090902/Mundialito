@@ -46,7 +46,7 @@ const apiFootball = axios.create({
 // TEST_MODE=true  → usa Copa Libertadores (para probar en vivo)
 // TEST_MODE=false → usa FIFA World Cup 2026
 // ──────────────────────────────────────────────────────────────────
-const TEST_MODE = process.env.TEST_MODE === 'true';
+const TEST_MODE = process.env.TEST_MODE === 'false';
 
 // Football-Data.org IDs
 const WC_2026_ID = 2000;           // FIFA World Cup 2026
@@ -424,6 +424,301 @@ async function actualizarHistoria() {
 
 cron.schedule('0 3 * * *', actualizarHistoria);
 
+// ══════════════════════════════════════════════════════════════════
+// SOFASCORE — Headers y helpers compartidos
+// ══════════════════════════════════════════════════════════════════
+const SOFASCORE_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  'Accept': 'application/json',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+  'Referer': 'https://www.sofascore.com/'
+};
+
+const sofascoreNormalize = s => s ? s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') : '';
+
+function sofascoreTeamMatch(sofascoreName, dbName) {
+  const sfNorm = sofascoreNormalize(sofascoreName);
+  const dbNorm = sofascoreNormalize(dbName);
+  if (sfNorm.includes(dbNorm) || dbNorm.includes(sfNorm)) return true;
+  const dbWords = dbNorm.match(/.{4,}/g) || [dbNorm];
+  return dbWords.some(w => sfNorm.includes(w));
+}
+
+function parseSofascoreStats(statsData) {
+  const allPeriod = statsData.statistics?.find(s => s.period === 'ALL');
+  if (!allPeriod) return null;
+
+  const getGroupStat = (groupName, statName) => {
+    const group = allPeriod.groups?.find(g => g.groupName === groupName);
+    return group?.statisticsItems?.find(s => s.name === statName) || null;
+  };
+  const parsePercent = (val) => parseInt(String(val).replace('%', '')) || 0;
+  const parseNum = (val) => parseInt(val) || 0;
+
+  return {
+    posesion_local:      parsePercent(getGroupStat('Match overview', 'Ball possession')?.home),
+    posesion_visitante:  parsePercent(getGroupStat('Match overview', 'Ball possession')?.away),
+    tiros_local:         parseNum(getGroupStat('Match overview', 'Total shots')?.home),
+    tiros_visitante:     parseNum(getGroupStat('Match overview', 'Total shots')?.away),
+    tiros_al_arco_local: parseNum(getGroupStat('Shots', 'Shots on target')?.home),
+    tiros_al_arco_visit: parseNum(getGroupStat('Shots', 'Shots on target')?.away),
+    corners_local:       parseNum(getGroupStat('Match overview', 'Corner kicks')?.home),
+    corners_visitante:   parseNum(getGroupStat('Match overview', 'Corner kicks')?.away),
+    faltas_local:        parseNum(getGroupStat('Match overview', 'Fouls')?.home),
+    faltas_visitante:    parseNum(getGroupStat('Match overview', 'Fouls')?.away),
+    amarillas_local:     parseNum(getGroupStat('Match overview', 'Yellow cards')?.home),
+    amarillas_visitante: parseNum(getGroupStat('Match overview', 'Yellow cards')?.away),
+  };
+}
+
+async function fetchSofascoreGoals(matchId, localName, visName) {
+  try {
+    const { data: incData } = await axios.get(
+      `https://api.sofascore.com/api/v1/event/${matchId}/incidents`,
+      { headers: SOFASCORE_HEADERS, timeout: 10000 }
+    );
+    const goals = (incData.incidents || []).filter(i => i.incidentType === 'goal');
+    if (goals.length > 0) {
+      return goals.map(g => ({
+        minute: g.time,
+        scorer: { name: g.player?.name || 'Desconocido' },
+        team: { name: g.isHome ? localName : visName }
+      }));
+    }
+  } catch (err) {
+    console.warn(`   ⚠️ Error obteniendo incidentes para ID ${matchId}:`, err.message);
+  }
+  return null;
+}
+
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+// ══════════════════════════════════════════════════════════════════
+// BATCH: Poblar estadísticas de partidos finalizados desde Sofascore
+// Corre al inicio y cada 2 horas. Procesa con delays para no recibir 403.
+// ══════════════════════════════════════════════════════════════════
+async function poblarEstadisticasSofascore() {
+  console.log('\n📊 [SOFASCORE BATCH] Buscando partidos finalizados sin estadísticas...');
+  try {
+    // Obtener partidos finalizados sin estadísticas (o con stats vacías)
+    const { data: partidos, error } = await supabase
+      .from('partidos')
+      .select('id, equipo_local, equipo_visitante, fecha_utc, estadisticas')
+      .eq('estado', 'finalizado')
+      .order('fecha_utc', { ascending: false });
+
+    if (error) { console.error('   ❌ Error consultando partidos:', error.message); return; }
+
+    // Filtrar solo los que no tienen estadísticas o no tienen detalles de goles
+    const sinStats = partidos.filter(p => !p.estadisticas || Object.keys(p.estadisticas).length === 0 || p.estadisticas.goles_detalle === undefined);
+
+    if (sinStats.length === 0) {
+      console.log('   ✅ Todos los partidos finalizados ya tienen estadísticas.');
+      return;
+    }
+
+    console.log(`   📋 ${sinStats.length} partidos sin estadísticas. Procesando...`);
+
+    // Agrupar por fecha para reducir llamadas a scheduled-events
+    const porFecha = {};
+    sinStats.forEach(p => {
+      const fecha = new Date(p.fecha_utc).toISOString().split('T')[0];
+      if (!porFecha[fecha]) porFecha[fecha] = [];
+      porFecha[fecha].push(p);
+    });
+
+    let encontrados = 0;
+    let noEncontrados = 0;
+
+    for (const [fecha, partidosFecha] of Object.entries(porFecha)) {
+      try {
+        // Traer todos los eventos de esa fecha
+        const { data: ssData } = await axios.get(
+          `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fecha}`,
+          { headers: SOFASCORE_HEADERS, timeout: 10000 }
+        );
+        const events = ssData.events || [];
+
+        for (const partido of partidosFecha) {
+          // Buscar el partido en los eventos de Sofascore
+          const ssMatch = events.find(e => {
+            const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_local);
+            const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_visitante);
+            const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_visitante);
+            const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_local);
+            return (homeOk && awayOk) || (homeInv && awayInv);
+          });
+
+          if (!ssMatch) {
+            noEncontrados++;
+            continue;
+          }
+
+          // Delay de 2 segundos entre cada request de stats para no recibir 403
+          await delay(2000);
+
+          try {
+            const { data: statsData } = await axios.get(
+              `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+              { headers: SOFASCORE_HEADERS, timeout: 10000 }
+            );
+
+            let estadisticas = parseSofascoreStats(statsData) || {};
+            const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
+            if (goles) estadisticas.goles_detalle = goles;
+            else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
+
+            if (Object.keys(estadisticas).length > 0) {
+              const finalStats = { ...(partido.estadisticas || {}), ...estadisticas };
+              await supabase.from('partidos').update({ estadisticas: finalStats }).eq('id', partido.id);
+              encontrados++;
+              console.log(`   ✅ ${partido.equipo_local} vs ${partido.equipo_visitante} → Stats/Goles actualizados`);
+            }
+          } catch (statsErr) {
+            if (statsErr.response?.status === 403) {
+              console.warn('   ⏳ Rate limit alcanzado, esperando 10 segundos...');
+              await delay(10000);
+              // Reintentar una vez
+              try {
+                const { data: retry } = await axios.get(
+                  `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+                  { headers: SOFASCORE_HEADERS, timeout: 10000 }
+                );
+                let estadisticas = parseSofascoreStats(retry) || {};
+                const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
+                if (goles) estadisticas.goles_detalle = goles;
+                else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
+
+                if (Object.keys(estadisticas).length > 0) {
+                  const finalStats = { ...(partido.estadisticas || {}), ...estadisticas };
+                  await supabase.from('partidos').update({ estadisticas: finalStats }).eq('id', partido.id);
+                  encontrados++;
+                  console.log(`   ✅ (reintento) ${partido.equipo_local} vs ${partido.equipo_visitante} → Stats/Goles actualizados`);
+                }
+              } catch (retryErr) {
+                console.warn(`   ⚠️ Falló reintento para ${partido.equipo_local} vs ${partido.equipo_visitante}`);
+              }
+            } else {
+              console.warn(`   ⚠️ Error stats ${partido.equipo_local} vs ${partido.equipo_visitante}: ${statsErr.message}`);
+            }
+          }
+        }
+
+        // Delay entre fechas
+        await delay(1500);
+
+      } catch (dateErr) {
+        if (dateErr.response?.status === 403) {
+          console.warn(`   ⏳ Rate limit en fecha ${fecha}, esperando 15 segundos...`);
+          await delay(15000);
+        } else {
+          console.warn(`   ⚠️ Error buscando fecha ${fecha}: ${dateErr.message}`);
+        }
+      }
+    }
+
+    console.log(`   🏁 Batch completado: ${encontrados} encontrados, ${noEncontrados} no encontrados.`);
+
+  } catch (err) {
+    console.error('   ❌ Error en poblarEstadisticasSofascore:', err.message);
+  }
+}
+
+// Ejecutar batch 15 segundos después del inicio (dar tiempo al fixture)
+setTimeout(poblarEstadisticasSofascore, 15000);
+// Repetir cada 2 horas para capturar nuevos partidos finalizados
+cron.schedule('10 */2 * * *', poblarEstadisticasSofascore);
+
+// ══════════════════════════════════════════════════════════════════
+// LIVE: Actualizar partidos en curso desde Sofascore (reemplaza API-Football)
+// Busca partidos en_curso en nuestra BD, los encuentra en Sofascore y
+// actualiza goles, minuto y estadísticas en tiempo real.
+// ══════════════════════════════════════════════════════════════════
+async function actualizarEnVivoSofascore() {
+  const { data: enCurso, error: errConsulta } = await supabase
+    .from('partidos')
+    .select('id, equipo_local, equipo_visitante, fecha_utc')
+    .eq('estado', 'en_curso');
+
+  if (errConsulta) {
+    console.error('Error consultando en_curso:', errConsulta.message);
+    return;
+  }
+  if (!enCurso?.length) return;
+
+  console.log(`\n🔥 [LIVE SOFASCORE] ${enCurso.length} partido(s) en curso. Buscando en Sofascore...`);
+
+  try {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data: ssData } = await axios.get(
+      `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${hoy}`,
+      { headers: SOFASCORE_HEADERS, timeout: 10000 }
+    );
+    const events = ssData.events || [];
+
+    for (const partido of enCurso) {
+      const ssMatch = events.find(e => {
+        const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_local);
+        const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_visitante);
+        const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_visitante);
+        const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_local);
+        return (homeOk && awayOk) || (homeInv && awayInv);
+      });
+
+      if (!ssMatch) continue;
+
+      const updateData = {
+        goles_local:     ssMatch.homeScore?.current ?? null,
+        goles_visitante: ssMatch.awayScore?.current ?? null,
+        minuto:          ssMatch.time?.currentPeriodStartTimestamp
+                           ? Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60)
+                           : ssMatch.statusDescription || null,
+        updated_at:      new Date().toISOString(),
+      };
+
+      // Si el partido terminó en Sofascore, actualizamos el estado
+      if (ssMatch.status?.type === 'finished') {
+        updateData.estado = 'finalizado';
+      }
+
+      // Intentar obtener estadísticas en vivo
+      try {
+        await delay(1000);
+        const { data: statsData } = await axios.get(
+          `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+          { headers: SOFASCORE_HEADERS, timeout: 10000 }
+        );
+        let estadisticas = parseSofascoreStats(statsData) || {};
+        const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
+        if (goles) estadisticas.goles_detalle = goles;
+
+        if (Object.keys(estadisticas).length > 0) {
+          updateData.estadisticas = { ...(partido.estadisticas || {}), ...estadisticas };
+        }
+      } catch (statsErr) {
+        // Stats pueden no estar disponibles al inicio del partido
+      }
+
+      const { error } = await supabase
+        .from('partidos')
+        .update(updateData)
+        .eq('id', partido.id);
+
+      if (error) {
+        console.error(`   ❌ Error actualizando ${partido.id}:`, error.message);
+      } else {
+        console.log(`   ⚽ ${partido.equipo_local} ${updateData.goles_local}-${updateData.goles_visitante} ${partido.equipo_visitante}${updateData.estadisticas ? ' (con stats)' : ''}`);
+      }
+    }
+  } catch (err) {
+    console.error('   ❌ Error en actualizarEnVivoSofascore:', err.message);
+  }
+}
+
+// Live cada 3 minutos (reemplaza el actualizarEnVivo de API-Football)
+cron.schedule('*/3 * * * *', actualizarEnVivoSofascore);
+
 
 // ══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -543,86 +838,66 @@ app.get('/api/fixture/:id', async (req, res) => {
             }
         }
 
-        // 3. FALLBACK: Si no hay estadísticas, buscamos en API-Football on-demand
-        if (Object.keys(dbMatch.estadisticas || {}).length === 0) {
-            console.log(`Buscando estadísticas históricas para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante} en API-Football...`);
-            const normalize = s => s ? s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') : '';
-            
+        // 3. FALLBACK: Si no hay estadísticas, buscamos en Sofascore on-demand
+        //    Sofascore es gratuito, sin API key, y cubre Libertadores 2026 con stats completas
+        if (Object.keys(dbMatch.estadisticas || {}).length === 0 && dbMatch.estado === 'finalizado') {
+            console.log(`🔍 Buscando estadísticas en Sofascore para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}...`);
+
             try {
-                // Como las fechas en la BD están adelantadas a 2026 para simular, buscamos por temporada real
-                const currentSeason = process.env.TEST_MODE === 'true' ? 2024 : 2026;
-                const LIVE_LEAGUE_ID = process.env.TEST_MODE === 'true' ? 13 : 1;
-                
-                const { data: afData } = await apiFootball.get('/fixtures', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } });
-                const fixtures = afData.response || [];
-                
-                // Buscar coincidencia por nombres de ambos equipos
-                const eqLocal = normalize(dbMatch.equipo_local);
-                const eqVis = normalize(dbMatch.equipo_visitante);
-                
-                const fixtureSummary = fixtures.find(f => {
-                    const home = normalize(f.teams.home.name);
-                    const away = normalize(f.teams.away.name);
-                    return (home.includes(eqLocal) && away.includes(eqVis)) ||
-                           (home.includes(eqVis) && away.includes(eqLocal));
+                // Usar la fecha del partido para buscar en Sofascore
+                const fechaPartido = new Date(dbMatch.fecha_utc);
+                const fechaStr = fechaPartido.toISOString().split('T')[0];
+
+                const { data: ssData } = await axios.get(
+                    `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fechaStr}`,
+                    { headers: SOFASCORE_HEADERS, timeout: 10000 }
+                );
+                const events = ssData.events || [];
+
+                // Buscar el partido por nombres de equipos
+                const ssMatch = events.find(e => {
+                    const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_local);
+                    const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_visitante);
+                    const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_visitante);
+                    const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_local);
+                    return (homeOk && awayOk) || (homeInv && awayInv);
                 });
 
-                if (fixtureSummary) {
-                    // Para obtener estadísticas y eventos, necesitamos consultar el ID específico
-                    const { data: detailData } = await apiFootball.get('/fixtures', { params: { id: fixtureSummary.fixture.id } });
-                    const fixture = detailData.response?.[0];
+                if (ssMatch) {
+                    console.log(`   ✅ Encontrado: ${ssMatch.homeTeam?.name} vs ${ssMatch.awayTeam?.name} (ID: ${ssMatch.id})`);
 
-                    if (fixture) {
-                        const statsHome = fixture.statistics?.[0]?.statistics || [];
-                        const statsAway = fixture.statistics?.[1]?.statistics || [];
+                    // Obtener estadísticas
+                    const { data: statsData } = await axios.get(
+                        `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+                        { headers: SOFASCORE_HEADERS, timeout: 10000 }
+                    );
+                    let estadisticas = parseSofascoreStats(statsData) || {};
+                    const goles = await fetchSofascoreGoals(ssMatch.id, dbMatch.equipo_local, dbMatch.equipo_visitante);
+                    if (goles) estadisticas.goles_detalle = goles;
+                    else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
 
-                        const getStat = (arr, type) => {
-                            const s = arr.find(x => x.type === type);
-                            return s ? (parseInt(s.value) || 0) : 0;
-                        };
+                    if (Object.keys(estadisticas).length > 0) {
+                        dbMatch.estadisticas = { ...(dbMatch.estadisticas || {}), ...estadisticas };
+                        console.log(`   📊 Stats/Goles guardados en memoria`);
+                    }
 
-                        const estadisticas = {
-                            posesion_local:      getStat(statsHome, 'Ball Possession'),
-                            posesion_visitante:  getStat(statsAway, 'Ball Possession'),
-                            tiros_local:         getStat(statsHome, 'Total Shots'),
-                            tiros_visitante:     getStat(statsAway, 'Total Shots'),
-                            tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
-                            tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
-                            corners_local:       getStat(statsHome, 'Corner Kicks'),
-                            corners_visitante:   getStat(statsAway, 'Corner Kicks'),
-                            faltas_local:        getStat(statsHome, 'Fouls'),
-                            faltas_visitante:    getStat(statsAway, 'Fouls'),
-                            amarillas_local:     getStat(statsHome, 'Yellow Cards'),
-                            amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
-                        };
-                        
-                        dbMatch.estadisticas = estadisticas;
+                    if (goles && (!footballDataMatch?.goals || footballDataMatch.goals.length === 0)) {
+                        footballDataMatch = footballDataMatch || {};
+                        footballDataMatch.goals = goles;
+                    }
 
-                        // Si no tenemos los goles por football-data, los sacamos de los eventos de API-Football
-                        if (fixture.events && fixture.events.length > 0) {
-                            const golesEventos = fixture.events.filter(e => e.type === 'Goal');
-                            if (golesEventos.length > 0 && (!footballDataMatch?.goals || footballDataMatch.goals.length === 0)) {
-                                footballDataMatch = footballDataMatch || {};
-                                footballDataMatch.goals = golesEventos.map(e => ({
-                                    minute: e.time.elapsed,
-                                    scorer: { name: e.player.name },
-                                    team: { name: e.team.name }
-                                }));
-                            }
-                        }
-
-                        // Guardar en la DB para futuras consultas (persistencia)
+                    // Guardar en la DB para futuras consultas
+                    if (Object.keys(dbMatch.estadisticas || {}).length > 0) {
                         await supabase.from('partidos').update({
-                            estadisticas,
-                            id_api_football: fixture.fixture.id
+                            estadisticas: dbMatch.estadisticas
                         }).eq('id', dbMatch.id);
-                        console.log('✅ Estadísticas guardadas correctamente.');
+                        console.log('   💾 Estadísticas guardadas en BD.');
                     }
                 } else {
-                    console.warn(`⚠️ No se encontró el partido en API-Football: ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}`);
+                    console.warn(`   ⚠️ No se encontró en Sofascore: ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante} (fecha: ${fechaStr})`);
                 }
             } catch (err) {
-                console.warn('⚠️ Fallback a API-Football falló:', err.message);
+                console.warn('   ⚠️ Fallback a Sofascore falló:', err.message);
             }
         }
 
@@ -643,7 +918,7 @@ app.get('/api/fixture/:id', async (req, res) => {
             estadio: footballDataMatch?.venue || null,
             arbitro: footballDataMatch?.referees?.map(r => r.name).join(', ') || null,
             competicion: footballDataMatch?.competition?.name || 'Mundial 2026',
-            goles_detalle: footballDataMatch?.goals || [],
+            goles_detalle: (footballDataMatch?.goals?.length > 0) ? footballDataMatch.goals : (dbMatch.estadisticas?.goles_detalle || []),
         });
     } catch (err) {
         console.error('Error /api/fixture/:id:', err.message);
