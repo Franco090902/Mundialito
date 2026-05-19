@@ -131,6 +131,34 @@ export async function cerrarSesion() {
   // onAuthStateChange se encarga de limpiar la UI automáticamente
 }
 
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 4.1: Recuperar contraseña
+// ══════════════════════════════════════════════════════════════════
+export async function recuperarContrasena(email) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname,
+  });
+  if (error) {
+    console.error('Error al enviar recuperación:', error.message);
+    return { error };
+  }
+  return { data, error: null };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 4.2: Actualizar contraseña (después de recuperar)
+// ══════════════════════════════════════════════════════════════════
+export async function actualizarContrasena(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+  if (error) {
+    console.error('Error al actualizar contraseña:', error.message);
+    return { error };
+  }
+  return { data, error: null };
+}
+
 
 // ══════════════════════════════════════════════════════════════════
 // FUNCIÓN 5: Obtener el perfil completo del usuario
@@ -214,8 +242,18 @@ export async function subirAvatar(file) {
 //   - El usuario cierra sesión
 //   - El token se refresca automáticamente
 // ══════════════════════════════════════════════════════════════════
+export const onAuthEvent = (callback) => {
+  supabase.auth.onAuthStateChange(callback);
+};
+
 supabase.auth.onAuthStateChange(async (event, session) => {
   console.log('🔐 Auth event:', event);
+
+  if (event === 'PASSWORD_RECOVERY') {
+    // El usuario clickeó el link del email
+    console.log('Redirigido para recuperación de contraseña');
+    window.dispatchEvent(new Event('show-password-reset'));
+  }
 
   if (session?.user) {
     // ── HAY SESIÓN ACTIVA ─────────────────────────────────────────

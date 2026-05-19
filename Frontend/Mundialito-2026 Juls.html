@@ -53,8 +53,32 @@
         <label class="auth-label">Contraseña</label>
         <input class="auth-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
+      <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+        <a href="#" id="auth-forgot-password" style="font-size: 12px; color: var(--gold); text-decoration: none;">¿Olvidaste tu contraseña?</a>
+      </div>
       <button class="btn-token" id="btn-token-login">Ingresar</button>
       <div class="auth-msg" id="auth-message"></div>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div class="auth-form" id="auth-form-forgot" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Email para recuperar</label>
+        <input class="auth-input" type="email" id="auth-forgot-email" placeholder="tu@email.com"/>
+      </div>
+      <button class="btn-token" id="btn-forgot-send">Enviar link de recuperación</button>
+      <button class="btn-token" id="btn-forgot-back" style="background: var(--navy2); border: 1px solid var(--border); margin-top: 10px;">Volver al login</button>
+      <div class="auth-msg" id="auth-forgot-message"></div>
+    </div>
+
+    <!-- Reset Password Form (cuando vuelve de email) -->
+    <div class="auth-form" id="auth-form-reset" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Nueva contraseña</label>
+        <input class="auth-input" type="password" id="auth-reset-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn-token" id="btn-reset-save">Actualizar contraseña</button>
+      <div class="auth-msg" id="auth-reset-message"></div>
     </div>
 
     <div class="auth-toggle">
@@ -406,7 +430,7 @@
 
 <script type="module">
   // Importamos las funciones exactas de tu auth.js
-  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion } from '../backend/auth.js'; 
+  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena } from '../backend/auth.js'; 
   import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
 
   // ─── 1. REFERENCIAS DE TU INTERFAZ ───
@@ -420,13 +444,27 @@
   const btnGoogle     = document.getElementById('btn-google-login');
   const btnToken      = document.getElementById('btn-token-login');
   const modeToggle    = document.getElementById('auth-mode-toggle');
+  
+  // Referencias para recuperación de contraseña
+  const forgotLink    = document.getElementById('auth-forgot-password');
+  const formToken     = document.getElementById('auth-form-token');
+  const formForgot    = document.getElementById('auth-form-forgot');
+  const formReset     = document.getElementById('auth-form-reset');
+  const btnForgotSend = document.getElementById('btn-forgot-send');
+  const btnForgotBack = document.getElementById('btn-forgot-back');
+  const forgotEmailEl = document.getElementById('auth-forgot-email');
+  const msgForgotEl   = document.getElementById('auth-forgot-message');
+  
+  const btnResetSave  = document.getElementById('btn-reset-save');
+  const resetPassEl   = document.getElementById('auth-reset-password');
+  const msgResetEl    = document.getElementById('auth-reset-message');
 
   let authMode = 'login';
 
-  function setMsg(text, type) {
-    msgEl.className = 'auth-msg ' + type;
-    msgEl.textContent = text;
-    msgEl.style.display = text ? 'block' : 'none';
+  function setMsg(text, type, element = msgEl) {
+    element.className = 'auth-msg ' + type;
+    element.textContent = text;
+    element.style.display = text ? 'block' : 'none';
   }
 
   // ─── 2. EVENTOS DE LOS BOTONES ───
@@ -437,7 +475,113 @@
     btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
     modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
     usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
+    forgotLink.style.display = authMode === 'login' ? 'block' : 'none';
     setMsg('', '');
+  });
+
+  // Mostrar form de olvidé contraseña
+  forgotLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    formToken.style.display = 'none';
+    formForgot.style.display = 'block';
+    modeToggle.parentElement.style.display = 'none';
+    btnGoogle.style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+  });
+
+  // Volver al login desde olvidé contraseña
+  btnForgotBack.addEventListener('click', () => {
+    formForgot.style.display = 'none';
+    formToken.style.display = 'block';
+    modeToggle.parentElement.style.display = 'block';
+    btnGoogle.style.display = 'flex';
+    document.querySelector('.auth-divider').style.display = 'flex';
+    setMsg('', '', msgForgotEl);
+  });
+
+  // Enviar email de recuperación
+  btnForgotSend.addEventListener('click', async () => {
+    const email = forgotEmailEl.value.trim();
+    if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
+    
+    btnForgotSend.textContent = 'Enviando...';
+    btnForgotSend.disabled = true;
+    
+    const { error } = await recuperarContrasena(email);
+    
+    btnForgotSend.textContent = 'Enviar link de recuperación';
+    btnForgotSend.disabled = false;
+    
+    if (error) {
+      setMsg(error.message, 'error', msgForgotEl);
+    } else {
+      setMsg('Revisá tu email para el enlace de recuperación.', 'success', msgForgotEl);
+    }
+  });
+
+  // Escuchar evento de recuperación (de auth.js)
+  window.addEventListener('show-password-reset', () => {
+    overlay.classList.remove('hidden');
+    appWrapper.classList.remove('visible');
+    
+    formToken.style.display = 'none';
+    formForgot.style.display = 'none';
+    formReset.style.display = 'block';
+    modeToggle.parentElement.style.display = 'none';
+    btnGoogle.style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+    
+    document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Restablecer contraseña';
+  });
+
+  // Guardar nueva contraseña
+  btnResetSave.addEventListener('click', async () => {
+    const newPass = resetPassEl.value;
+    if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
+    
+    btnResetSave.textContent = 'Actualizando...';
+    btnResetSave.disabled = true;
+    
+    try {
+      const { error } = await actualizarContrasena(newPass);
+      
+      if (error) {
+        btnResetSave.textContent = 'Actualizar contraseña';
+        btnResetSave.disabled = false;
+        setMsg(error.message, 'error', msgResetEl);
+      } else {
+        setMsg('Contraseña actualizada. Volviendo al login...', 'success', msgResetEl);
+        
+        // Cerramos la sesión actual generada por el link de recuperación
+        await cerrarSesion();
+        
+        setTimeout(() => {
+          // Limpiamos el hash de la URL
+          window.location.hash = '';
+          
+          // Restauramos el estado inicial de los botones
+          btnResetSave.textContent = 'Actualizar contraseña';
+          btnResetSave.disabled = false;
+          resetPassEl.value = '';
+          msgResetEl.style.display = 'none';
+          
+          // Volvemos al form de login
+          formReset.style.display = 'none';
+          formToken.style.display = 'block';
+          modeToggle.parentElement.style.display = 'block';
+          btnGoogle.style.display = 'flex';
+          document.querySelector('.auth-divider').style.display = 'flex';
+          document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Ingresá para continuar';
+          
+          setMsg('Iniciá sesión con tu nueva contraseña.', 'success', msgEl);
+        }, 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      btnResetSave.textContent = 'Actualizar contraseña';
+      btnResetSave.disabled = false;
+      setMsg('Hubo un error inesperado.', 'error', msgResetEl);
+    }
   });
 
   // Botón de Google
@@ -473,6 +617,11 @@
 
   // Detectar cambios de sesión (Oculta el login y muestra la app)
   supabase.auth.onAuthStateChange((event, session) => {
+    // Si estamos en medio de una recuperación de contraseña, no ocultamos el overlay
+    if (event === 'PASSWORD_RECOVERY' || formReset.style.display === 'block') {
+      return;
+    }
+    
     if (session) {
       overlay.classList.add('hidden');
       appWrapper.classList.add('visible');
