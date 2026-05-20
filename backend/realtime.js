@@ -788,6 +788,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Suscribirse a todos los partidos en curso para el ticker/dashboard
   suscribirseAPartidosEnVivo((partidoActualizado) => {
+    if (typeof window.cargarPartidosEnVivo === 'function') {
+      window.cargarPartidosEnVivo();
+    }
     // Actualizar el ticker y las tarjetas de partidos en vivo
     const card = document.querySelector(`[data-partido-id="${partidoActualizado.id}"]`);
     if (!card) return;

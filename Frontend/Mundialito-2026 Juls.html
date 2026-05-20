@@ -633,39 +633,54 @@
 
   // ─── 3. CARGA DE DATOS ───
   async function cargarFixtureBD() {
-    console.log("⏳ Cargando partidos desde Supabase...");
-    const { data, error } = await supabase.from('partidos').select('*').order('fecha_utc');
-    
-    if (error) return console.error('Error cargando partidos:', error);
+    console.log("⏳ Cargando partidos desde la API de Mundialito...");
+    try {
+      const res = await fetch('http://localhost:3000/api/fixture');
+      if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
+      const data = await res.json();
 
-    if (data && data.length > 0) {
-      let gruposReales = {};
-      
-      data.forEach(p => {
-        if(p.fase && p.fase.includes('Grupo')) {
-           let letra = p.fase.replace('Grupo ', '').trim();
-           if(!gruposReales[letra]) gruposReales[letra] = { teams: [], matches: [] };
-           
-           if(!gruposReales[letra].teams.includes(p.equipo_local)) gruposReales[letra].teams.push(p.equipo_local);
-           if(!gruposReales[letra].teams.includes(p.equipo_visitante)) gruposReales[letra].teams.push(p.equipo_visitante);
+      if (data && data.length > 0) {
+        let gruposReales = {};
+        
+        data.forEach(p => {
+          // Determinar la clave del grupo/fase
+          let clave = null;
+          if (p.fase && p.fase.includes('Grupo')) {
+            // "Grupo A", "Grupo B", etc.
+            clave = p.fase.replace('Grupo ', '').trim();
+          } else if (p.fase) {
+            // Fases eliminatorias: "Ronda 1", "Octavos de Final", "Final", etc.
+            clave = p.fase;
+          }
+          
+          if (!clave) return;
+          
+          if(!gruposReales[clave]) gruposReales[clave] = { teams: [], matches: [] };
+          
+          if(p.equipo_local && !gruposReales[clave].teams.includes(p.equipo_local)) gruposReales[clave].teams.push(p.equipo_local);
+          if(p.equipo_visitante && !gruposReales[clave].teams.includes(p.equipo_visitante)) gruposReales[clave].teams.push(p.equipo_visitante);
 
-           const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', {day:'2-digit', month:'short'});
-           
-           gruposReales[letra].matches.push({
-             id: p.id, home: p.equipo_local, away: p.equipo_visitante,
-             hs: p.goles_local === null ? '-' : p.goles_local,
-             as: p.goles_visitante === null ? '-' : p.goles_visitante,
-             date: fechaFormateada, estado: p.estado
-           });
+          const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', {day:'2-digit', month:'short'});
+          
+          gruposReales[clave].matches.push({
+            id: p.id, home: p.equipo_local, away: p.equipo_visitante,
+            hs: p.goles_local === null ? '-' : p.goles_local,
+            as: p.goles_visitante === null ? '-' : p.goles_visitante,
+            date: fechaFormateada, estado: p.estado,
+            escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
+            minuto: p.minuto
+          });
+        });
+
+        const letrasDeGrupos = Object.keys(gruposReales);
+        if (letrasDeGrupos.length > 0) {
+          window.GROUPS = gruposReales;
+          renderGroups(letrasDeGrupos[0]);
+          renderFixtures();
         }
-      });
-
-      const letrasDeGrupos = Object.keys(gruposReales);
-      if (letrasDeGrupos.length > 0) {
-        window.GROUPS = gruposReales;
-        renderGroups(letrasDeGrupos[0]);
-        renderFixtures();
       }
+    } catch (err) {
+      console.error('Error cargando partidos desde API:', err);
     }
   }
 

@@ -76,7 +76,7 @@ function switchTab(id, btn) {
   
   if (id === 'groups') {
     // 🛑 EL ARREGLO: Buscamos el primer grupo que exista en la base de datos en vez de forzar la 'A'
-    const primerGrupo = Object.keys(window.GROUPS).sort()[0];
+    const primerGrupo = Object.keys(window.GROUPS).sort(sortFases)[0];
     if (primerGrupo) renderGroups(primerGrupo);
   }
   if (id === 'fixtures') renderFixtures();
@@ -94,6 +94,27 @@ function switchTab(id, btn) {
 /* ─────────────────────────────────────
    GRUPOS: calcular posiciones
 ───────────────────────────────────── */
+function sortFases(a, b) {
+  const isGroupA = a.length <= 2;
+  const isGroupB = b.length <= 2;
+  if (isGroupA && isGroupB) {
+    return a.localeCompare(b);
+  }
+  if (isGroupA) return -1;
+  if (isGroupB) return 1;
+  
+  const seq = ['Ronda 1', 'Ronda 2', 'Ronda 3', 'Fase de Grupos', 'Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'Semifinales', 'Tercer Puesto', 'Final'];
+  const idxA = seq.indexOf(a);
+  const idxB = seq.indexOf(b);
+  
+  if (idxA !== -1 && idxB !== -1) {
+    return idxA - idxB;
+  }
+  if (idxA !== -1) return -1;
+  if (idxB !== -1) return 1;
+  return a.localeCompare(b);
+}
+
 function computeStandings(key) {
   const g = window.GROUPS[key];
   const s = {};
@@ -110,22 +131,28 @@ function computeStandings(key) {
       else { s[m.home].d++; s[m.away].d++; s[m.home].pts++; s[m.away].pts++; }
     }
   });
-  return Object.entries(s).sort((a,b) => b[1].pts-a[1].pts || (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga));
+  return Object.entries(s).sort((a,b) => b[1].pts-a[1].pts || (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga) || b[1].gf-a[1].gf);
 }
 
 function renderGroups(key) {
   const sel = document.getElementById('grpSelector');
-  const sortedKeys = Object.keys(GROUPS).sort();
+  const sortedKeys = Object.keys(GROUPS).sort(sortFases);
+  
+  // Generar botones: primero grupos, luego eliminatorias en orden lógico
+  const getLabel = (g) => g.length <= 2 ? `Grupo ${g}` : g;
+  
   sel.innerHTML = sortedKeys.map(g =>
-    `<button class="grp-btn ${g===key?'active':''}" onclick="renderGroups('${g}')">Grupo ${g}</button>`
+    `<button class="grp-btn ${g===key?'active':''}" onclick="renderGroups('${g}')">${getLabel(g)}</button>`
   ).join('');
 
   const standings = computeStandings(key);
   const gData = GROUPS[key];
+  const isGroup = key.length <= 2;
+  const sectionTitle = isGroup ? `Grupo ${key}` : key;
 
   const standHtml = `
     <div>
-      <p class="section-label">Tabla — Grupo ${key}</p>
+      <p class="section-label">Tabla — ${sectionTitle}</p>
       <div class="tbl">
         <div class="tbl-head">
           <span>#</span><span>EQUIPO</span>
@@ -151,16 +178,16 @@ function renderGroups(key) {
 
   const matchHtml = `
     <div>
-      <p class="section-label">Partidos — Grupo ${key}</p>
+      <p class="section-label">Partidos — ${sectionTitle}</p>
       ${gData.matches.map(m => `
-        <div class="gmatch">
+        <div class="gmatch" ${m.id ? `onclick="abrirDetallePartido('${m.id}')" style="cursor:pointer"` : ''}>
           <span class="gm-date">${m.date}</span>
           <div class="gm-teams">
             <span class="gm-home">${m.home}</span>
             <span class="gm-score">${m.hs}–${m.as}</span>
             <span class="gm-away">${m.away}</span>
           </div>
-          <span class="gm-ft">FT</span>
+          <span class="gm-ft">${m.estado === 'finalizado' ? 'FT' : m.estado === 'en_curso' ? '🔴' : '—'}</span>
         </div>`).join('')}
     </div>`;
 
@@ -171,24 +198,29 @@ function renderGroups(key) {
    FIXTURE
 ───────────────────────────────────── */
 function renderFixtures() {
-  const sortedEntries = Object.entries(GROUPS).sort((a,b) => a[0].localeCompare(b[0]));
-  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key,g]) => `
+  const sortedEntries = Object.entries(GROUPS).sort((a,b) => sortFases(a[0], b[0]));
+  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key,g]) => {
+    // Si es una sola letra, es un grupo. Si no, es una fase eliminatoria.
+    const isGroup = key.length <= 2;
+    const headerName = isGroup ? `GRUPO ${key}` : key.toUpperCase();
+    return `
     <div class="fix-card">
       <div class="fix-hdr">
-        <span class="fix-grp-name">GRUPO ${key}</span>
+        <span class="fix-grp-name">${headerName}</span>
         <span class="fix-grp-teams">${g.teams.join(' · ')}</span>
       </div>
       ${g.matches.map(m => `
-        <div class="fix-match" ${m.id ? `onclick="abrirDetallePartido(${m.id})" style="cursor:pointer"` : ''}>
+        <div class="fix-match" ${m.id ? `onclick="abrirDetallePartido('${m.id}')" style="cursor:pointer"` : ''}>
           <span class="fix-date">${m.date}</span>
           <div class="fix-teams">
             <span class="fix-home">${m.home}</span>
             <span class="fix-score">${m.hs}–${m.as}</span>
             <span class="fix-away">${m.away}</span>
           </div>
-          <span class="fix-ft">${m.estado === 'finalizado' ? 'FT' : m.estado === 'en_curso' ? '🔴' : '—'}</span>
+          <span class="fix-ft">${m.estado === 'finalizado' ? 'FT' : m.estado === 'en_curso' ? `🔴 ${m.minuto || ''}'` : '—'}</span>
         </div>`).join('')}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ─────────────────────────────────────
@@ -624,31 +656,44 @@ async function cargarFixtureDesdeAPI() {
     const gruposAPI = {};
     partidos.forEach(p => {
       if (!p.grupo) return;
-      const letra = p.grupo.replace('GROUP_', '');
-      if (!gruposAPI[letra]) gruposAPI[letra] = { teams: [], matches: [] };
-      const g = gruposAPI[letra];
-      if (p.equipo_local && !g.teams.includes(p.equipo_local_short || p.equipo_local)) {
-        g.teams.push(p.equipo_local_short || p.equipo_local);
+      
+      // Extraer la clave: "Grupo A" → "A", "Grupo B" → "B"
+      // Fases eliminatorias como "Ronda 1", "Final", etc. → se usan como clave directa
+      let clave;
+      if (p.grupo.startsWith('Grupo ')) {
+        clave = p.grupo.replace('Grupo ', '').trim();
+      } else {
+        clave = p.grupo; // "Ronda 1", "Octavos de Final", etc.
       }
-      if (p.equipo_visitante && !g.teams.includes(p.equipo_visitante_short || p.equipo_visitante)) {
-        g.teams.push(p.equipo_visitante_short || p.equipo_visitante);
-      }
+      
+      if (!gruposAPI[clave]) gruposAPI[clave] = { teams: [], matches: [] };
+      const g = gruposAPI[clave];
+      
+      const localName = p.equipo_local || 'Por definirse';
+      const awayName = p.equipo_visitante || 'Por definirse';
+      
+      if (localName && !g.teams.includes(localName)) g.teams.push(localName);
+      if (awayName && !g.teams.includes(awayName)) g.teams.push(awayName);
+      
       const fecha = new Date(p.fecha_utc);
       g.matches.push({
         id: p.id,
-        home: p.equipo_local_short || p.equipo_local,
-        away: p.equipo_visitante_short || p.equipo_visitante,
+        home: localName,
+        away: awayName,
         hs: p.goles_local ?? '-', as: p.goles_visitante ?? '-',
         date: fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }),
         estado: p.estado, estadio: p.estadio,
         fecha_utc: p.fecha_utc,
         escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
+        minuto: p.minuto
       });
     });
 
     if (Object.keys(gruposAPI).length > 0) {
       window.GROUPS = gruposAPI;
-      const primerGrupo = Object.keys(gruposAPI)[0];
+      // Seleccionar el primer grupo real (letra de 1-2 chars) como inicial
+      const sortedKeys = Object.keys(gruposAPI).sort(sortFases);
+      const primerGrupo = sortedKeys.find(k => k.length <= 2) || sortedKeys[0];
       renderGroups(primerGrupo);
       renderFixtures();
       console.log('✅ Fixture cargado desde API:', Object.keys(gruposAPI).length, 'grupos');
@@ -697,11 +742,40 @@ async function cargarPartidosEnVivo() {
     
     if (partidos && partidos.length > 0) {
       buildTicker(partidos);
+      
+      // Sincronizar goles en vivo con el objeto GROUPS para que la tabla de posiciones se actualice
+      if (window.GROUPS) {
+        let updated = false;
+        partidos.forEach(liveM => {
+          Object.values(window.GROUPS).forEach(g => {
+            const matchInGroup = g.matches.find(m => m.id === liveM.id);
+            if (matchInGroup) {
+              matchInGroup.hs = liveM.goles_local ?? 0;
+              matchInGroup.as = liveM.goles_visitante ?? 0;
+              matchInGroup.estado = 'en_curso';
+              updated = true;
+            }
+          });
+        });
+        
+        // Re-renderizar si hubo cambios y estamos en la pestaña correcta
+        if (updated) {
+          const activeGrpBtn = document.querySelector('.grp-btn.active');
+          if (activeGrpBtn && document.getElementById('panel-groups').classList.contains('active')) {
+            const activeKey = activeGrpBtn.textContent.replace('Grupo ', '').trim();
+            renderGroups(activeKey);
+          }
+          if (document.getElementById('panel-fixtures').classList.contains('active')) {
+            renderFixtures();
+          }
+        }
+      }
     } else {
       updateTickerWithUpcoming();
     }
   } catch (e) { console.warn('⚠️ Live no disponible:', e.message); }
 }
+window.cargarPartidosEnVivo = cargarPartidosEnVivo;
 
 window.updateTickerWithUpcoming = function() {
   if (!window.GROUPS) return;
@@ -743,7 +817,7 @@ function renderLivePanel(partidos) {
   }
 
   container.innerHTML = partidos.map(p => `
-    <div class="match-live" onclick="abrirDetallePartido(${p.id})" style="cursor:pointer">
+    <div class="match-live" onclick="abrirDetallePartido('${p.id}')" style="cursor:pointer">
       <div class="team-block home">
         ${p.escudo_local ? `<img src="${p.escudo_local}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
         <div class="team-name">${p.equipo_local}</div>
@@ -1089,8 +1163,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarCardsDesdeAPI();
   await cargarPartidosEnVivo();
 
-  // 🛑 ELIMINADO: Refrescar partidos en vivo cada 60 segundos (Ahora usamos Supabase Realtime)
-  // setInterval(cargarPartidosEnVivo, 60000);
+  // Refrescar partidos en vivo cada 60 segundos como fallback
+  setInterval(cargarPartidosEnVivo, 60000);
 });   
 
 /* ══════════════════════════════════════════════════════════════════

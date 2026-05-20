@@ -12,10 +12,10 @@
 
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const axios            = require('axios');
-const cron             = require('node-cron');
+const axios = require('axios');
+const cron = require('node-cron');
 const express = require('express');
-const cors    = require('cors');
+const cors = require('cors');
 // ──────────────────────────────────────────────────────────────────
 // SUPABASE — Service Role Key (bypasea RLS, solo usar en backend)
 // ──────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const apiFootball = axios.create({
 // TEST_MODE=true  → usa Copa Libertadores (para probar en vivo)
 // TEST_MODE=false → usa FIFA World Cup 2026
 // ──────────────────────────────────────────────────────────────────
-const TEST_MODE = process.env.TEST_MODE === 'false';
+const TEST_MODE = String(process.env.TEST_MODE).trim().toLowerCase() === 'true';
 
 // Football-Data.org IDs
 const WC_2026_ID = 2000;           // FIFA World Cup 2026
@@ -62,10 +62,10 @@ const LIVE_LEAGUE_ID = TEST_MODE ? LIBERTADORES_AF_ID : WC_AF_ID;
 // CACHE EN MEMORIA — evitar exceder 10 req/min de Football-Data
 // ──────────────────────────────────────────────────────────────────
 const cache = {
-  fixture:    { data: null, ts: 0 },
-  standings:  { data: null, ts: 0 },
-  scorers:    { data: null, ts: 0 },
-  live:       { data: null, ts: 0 },
+  fixture: { data: null, ts: 0 },
+  standings: { data: null, ts: 0 },
+  scorers: { data: null, ts: 0 },
+  live: { data: null, ts: 0 },
 };
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
@@ -80,6 +80,14 @@ function setCache(key, data) {
 console.log('⚽ Worker Mundialito iniciado —', new Date().toLocaleString('es-AR'));
 console.log(`📡 Modo: ${TEST_MODE ? '🧪 TEST (Copa Libertadores)' : '🏆 PRODUCCIÓN (Mundial 2026)'}`);
 console.log('📡 Supabase URL:', process.env.SUPABASE_URL);
+console.log('📡 ENV PROXIES:', {
+  HTTP_PROXY: process.env.HTTP_PROXY,
+  HTTPS_PROXY: process.env.HTTPS_PROXY,
+  http_proxy: process.env.http_proxy,
+  https_proxy: process.env.https_proxy,
+  ALL_PROXY: process.env.ALL_PROXY,
+  all_proxy: process.env.all_proxy
+});
 
 // ──────────────────────────────────────────────────────────────────
 // HELPER: mapear estado de Football-Data a nuestro formato
@@ -105,31 +113,91 @@ async function actualizarFixture() {
   console.log('\n🗓️  [FIXTURE] Actualizando desde Football-Data...');
   try {
     const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/matches`);
-    const partidos  = data.matches;
+    const partidos = data.matches;
 
     if (!partidos?.length) {
       console.log('   Sin partidos en la respuesta.');
       return;
     }
 
-    const rows = partidos.map(p => ({
-      id_football_data:  p.id,
-      fase:              p.group
-                           ? `Grupo ${p.group}`
-                           : (p.stage || 'Fase eliminatoria'),
-      jornada:           p.matchday,
-      fecha_utc:         p.utcDate,
-      // Usamos ?. para evitar errores y ponemos "Por definirse" si viene nulo
-      equipo_local:      p.homeTeam?.shortName || p.homeTeam?.name || 'Por definirse',
-      equipo_visitante:  p.awayTeam?.shortName || p.awayTeam?.name || 'Por definirse',
-      escudo_local:      p.homeTeam?.crest || null,
-      escudo_visitante:  p.awayTeam?.crest || null,
-      estado:            mapearEstado(p.status),
-      // También protegemos los goles por si fullTime viene nulo
-      goles_local:       p.score?.fullTime?.home ?? null,
-      goles_visitante:   p.score?.fullTime?.away ?? null,
-      updated_at:        new Date().toISOString(),
-    }));
+    const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
+
+    // 1. Consultar partidos de Supabase para cruzar y preservar estado/goles/estadísticas
+    let dbMatchesMap = new Map();
+    try {
+      const { data: dbMatches } = await supabase
+        .from('partidos')
+        .select('id_football_data, estado, goles_local, goles_visitante, estadisticas')
+        .eq('edicion_mundial', activeEdicion);
+      if (dbMatches) {
+        dbMatches.forEach(m => {
+          if (m.id_football_data) dbMatchesMap.set(m.id_football_data, m);
+        });
+      }
+    } catch (err) {
+      console.warn('   ⚠️ Error al consultar partidos pre-upsert:', err.message);
+    }
+
+    const rows = partidos.map(p => {
+      const dbMatch = dbMatchesMap.get(p.id);
+      let estado = mapearEstado(p.status);
+      let goles_local = p.score?.fullTime?.home ?? null;
+      let goles_visitante = p.score?.fullTime?.away ?? null;
+
+      // Si el partido ya figura como en_curso o finalizado en nuestra BD, lo preservamos
+      if (dbMatch && (dbMatch.estado === 'en_curso' || dbMatch.estado === 'finalizado')) {
+        estado = dbMatch.estado;
+        const apiGolesL = p.score?.fullTime?.home;
+        const apiGolesV = p.score?.fullTime?.away;
+        
+        // Si el estado en Football-Data es FINISHED, adoptamos la finalización y los goles oficiales
+        if (p.status === 'FINISHED' && apiGolesL !== null && apiGolesV !== null) {
+          estado = 'finalizado';
+          goles_local = apiGolesL;
+          goles_visitante = apiGolesV;
+        } else if ((dbMatch.goles_local === 0 || dbMatch.goles_local === null) && (dbMatch.goles_visitante === 0 || dbMatch.goles_visitante === null) && (apiGolesL > 0 || apiGolesV > 0) && apiGolesL !== null && apiGolesV !== null) {
+          // Si estaba en 0-0 en la BD (ej: por zombie/auto-start) pero Football-Data tiene goles reales, los adoptamos
+          goles_local = apiGolesL;
+          goles_visitante = apiGolesV;
+        } else {
+          goles_local = dbMatch.goles_local;
+          goles_visitante = dbMatch.goles_visitante;
+        }
+      }
+
+      const row = {
+        id_football_data: p.id,
+        fase: p.group
+          ? `Grupo ${p.group.replace('GROUP_', '')}`
+          : ({
+              'ROUND_1': 'Ronda 1', 'ROUND_2': 'Ronda 2', 'ROUND_3': 'Ronda 3',
+              'LAST_32': 'Dieciseisavos', 'LAST_16': 'Octavos de Final',
+              'QUARTER_FINALS': 'Cuartos de Final', 'SEMI_FINALS': 'Semifinales',
+              'THIRD_PLACE': 'Tercer Puesto', 'FINAL': 'Final',
+              'GROUP_STAGE': 'Fase de Grupos'
+            }[p.stage] || p.stage || 'Fase eliminatoria'),
+        jornada: p.matchday,
+        fecha_utc: p.utcDate,
+        // Usamos ?. para evitar errores y ponemos "Por definirse" si viene nulo
+        equipo_local: p.homeTeam?.shortName || p.homeTeam?.name || 'Por definirse',
+        equipo_visitante: p.awayTeam?.shortName || p.awayTeam?.name || 'Por definirse',
+        escudo_local: p.homeTeam?.crest || null,
+        escudo_visitante: p.awayTeam?.crest || null,
+        estado,
+        // También protegemos los goles por si fullTime viene nulo
+        goles_local,
+        goles_visitante,
+        edicion_mundial: activeEdicion,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Preservar estadísticas de la BD para que no se pisen a null
+      if (dbMatch?.estadisticas) {
+        row.estadisticas = dbMatch.estadisticas;
+      }
+
+      return row;
+    });
 
     // UPSERT masivo — el trigger calcular_puntos_prode se dispara
     // automáticamente si estado cambia a 'finalizado'
@@ -138,7 +206,7 @@ async function actualizarFixture() {
       .upsert(rows, { onConflict: 'id_football_data' });
 
     if (error) throw error;
-    console.log(`   ✅ ${rows.length} partidos actualizados.`);
+    console.log(`   ✅ ${rows.length} partidos actualizados con edicion_mundial: ${activeEdicion}`);
 
   } catch (err) {
     console.error('   ❌ Error en actualizarFixture:', err.message);
@@ -156,82 +224,234 @@ cron.schedule('0 * * * *', actualizarFixture);
 // Actualiza: goles, minuto y estadísticas JSONB.
 // ══════════════════════════════════════════════════════════════════
 async function actualizarEnVivo() {
-  // Preguntamos a NUESTRA BD antes de gastar cuota en la API externa
-  const { data: enCurso, error: errConsulta } = await supabase
-    .from('partidos')
-    .select('id, id_api_football, equipo_local, equipo_visitante')
-    .eq('estado', 'en_curso');
-
-  if (errConsulta) {
-    console.error('Error consultando en_curso:', errConsulta.message);
-    return;
-  }
-  if (!enCurso?.length) return; // No hay partidos → no gastar cuota
-
-  console.log(`\n🔥 [LIVE] ${enCurso.length} partido(s) en curso. Consultando API-Football...`);
+  console.log(`\n🔥 [LIVE] Consultando API-Football para partidos en vivo...`);
 
   try {
-    const { data } = await apiFootball.get('/fixtures', { params: { live: 'all' } });
-    const fixtures  = data.response || [];
+    // 1. Obtener partidos en vivo de la liga correspondiente
+    const { data } = await apiFootball.get('/fixtures', { 
+      params: { live: 'all', league: LIVE_LEAGUE_ID } 
+    });
+    const fixtures = data.response || [];
 
     if (!fixtures.length) {
-      console.log('   API-Football no reporta partidos en vivo.');
+      console.log('   No hay partidos en vivo de la liga en este momento. Buscando partidos del día...');
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { data: todayData } = await apiFootball.get('/fixtures', {
+          params: { date: todayStr, league: LIVE_LEAGUE_ID }
+        });
+        const todayFixtures = todayData.response || [];
+
+        const { data: enCurso } = await supabase.from('partidos')
+          .select('id, equipo_local, equipo_visitante, id_api_football')
+          .eq('estado', 'en_curso');
+
+        if (enCurso?.length) {
+          const normalizeName = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+          for (const p of enCurso) {
+            // Buscar partido en todayFixtures
+            let match = todayFixtures.find(f => f.fixture.id === p.id_api_football);
+            if (!match) {
+              match = todayFixtures.find(f => {
+                const homeMatch = normalizeName(f.teams.home.name).includes(normalizeName(p.equipo_local)) ||
+                                  normalizeName(p.equipo_local).includes(normalizeName(f.teams.home.name));
+                const awayMatch = normalizeName(f.teams.away.name).includes(normalizeName(p.equipo_visitante)) ||
+                                  normalizeName(p.equipo_visitante).includes(normalizeName(f.teams.away.name));
+                return homeMatch && awayMatch;
+              });
+            }
+
+            if (match && ['FT', 'AET', 'PEN'].includes(match.fixture.status.short)) {
+              // Obtener estadísticas finales
+              let statsFinales = {};
+              try {
+                const { data: statsData } = await apiFootball.get('/fixtures/statistics', { params: { fixture: match.fixture.id } });
+                const statsArr = statsData.response || [];
+                if (statsArr.length >= 2) {
+                  const statsHome = statsArr[0]?.statistics || [];
+                  const statsAway = statsArr[1]?.statistics || [];
+                  const getStat = (arr, type) => { const s = arr.find(x => x.type === type); return s ? (parseInt(s.value) || 0) : 0; };
+                  statsFinales = {
+                    posesion_local: getStat(statsHome, 'Ball Possession'),
+                    posesion_visitante: getStat(statsAway, 'Ball Possession'),
+                    tiros_local: getStat(statsHome, 'Total Shots'),
+                    tiros_visitante: getStat(statsAway, 'Total Shots'),
+                    tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
+                    tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
+                    corners_local: getStat(statsHome, 'Corner Kicks'),
+                    corners_visitante: getStat(statsAway, 'Corner Kicks'),
+                    faltas_local: getStat(statsHome, 'Fouls'),
+                    faltas_visitante: getStat(statsAway, 'Fouls'),
+                    amarillas_local: getStat(statsHome, 'Yellow Cards'),
+                    amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
+                  };
+                }
+              } catch(e) { /* silenciar */ }
+
+              const updateFinal = {
+                estado: 'finalizado',
+                goles_local: match.goals.home,
+                goles_visitante: match.goals.away,
+                minuto: 90,
+                id_api_football: match.fixture.id,
+                updated_at: new Date().toISOString()
+              };
+              if (Object.keys(statsFinales).length > 0) updateFinal.estadisticas = statsFinales;
+
+              await supabase.from('partidos').update(updateFinal).eq('id', p.id);
+              console.log(`   🏁 Finalizado en API-Football (día): ${p.equipo_local} ${match.goals.home}-${match.goals.away} ${p.equipo_visitante}`);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('   ❌ Error al buscar fixtures del día en fallback:', e.message);
+      }
       return;
     }
 
-    for (const partido of enCurso) {
-      // Cruzar por id_api_football si ya está mapeado, sino por nombre de equipo
-      const normalize = s => s.toLowerCase()
-  .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
-  .replace(/[^a-z0-9]/g, '');                       // solo alfanumérico
+    console.log(`   📡 ${fixtures.length} partido(s) en vivo de ${TEST_MODE ? 'Copa Libertadores' : 'FIFA World Cup'}`);
 
-    const fixture = fixtures.find(f =>
-      (partido.id_api_football && f.fixture.id === partido.id_api_football) ||
-      normalize(f.teams.home.name).includes(normalize(partido.equipo_local)) ||
-      normalize(f.teams.away.name).includes(normalize(partido.equipo_visitante))
-);
+    // 2. Obtener TODOS los partidos de la BD para cruzar por nombre
+    const { data: todosPartidos } = await supabase.from('partidos')
+      .select('id, equipo_local, equipo_visitante, id_api_football, estado');
 
-      if (!fixture) continue;
+    const normalize = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
-      const statsHome = fixture.statistics?.[0]?.statistics || [];
-      const statsAway = fixture.statistics?.[1]?.statistics || [];
+    for (const f of fixtures) {
+      // 3. Buscar el partido en la BD: primero por id_api_football, luego por nombre
+      let partido = (todosPartidos || []).find(p => p.id_api_football === f.fixture.id);
+      
+      if (!partido) {
+        partido = (todosPartidos || []).find(p => {
+          const homeMatch = normalize(f.teams.home.name).includes(normalize(p.equipo_local)) ||
+                            normalize(p.equipo_local).includes(normalize(f.teams.home.name));
+          const awayMatch = normalize(f.teams.away.name).includes(normalize(p.equipo_visitante)) ||
+                            normalize(p.equipo_visitante).includes(normalize(f.teams.away.name));
+          return homeMatch && awayMatch;
+        });
+      }
 
-      const getStat = (arr, type) => {
-        const s = arr.find(x => x.type === type);
-        return s ? (parseInt(s.value) || 0) : 0;
+      // 4. Obtener estadísticas completas del fixture
+      let estadisticas = {};
+      try {
+        const { data: statsData } = await apiFootball.get('/fixtures/statistics', { 
+          params: { fixture: f.fixture.id } 
+        });
+        const statsArr = statsData.response || [];
+        if (statsArr.length >= 2) {
+          const statsHome = statsArr[0]?.statistics || [];
+          const statsAway = statsArr[1]?.statistics || [];
+          const getStat = (arr, type) => { const s = arr.find(x => x.type === type); return s ? (parseInt(s.value) || 0) : 0; };
+          estadisticas = {
+            posesion_local: getStat(statsHome, 'Ball Possession'),
+            posesion_visitante: getStat(statsAway, 'Ball Possession'),
+            tiros_local: getStat(statsHome, 'Total Shots'),
+            tiros_visitante: getStat(statsAway, 'Total Shots'),
+            tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
+            tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
+            corners_local: getStat(statsHome, 'Corner Kicks'),
+            corners_visitante: getStat(statsAway, 'Corner Kicks'),
+            faltas_local: getStat(statsHome, 'Fouls'),
+            faltas_visitante: getStat(statsAway, 'Fouls'),
+            amarillas_local: getStat(statsHome, 'Yellow Cards'),
+            amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
+          };
+        }
+      } catch(e) { /* stats puede no estar disponible al inicio */ }
+
+      // Determinar estado basado en API-Football
+      const afStatus = f.fixture.status.short;
+      let estado = 'en_curso';
+      if (['FT', 'AET', 'PEN'].includes(afStatus)) estado = 'finalizado';
+      else if (['HT'].includes(afStatus)) estado = 'en_curso';
+
+      const updateData = {
+        estado,
+        goles_local: f.goals.home ?? 0,
+        goles_visitante: f.goals.away ?? 0,
+        minuto: f.fixture.status.elapsed,
+        id_api_football: f.fixture.id,
+        escudo_local: f.teams.home.logo,
+        escudo_visitante: f.teams.away.logo,
+        updated_at: new Date().toISOString()
       };
+      if (Object.keys(estadisticas).length > 0) updateData.estadisticas = estadisticas;
 
-      const estadisticas = {
-        posesion_local:      getStat(statsHome, 'Ball Possession'),
-        posesion_visitante:  getStat(statsAway, 'Ball Possession'),
-        tiros_local:         getStat(statsHome, 'Total Shots'),
-        tiros_visitante:     getStat(statsAway, 'Total Shots'),
-        tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
-        tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
-        corners_local:       getStat(statsHome, 'Corner Kicks'),
-        corners_visitante:   getStat(statsAway, 'Corner Kicks'),
-        faltas_local:        getStat(statsHome, 'Fouls'),
-        faltas_visitante:    getStat(statsAway, 'Fouls'),
-        amarillas_local:     getStat(statsHome, 'Yellow Cards'),
-        amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
-      };
-
-      const { error } = await supabase
-        .from('partidos')
-        .update({
-          goles_local:     fixture.goals.home,
-          goles_visitante: fixture.goals.away,
-          minuto:          fixture.fixture.status.elapsed,
-          id_api_football: fixture.fixture.id,
-          estadisticas,
-          updated_at:      new Date().toISOString(),
-        })
-        .eq('id', partido.id);
-
-      if (error) {
-        console.error(`   ❌ Error actualizando ${partido.id}:`, error.message);
+      if (partido) {
+        // Actualizar partido existente
+        await supabase.from('partidos').update(updateData).eq('id', partido.id);
+        console.log(`   ⚽ ${f.teams.home.name} ${f.goals.home}-${f.goals.away} ${f.teams.away.name} (${f.fixture.status.elapsed}' ${afStatus})`);
       } else {
-        console.log(`   ⚽ ${partido.equipo_local} ${fixture.goals.home}-${fixture.goals.away} ${partido.equipo_visitante} (${fixture.fixture.status.elapsed}')`);
+        // No existe en DB — insertar solo si estamos en TEST_MODE
+        if (TEST_MODE) {
+          updateData.equipo_local = f.teams.home.name;
+          updateData.equipo_visitante = f.teams.away.name;
+          updateData.fase = f.league?.name || 'Copa Libertadores';
+          updateData.fecha_utc = new Date(f.fixture.date).toISOString();
+          updateData.jornada = 1;
+          await supabase.from('partidos').insert(updateData);
+          console.log(`   ⚽ [NUEVO] ${f.teams.home.name} vs ${f.teams.away.name} insertado`);
+        }
+      }
+    }
+
+    // 5. Detectar partidos finalizados: los que están en_curso en DB pero NO en la lista live
+    const liveIds = fixtures.map(f => f.fixture.id);
+    const { data: enCursoAll } = await supabase.from('partidos')
+      .select('id, equipo_local, equipo_visitante, id_api_football')
+      .eq('estado', 'en_curso');
+
+    if (enCursoAll?.length) {
+      for (const p of enCursoAll) {
+        // Si este partido NO está en la lista de live, puede haber terminado
+        if (p.id_api_football && !liveIds.includes(p.id_api_football)) {
+          try {
+            const { data: checkData } = await apiFootball.get('/fixtures', { params: { id: p.id_api_football } });
+            const match = checkData.response?.[0];
+            if (match) {
+              const st = match.fixture.status.short;
+              if (['FT', 'AET', 'PEN'].includes(st)) {
+                // Obtener estadísticas finales
+                let statsFinales = {};
+                try {
+                  const { data: statsData } = await apiFootball.get('/fixtures/statistics', { params: { fixture: p.id_api_football } });
+                  const statsArr = statsData.response || [];
+                  if (statsArr.length >= 2) {
+                    const statsHome = statsArr[0]?.statistics || [];
+                    const statsAway = statsArr[1]?.statistics || [];
+                    const getStat = (arr, type) => { const s = arr.find(x => x.type === type); return s ? (parseInt(s.value) || 0) : 0; };
+                    statsFinales = {
+                      posesion_local: getStat(statsHome, 'Ball Possession'),
+                      posesion_visitante: getStat(statsAway, 'Ball Possession'),
+                      tiros_local: getStat(statsHome, 'Total Shots'),
+                      tiros_visitante: getStat(statsAway, 'Total Shots'),
+                      tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
+                      tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
+                      corners_local: getStat(statsHome, 'Corner Kicks'),
+                      corners_visitante: getStat(statsAway, 'Corner Kicks'),
+                      faltas_local: getStat(statsHome, 'Fouls'),
+                      faltas_visitante: getStat(statsAway, 'Fouls'),
+                      amarillas_local: getStat(statsHome, 'Yellow Cards'),
+                      amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
+                    };
+                  }
+                } catch(e) { /* silenciar */ }
+                
+                const updateFinal = {
+                  estado: 'finalizado',
+                  goles_local: match.goals.home,
+                  goles_visitante: match.goals.away,
+                  minuto: 90,
+                  updated_at: new Date().toISOString()
+                };
+                if (Object.keys(statsFinales).length > 0) updateFinal.estadisticas = statsFinales;
+                
+                await supabase.from('partidos').update(updateFinal).eq('id', p.id);
+                console.log(`   🏁 Finalizado: ${p.equipo_local} ${match.goals.home}-${match.goals.away} ${p.equipo_visitante}`);
+              }
+            }
+          } catch(e) { /* silenciar errores de check individual */ }
+        }
       }
     }
 
@@ -240,9 +460,221 @@ async function actualizarEnVivo() {
   }
 }
 
-// Cada 3 minutos — 30 req por partido de 90 min, te sobran para el día
-// Cada 3 minutos — 30 req por partido de 90 min, te sobran para el día
-cron.schedule('*/3 * * * *', actualizarEnVivo);
+let ultimoLiveRun = 0;
+async function actualizarEnVivoMaster() {
+  const nowTime = Date.now();
+  if (nowTime - ultimoLiveRun < 60000) {
+    console.log('   😴 [LIVE WORKER] Omitiendo ciclo por ejecución reciente (salvaguarda de rate limit).');
+    return;
+  }
+  ultimoLiveRun = nowTime;
+
+  console.log(`\n⏳ [LIVE MASTER] Iniciando ciclo de actualización en vivo — ${new Date().toLocaleString('es-AR')}`);
+  try {
+    const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
+    const now = new Date();
+    // Buffer de 15 minutos para partidos programados a empezar
+    const bufferTime = new Date(now.getTime() + 15 * 60 * 1000).toISOString();
+    
+    // 1. Pre-chequeo rápido en BD (solo traemos partidos del torneo activo para proteger cuotas de API)
+    const { data: activeMatches, error: dbErr } = await supabase
+      .from('partidos')
+      .select('id, equipo_local, equipo_visitante, estado, fecha_utc, goles_local, goles_visitante, estadisticas, id_api_football')
+      .eq('edicion_mundial', activeEdicion)
+      .or(`estado.eq.en_curso,and(estado.eq.programado,fecha_utc.lte.${bufferTime})`);
+
+    if (dbErr) {
+      console.error('   ❌ Error al consultar partidos en BD para pre-chequeo:', dbErr.message);
+      return;
+    }
+
+    if (!activeMatches || activeMatches.length === 0) {
+      console.log('   😴 [LIVE WORKER] Sin partidos en curso o próximos en este momento. Omitiendo llamados externos.');
+      return;
+    }
+
+    console.log(`   📋 Partidos activos/próximos en BD para ${activeEdicion.toUpperCase()}: ${activeMatches.length}`);
+
+    // 2. Auto-inicio de partidos programados cuya fecha ya pasó
+    const toStart = activeMatches.filter(m => m.estado === 'programado' && new Date(m.fecha_utc) <= now);
+    for (const p of toStart) {
+      const { error: startErr } = await supabase
+        .from('partidos')
+        .update({
+          estado: 'en_curso',
+          goles_local: 0,
+          goles_visitante: 0,
+          minuto: 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', p.id);
+
+      if (startErr) {
+        console.error(`   ❌ Error iniciando partido ${p.equipo_local} vs ${p.equipo_visitante}:`, startErr.message);
+      } else {
+        console.log(`   🚀 [AUTO-START] Partido iniciado automáticamente en BD: ${p.equipo_local} vs ${p.equipo_visitante}`);
+        p.estado = 'en_curso'; // Actualizar en memoria
+        p.goles_local = 0;
+        p.goles_visitante = 0;
+        p.minuto = 1;
+      }
+    }
+
+    // 3. Filtro de Seguridad: Zombie Match Safety Net
+    const enCurso = activeMatches.filter(m => m.estado === 'en_curso');
+    for (const p of enCurso) {
+      const hoursSinceStart = (Date.now() - new Date(p.fecha_utc).getTime()) / (1000 * 60 * 60);
+      if (hoursSinceStart > 3.5) {
+        console.log(`   🧟 [ZOMBIE MATCH] ${p.equipo_local} vs ${p.equipo_visitante} lleva en curso > 3.5 horas. Auto-finalizando...`);
+        const { error: zErr } = await supabase
+          .from('partidos')
+          .update({
+            estado: 'finalizado',
+            minuto: 90,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', p.id);
+        
+        if (zErr) console.error('   ❌ Error al auto-finalizar zombie match:', zErr.message);
+        p.estado = 'finalizado'; // Actualizar en memoria para omitir crawling
+      }
+    }
+
+    // Volver a filtrar los que quedaron realmente en_curso para actualizar
+    const partidosAActualizar = activeMatches.filter(m => m.estado === 'en_curso');
+    if (partidosAActualizar.length === 0) {
+      console.log('   Sin partidos activos para actualizar por API en este momento.');
+      return;
+    }
+
+    // 4. Intentar actualización con Sofascore (Principal, Ilimitado, Gratis)
+    console.log(`   📡 Intentando actualizar ${partidosAActualizar.length} partido(s) mediante Sofascore...`);
+    let sofascoreSuccess = false;
+    try {
+      const scheduledEventsCache = {};
+      let matchesUpdated = 0;
+
+      for (const partido of partidosAActualizar) {
+        let ssMatch = null;
+        const cachedSofaId = partido.estadisticas?.sofascore_id;
+
+        if (cachedSofaId) {
+          try {
+            console.log(`      🎯 Usando sofascore_id cacheado ${cachedSofaId} para ${partido.equipo_local} vs ${partido.equipo_visitante}`);
+            const { data: eventDetail } = await safeSofascoreGet(
+              `https://api.sofascore.com/api/v1/event/${cachedSofaId}`,
+              8000
+            );
+            ssMatch = eventDetail.event;
+          } catch (err) {
+            console.warn(`      ⚠️ Error al consultar evento directo por ID ${cachedSofaId}:`, err.message);
+          }
+        }
+
+        if (!ssMatch) {
+          const fecha = new Date(partido.fecha_utc).toISOString().split('T')[0];
+          if (!scheduledEventsCache[fecha]) {
+            try {
+              console.log(`      🔍 Consultando eventos de Sofascore para la fecha: ${fecha}`);
+              const { data: ssData } = await safeSofascoreGet(
+                `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fecha}`,
+                8000
+              );
+              scheduledEventsCache[fecha] = ssData.events || [];
+            } catch (err) {
+              console.warn(`      ⚠️ Error al consultar scheduled-events para la fecha ${fecha}:`, err.message);
+              scheduledEventsCache[fecha] = [];
+            }
+          }
+
+          const events = scheduledEventsCache[fecha];
+          ssMatch = events.find(e => {
+            const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_local);
+            const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_visitante);
+            const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', partido.equipo_visitante);
+            const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', partido.equipo_local);
+            return (homeOk && awayOk) || (homeInv && awayInv);
+          });
+        }
+
+        if (ssMatch) {
+          console.log(`      ✅ Partido encontrado en Sofascore: ${ssMatch.homeTeam?.name} vs ${ssMatch.awayTeam?.name} (ID: ${ssMatch.id})`);
+          
+          const isHomeMatchedDirectly = sofascoreTeamMatch(ssMatch.homeTeam?.name || '', partido.equipo_local);
+          const golesL = isHomeMatchedDirectly ? (ssMatch.homeScore?.current ?? 0) : (ssMatch.awayScore?.current ?? 0);
+          const golesV = isHomeMatchedDirectly ? (ssMatch.awayScore?.current ?? 0) : (ssMatch.homeScore?.current ?? 0);
+
+          const updateData = {
+            goles_local: golesL,
+            goles_visitante: golesV,
+            minuto: ssMatch.time?.currentPeriodStartTimestamp
+              ? Math.max(1, Math.min(90, Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60)))
+              : (parseInt(ssMatch.statusDescription) || ssMatch.status?.description || 1),
+            updated_at: new Date().toISOString(),
+            estadisticas: { ...(partido.estadisticas || {}), sofascore_id: ssMatch.id }
+          };
+
+          // Si el partido terminó en Sofascore
+          if (ssMatch.status?.type === 'finished' || ssMatch.statusDescription === 'FT') {
+            updateData.estado = 'finalizado';
+            updateData.minuto = 90;
+          }
+
+          // Intentar obtener estadísticas y goles en vivo
+          try {
+            const { data: statsData } = await safeSofascoreGet(
+              `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+              5000
+            );
+            let estadisticas = parseSofascoreStats(statsData) || {};
+            const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
+            if (goles) estadisticas.goles_detalle = goles;
+
+            if (Object.keys(estadisticas).length > 0) {
+              updateData.estadisticas = { ...updateData.estadisticas, ...estadisticas };
+            }
+          } catch (statsErr) {
+            // Silenciar, stats pueden no estar listos aún
+          }
+
+          const { error: updErr } = await supabase
+            .from('partidos')
+            .update(updateData)
+            .eq('id', partido.id);
+
+          if (updErr) {
+            console.error(`      ❌ Error actualizando partido ${partido.id}:`, updErr.message);
+          } else {
+            console.log(`      ⚽ [SOFASCORE] ${partido.equipo_local} ${updateData.goles_local}-${updateData.goles_visitante} ${partido.equipo_visitante} (${updateData.minuto}' - ${updateData.estado || 'en_curso'})`);
+            matchesUpdated++;
+          }
+        } else {
+          console.log(`      ⚠️ Partido no encontrado en Sofascore esta fecha: ${partido.equipo_local} vs ${partido.equipo_visitante}`);
+        }
+      }
+
+      sofascoreSuccess = true;
+      console.log(`   ✅ Sofascore finalizado. Partidos actualizados: ${matchesUpdated}`);
+      
+    } catch (sofaErr) {
+      console.warn(`   ⚠️ Error/Bloqueo de Sofascore (código ${sofaErr.response?.status || sofaErr.code || 'desconocido'}):`, sofaErr.message);
+      sofascoreSuccess = false;
+    }
+
+    // 5. Fallback a API-Football (si Sofascore falló o no se pudo completar)
+    if (!sofascoreSuccess) {
+      console.log(`   🚨 [FALLBACK] Iniciando actualización con API-Football...`);
+      await actualizarEnVivo();
+    }
+
+  } catch (masterErr) {
+    console.error('   ❌ Error crítico en actualizarEnVivoMaster:', masterErr.message);
+  }
+}
+
+// Iniciar el Master Live Worker cada 2 minutos (reemplaza anteriores schedules de live)
+actualizarEnVivoMaster();
+cron.schedule('*/2 * * * *', actualizarEnVivoMaster);
 
 // ══════════════════════════════════════════════════════════════════
 // ACTUALIZACIÓN DE TABLAS DE APOYO (Posiciones, Goleadores, Tarjetas)
@@ -254,7 +686,7 @@ async function actualizarPosiciones() {
     const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/standings`);
     const standings = data.standings || [];
     const rows = [];
-    
+
     standings.forEach(s => {
       const grupo = s.group || s.stage;
       (s.table || []).forEach(t => {
@@ -322,52 +754,123 @@ async function actualizarTarjetas() {
     // Para modo TEST (Libertadores), forzamos la temporada 2024 para asegurarnos de tener datos.
     // Para el Mundial 2026, usamos 2026.
     const currentSeason = TEST_MODE ? 2024 : 2026;
-    
-    const [yellow, red] = await Promise.all([
-      apiFootball.get('/players/topyellowcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } })),
-      apiFootball.get('/players/topredcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } }))
-    ]);
+    const tournamentId = TEST_MODE ? 384 : 16; // 384: Libertadores, 16: Mundial
+    let rows = [];
+    let sofascoreSuccess = false;
 
-    const cardsMap = new Map();
+    console.log(`   📡 Intentando actualizar tarjetas mediante Sofascore (Torneo: ${tournamentId}, Año: ${currentSeason})...`);
+    try {
+      const urlSeasons = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/seasons`;
+      const resSeasons = await safeSofascoreGet(urlSeasons);
+      const seasons = resSeasons.data?.seasons || [];
+      const activeSeason = seasons.find(s => s.year === String(currentSeason)) || seasons[0];
 
-    const processCards = (response, type) => {
-      (response || []).forEach(item => {
-        const p = item.player;
-        const stat = item.statistics?.[0] || {};
-        const team = stat.team || {};
-        const id = `${p.name}-${team.name}`;
-        
-        if (!cardsMap.has(id)) {
-          cardsMap.set(id, {
-            id,
-            nombre: p.name,
-            equipo: team.name,
-            equipo_short: team.name,
-            escudo: team.logo,
-            amarillas: 0,
-            rojas: 0,
-            updated_at: new Date().toISOString()
-          });
+      if (activeSeason) {
+        console.log(`      🏆 Temporada de Sofascore seleccionada: ${activeSeason.name} (ID: ${activeSeason.id})`);
+        const urlStats = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics`;
+        const resStats = await safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-yellowCards&group=card&type=overall");
+        const players = resStats.data?.results || [];
+
+        if (players.length > 0) {
+          console.log(`      Encontrados ${players.length} líderes de tarjetas en Sofascore. Obteniendo estadísticas individuales...`);
+          const cardsMap = new Map();
+
+          // Consultar las estadísticas individuales en paralelo con safeSofascoreGet (que tiene throttling)
+          await Promise.all(players.map(async (item) => {
+            const p = item.player;
+            const t = item.team;
+            if (!p || !t) return;
+            try {
+              const urlPlayerStats = `https://api.sofascore.com/api/v1/player/${p.id}/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics/overall`;
+              const resPlayerStats = await safeSofascoreGet(urlPlayerStats);
+              const stats = resPlayerStats.data?.statistics || {};
+              const id = `${p.name}-${t.name}`;
+              cardsMap.set(id, {
+                id,
+                nombre: p.name,
+                equipo: t.name,
+                equipo_short: t.name,
+                escudo: `https://api.sofascore.app/api/v1/team/${t.id}/image`,
+                amarillas: stats.yellowCards || 0,
+                rojas: (stats.redCards || 0) + (stats.yellowRedCards || 0),
+                updated_at: new Date().toISOString()
+              });
+            } catch (err) {
+              console.warn(`      ⚠️ Error al obtener estadísticas del jugador ${p.name}:`, err.message);
+            }
+          }));
+
+          rows = Array.from(cardsMap.values());
+          if (rows.length > 0) {
+            sofascoreSuccess = true;
+            console.log(`      ✅ Sofascore compiló ${rows.length} líderes de tarjetas con éxito.`);
+          }
         }
-        
-        const current = cardsMap.get(id);
-        if (type === 'yellow') current.amarillas = stat.cards?.yellow || 0;
-        if (type === 'red') current.rojas = stat.cards?.red || 0;
-      });
-    };
+      }
+    } catch (sofaErr) {
+      console.warn(`   ⚠️ Falló la obtención de tarjetas mediante Sofascore:`, sofaErr.message);
+    }
 
-    processCards(yellow.data?.response, 'yellow');
-    processCards(red.data?.response, 'red');
+    // FALLBACK A API-FOOTBALL (si Sofascore no se completó)
+    if (!sofascoreSuccess) {
+      console.log('   📡 Cambiando a fallback de API-Football...');
+      const [yellow, red] = await Promise.all([
+        apiFootball.get('/players/topyellowcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } })),
+        apiFootball.get('/players/topredcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } }))
+      ]);
 
-    const rows = Array.from(cardsMap.values());
-    
-    // Limpiar tabla antes de insertar para no mezclar datos de Libertadores con el Mundial
+      const yellowErrors = yellow.data?.errors;
+      const redErrors = red.data?.errors;
+      const hasYellowErrors = yellowErrors && Object.keys(yellowErrors).length > 0;
+      const hasRedErrors = redErrors && Object.keys(redErrors).length > 0;
+
+      if (hasYellowErrors || hasRedErrors) {
+        console.warn('   ⚠️ Fallback de API-Football también falló por límite de cuota. Se conservan las tarjetas actuales.');
+        if (hasYellowErrors) console.warn('      Detalle amarillas:', yellowErrors);
+        if (hasRedErrors) console.warn('      Detalle rojas:', redErrors);
+        return;
+      }
+
+      const cardsMap = new Map();
+      const processCards = (response, type) => {
+        (response || []).forEach(item => {
+          const p = item.player;
+          const stat = item.statistics?.[0] || {};
+          const team = stat.team || {};
+          const id = `${p.name}-${team.name}`;
+
+          if (!cardsMap.has(id)) {
+            cardsMap.set(id, {
+              id,
+              nombre: p.name,
+              equipo: team.name,
+              equipo_short: team.name,
+              escudo: team.logo,
+              amarillas: 0,
+              rojas: 0,
+              updated_at: new Date().toISOString()
+            });
+          }
+
+          const current = cardsMap.get(id);
+          if (type === 'yellow') current.amarillas = stat.cards?.yellow || 0;
+          if (type === 'red') current.rojas = stat.cards?.red || 0;
+        });
+      };
+
+      processCards(yellow.data?.response, 'yellow');
+      processCards(red.data?.response, 'red');
+      rows = Array.from(cardsMap.values());
+    }
+
+    // LIMPIEZA Y ACTUALIZACIÓN EN BD
+    // Limpiar tabla antes de insertar para no mezclar datos antiguos o de pruebas
     await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
-    
+
     if (rows.length > 0) {
       const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
-      console.log(`   ✅ ${rows.length} jugadores con tarjetas actualizados.`);
+      console.log(`   ✅ ${rows.length} registros de tarjetas actualizados con éxito en la base de datos.`);
     } else {
       console.log('   Sin tarjetas reportadas aún.');
     }
@@ -405,14 +908,14 @@ async function actualizarHistoria() {
     if (!data.events?.length) return;
 
     const rows = data.events.map(e => ({
-      id_thesports:   e.idEvent,
-      nombre:         e.strEvent,
-      fecha:          e.dateEvent,
-      equipo_local:   e.strHomeTeam,
+      id_thesports: e.idEvent,
+      nombre: e.strEvent,
+      fecha: e.dateEvent,
+      equipo_local: e.strHomeTeam,
       equipo_visitante: e.strAwayTeam,
-      goles_local:    parseInt(e.intHomeScore) || null,
+      goles_local: parseInt(e.intHomeScore) || null,
       goles_visitante: parseInt(e.intAwayScore) || null,
-      temporada:      e.strSeason,
+      temporada: e.strSeason,
     }));
 
     await supabase
@@ -432,11 +935,71 @@ cron.schedule('0 3 * * *', actualizarHistoria);
 // ══════════════════════════════════════════════════════════════════
 const SOFASCORE_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-  'Accept': 'application/json',
-  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept': '*/*',
+  'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8',
   'Cache-Control': 'no-cache',
+  'Origin': 'https://www.sofascore.com',
   'Referer': 'https://www.sofascore.com/'
 };
+
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+];
+
+let ultimoSofascoreReqTime = 0;
+const SOFASCORE_THROTTLE_MS = 1000;
+
+async function safeSofascoreGet(url, customTimeout = 8000) {
+  const now = Date.now();
+  const timeSinceLast = now - ultimoSofascoreReqTime;
+  if (timeSinceLast < SOFASCORE_THROTTLE_MS) {
+    const waitTime = SOFASCORE_THROTTLE_MS - timeSinceLast;
+    await delay(waitTime);
+  }
+  
+  let attempts = 3;
+  let lastError = null;
+  const https = require('https');
+  const agent = new https.Agent({ keepAlive: false });
+
+  for (let i = 0; i < attempts; i++) {
+    ultimoSofascoreReqTime = Date.now();
+    const ua = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+    const headers = {
+      'User-Agent': ua,
+      'Accept': 'application/json',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Origin': 'https://www.sofascore.com',
+      'Referer': 'https://www.sofascore.com/',
+      'Connection': 'close'
+    };
+
+    try {
+      if (i > 0) {
+        console.log(`      🔄 [REINTENTO SOFASCORE] Intento ${i + 1}/${attempts} para: ${url}`);
+      }
+      return await axios.get(url, { headers, timeout: customTimeout, proxy: false, httpsAgent: agent });
+    } catch (err) {
+      lastError = err;
+      const status = err.response?.status;
+      console.warn(`      ⚠️ [SOFASCORE ERROR] Status ${status || 'desconocido'} en intento ${i + 1} para: ${url}. Detalle: ${err.message}`);
+      
+      if (status === 403 || status === 429) {
+        const backoff = (i + 1) * 2000;
+        await delay(backoff);
+      } else {
+        if (status === 404) throw err;
+        await delay(1000);
+      }
+    }
+  }
+
+  throw lastError;
+}
 
 const sofascoreNormalize = s => s ? s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '') : '';
 
@@ -460,26 +1023,26 @@ function parseSofascoreStats(statsData) {
   const parseNum = (val) => parseInt(val) || 0;
 
   return {
-    posesion_local:      parsePercent(getGroupStat('Match overview', 'Ball possession')?.home),
-    posesion_visitante:  parsePercent(getGroupStat('Match overview', 'Ball possession')?.away),
-    tiros_local:         parseNum(getGroupStat('Match overview', 'Total shots')?.home),
-    tiros_visitante:     parseNum(getGroupStat('Match overview', 'Total shots')?.away),
+    posesion_local: parsePercent(getGroupStat('Match overview', 'Ball possession')?.home),
+    posesion_visitante: parsePercent(getGroupStat('Match overview', 'Ball possession')?.away),
+    tiros_local: parseNum(getGroupStat('Match overview', 'Total shots')?.home),
+    tiros_visitante: parseNum(getGroupStat('Match overview', 'Total shots')?.away),
     tiros_al_arco_local: parseNum(getGroupStat('Shots', 'Shots on target')?.home),
     tiros_al_arco_visit: parseNum(getGroupStat('Shots', 'Shots on target')?.away),
-    corners_local:       parseNum(getGroupStat('Match overview', 'Corner kicks')?.home),
-    corners_visitante:   parseNum(getGroupStat('Match overview', 'Corner kicks')?.away),
-    faltas_local:        parseNum(getGroupStat('Match overview', 'Fouls')?.home),
-    faltas_visitante:    parseNum(getGroupStat('Match overview', 'Fouls')?.away),
-    amarillas_local:     parseNum(getGroupStat('Match overview', 'Yellow cards')?.home),
+    corners_local: parseNum(getGroupStat('Match overview', 'Corner kicks')?.home),
+    corners_visitante: parseNum(getGroupStat('Match overview', 'Corner kicks')?.away),
+    faltas_local: parseNum(getGroupStat('Match overview', 'Fouls')?.home),
+    faltas_visitante: parseNum(getGroupStat('Match overview', 'Fouls')?.away),
+    amarillas_local: parseNum(getGroupStat('Match overview', 'Yellow cards')?.home),
     amarillas_visitante: parseNum(getGroupStat('Match overview', 'Yellow cards')?.away),
   };
 }
 
 async function fetchSofascoreGoals(matchId, localName, visName) {
   try {
-    const { data: incData } = await axios.get(
+    const { data: incData } = await safeSofascoreGet(
       `https://api.sofascore.com/api/v1/event/${matchId}/incidents`,
-      { headers: SOFASCORE_HEADERS, timeout: 10000 }
+      10000
     );
     const goals = (incData.incidents || []).filter(i => i.incidentType === 'goal');
     if (goals.length > 0) {
@@ -629,9 +1192,9 @@ async function poblarEstadisticasSofascore() {
 }
 
 // Ejecutar batch 15 segundos después del inicio (dar tiempo al fixture)
-setTimeout(poblarEstadisticasSofascore, 15000);
+// setTimeout(poblarEstadisticasSofascore, 15000);
 // Repetir cada 2 horas para capturar nuevos partidos finalizados
-cron.schedule('10 */2 * * *', poblarEstadisticasSofascore);
+// cron.schedule('10 */2 * * *', poblarEstadisticasSofascore);
 
 // ══════════════════════════════════════════════════════════════════
 // LIVE: Actualizar partidos en curso desde Sofascore (reemplaza API-Football)
@@ -672,12 +1235,12 @@ async function actualizarEnVivoSofascore() {
       if (!ssMatch) continue;
 
       const updateData = {
-        goles_local:     ssMatch.homeScore?.current ?? null,
+        goles_local: ssMatch.homeScore?.current ?? null,
         goles_visitante: ssMatch.awayScore?.current ?? null,
-        minuto:          ssMatch.time?.currentPeriodStartTimestamp
-                           ? Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60)
-                           : ssMatch.statusDescription || null,
-        updated_at:      new Date().toISOString(),
+        minuto: ssMatch.time?.currentPeriodStartTimestamp
+          ? Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60)
+          : ssMatch.statusDescription || null,
+        updated_at: new Date().toISOString(),
       };
 
       // Si el partido terminó en Sofascore, actualizamos el estado
@@ -720,7 +1283,7 @@ async function actualizarEnVivoSofascore() {
 }
 
 // Live cada 3 minutos (reemplaza el actualizarEnVivo de API-Football)
-cron.schedule('*/3 * * * *', actualizarEnVivoSofascore);
+// cron.schedule('*/3 * * * *', actualizarEnVivoSofascore);
 
 
 // ══════════════════════════════════════════════════════════════════
@@ -732,17 +1295,17 @@ cron.schedule('*/3 * * * *', actualizarEnVivoSofascore);
  */
 function mapearEstado(status) {
   const mapa = {
-    'SCHEDULED':  'programado',
-    'TIMED':      'programado',
-    'IN_PLAY':    'en_curso',
-    'PAUSED':     'en_curso',     // entretiempo sigue siendo en_curso
+    'SCHEDULED': 'programado',
+    'TIMED': 'programado',
+    'IN_PLAY': 'en_curso',
+    'PAUSED': 'en_curso',     // entretiempo sigue siendo en_curso
     'EXTRA_TIME': 'en_curso',
-    'PENALTY':    'en_curso',
-    'FINISHED':   'finalizado',
-    'AWARDED':    'finalizado',
-    'SUSPENDED':  'suspendido',
-    'CANCELLED':  'suspendido',
-    'POSTPONED':  'suspendido',
+    'PENALTY': 'en_curso',
+    'FINISHED': 'finalizado',
+    'AWARDED': 'finalizado',
+    'SUSPENDED': 'suspendido',
+    'CANCELLED': 'suspendido',
+    'POSTPONED': 'suspendido',
   };
   return mapa[status] || 'programado';
 }
@@ -771,312 +1334,446 @@ app.use(express.json());
 
 // Health check — para verificar que el servidor está vivo
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', mode: TEST_MODE ? 'test_libertadores' : 'mundial_2026', time: new Date().toISOString() });
+  res.json({ status: 'ok', mode: TEST_MODE ? 'test_libertadores' : 'mundial_2026', time: new Date().toISOString() });
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: FIXTURE COMPLETO (cacheado desde Football-Data.org)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/fixture', async (req, res) => {
-    try {
-        let cached = getCached('fixture');
-        if (cached) return res.json(cached);
+  try {
+    const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
+    const { data, error } = await supabase
+      .from('partidos')
+      .select('*')
+      .eq('edicion_mundial', activeEdicion)
+      .order('fecha_utc', { ascending: true });
 
-        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/matches`);
-        const partidos = (data.matches || []).map(p => ({
-            id: p.id,
-            grupo: p.group || null,
-            fase: p.stage || '',
-            jornada: p.matchday,
-            fecha_utc: p.utcDate,
-            equipo_local: p.homeTeam?.name || 'Por definir',
-            equipo_local_short: p.homeTeam?.shortName || p.homeTeam?.tla || '',
-            equipo_visitante: p.awayTeam?.name || 'Por definir',
-            equipo_visitante_short: p.awayTeam?.shortName || p.awayTeam?.tla || '',
-            escudo_local: p.homeTeam?.crest || null,
-            escudo_visitante: p.awayTeam?.crest || null,
-            goles_local: p.score?.fullTime?.home,
-            goles_visitante: p.score?.fullTime?.away,
-            estado: mapearEstado(p.status),
-            estadio: p.venue || null,
-        }));
+    if (error) throw error;
 
-        setCache('fixture', partidos);
-        res.json(partidos);
-    } catch (err) {
-        console.error('Error /api/fixture:', err.message);
-        res.status(500).json({ error: 'Error obteniendo fixture' });
-    }
+    const partidos = (data || []).map(p => ({
+      id: p.id,
+      grupo: p.fase || null,
+      fase: p.fase || '',
+      jornada: p.jornada || 1,
+      fecha_utc: p.fecha_utc,
+      equipo_local: p.equipo_local,
+      equipo_visitante: p.equipo_visitante,
+      escudo_local: p.escudo_local,
+      escudo_visitante: p.escudo_visitante,
+      goles_local: p.goles_local,
+      goles_visitante: p.goles_visitante,
+      estado: p.estado,
+      estadio: null,
+      minuto: p.minuto
+    }));
+
+    res.json(partidos);
+  } catch (err) {
+    console.error('Error /api/fixture:', err.message);
+    res.status(500).json({ error: 'Error obteniendo fixture' });
+  }
 });
+
+// ══════════════════════════════════════════════════════════════════
+// FALLBACK A API-FOOTBALL SI SOFASCORE FALLA O NO TIENE EL PARTIDO
+// ══════════════════════════════════════════════════════════════════
+async function intentarApiFootballFallback(dbMatch) {
+  console.log(`🔍 [API-FOOTBALL FALLBACK] Intentando buscar stats para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}...`);
+  try {
+    const fechaPartido = new Date(dbMatch.fecha_utc);
+    const fechaStr = fechaPartido.toISOString().split('T')[0];
+
+    const { data: afData } = await apiFootball.get('/fixtures', {
+      params: {
+        date: fechaStr,
+        league: LIVE_LEAGUE_ID
+      }
+    });
+    const afFixtures = afData.response || [];
+
+    const normalizeName = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    const foundMatch = afFixtures.find(f => {
+      const homeMatch = normalizeName(f.teams.home.name).includes(normalizeName(dbMatch.equipo_local)) ||
+                        normalizeName(dbMatch.equipo_local).includes(normalizeName(f.teams.home.name));
+      const awayMatch = normalizeName(f.teams.away.name).includes(normalizeName(dbMatch.equipo_visitante)) ||
+                        normalizeName(dbMatch.equipo_visitante).includes(normalizeName(f.teams.away.name));
+      return homeMatch && awayMatch;
+    });
+
+    if (foundMatch) {
+      const afFixtureId = foundMatch.fixture.id;
+      console.log(`   ✅ Encontrado en API-Football (ID: ${afFixtureId})`);
+
+      // Obtener estadísticas
+      const { data: statsData } = await apiFootball.get('/fixtures/statistics', { params: { fixture: afFixtureId } });
+      const statsArr = statsData.response || [];
+      let estadisticas = {};
+
+      if (statsArr.length >= 2) {
+        const statsHome = statsArr[0]?.statistics || [];
+        const statsAway = statsArr[1]?.statistics || [];
+        const getStat = (arr, type) => { const s = arr.find(x => x.type === type); return s ? (parseInt(s.value) || 0) : 0; };
+        
+        estadisticas = {
+          posesion_local: getStat(statsHome, 'Ball Possession'),
+          posesion_visitante: getStat(statsAway, 'Ball Possession'),
+          tiros_local: getStat(statsHome, 'Total Shots'),
+          tiros_visitante: getStat(statsAway, 'Total Shots'),
+          tiros_al_arco_local: getStat(statsHome, 'Shots on Goal'),
+          tiros_al_arco_visit: getStat(statsAway, 'Shots on Goal'),
+          corners_local: getStat(statsHome, 'Corner Kicks'),
+          corners_visitante: getStat(statsAway, 'Corner Kicks'),
+          faltas_local: getStat(statsHome, 'Fouls'),
+          faltas_visitante: getStat(statsAway, 'Fouls'),
+          amarillas_local: getStat(statsHome, 'Yellow Cards'),
+          amarillas_visitante: getStat(statsAway, 'Yellow Cards'),
+          goles_detalle: []
+        };
+      }
+
+      // Actualizar en Supabase
+      const updatePayload = {
+        id_api_football: afFixtureId
+      };
+      if (Object.keys(estadisticas).length > 0) {
+        updatePayload.estadisticas = estadisticas;
+        dbMatch.estadisticas = estadisticas; // actualiza en memoria para la respuesta actual
+      }
+      dbMatch.id_api_football = afFixtureId;
+
+      if (foundMatch.goals && foundMatch.goals.home !== null && foundMatch.goals.away !== null) {
+        updatePayload.goles_local = foundMatch.goals.home;
+        updatePayload.goles_visitante = foundMatch.goals.away;
+        dbMatch.goles_local = foundMatch.goals.home;
+        dbMatch.goles_visitante = foundMatch.goals.away;
+      }
+
+      await supabase.from('partidos').update(updatePayload).eq('id', dbMatch.id);
+      console.log('   💾 Estadísticas, goles y id_api_football guardados en BD desde API-Football.');
+      return true;
+    } else {
+      console.warn(`   ⚠️ No se encontró partido coincidente en API-Football para fecha: ${fechaStr}`);
+    }
+  } catch (err) {
+    console.error('   ❌ Error en API-Football fallback stats:', err.message);
+  }
+  return false;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: DETALLE DE UN PARTIDO
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/fixture/:id', async (req, res) => {
-    try {
-        const partidoId = req.params.id;
-        
-        // Determinar si es UUID o un ID entero (id_football_data)
-        const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partidoId);
-        
-        // 1. Obtener de Supabase
-        const { data: dbMatch, error } = await supabase
-            .from('partidos')
-            .select('*')
-            .eq(esUUID ? 'id' : 'id_football_data', partidoId)
-            .maybeSingle();
+  try {
+    const partidoId = req.params.id;
 
-        if (error || !dbMatch) {
-            return res.status(404).json({ error: 'Partido no encontrado en BD' });
-        }
+    // Determinar si es UUID o un ID entero (id_football_data)
+    const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partidoId);
 
-        let footballDataMatch = null;
-        // 2. Si tenemos el id_football_data, traemos detalles extra (goles, arbitro)
-        if (dbMatch.id_football_data) {
-            try {
-                const { data } = await footballData.get(`/matches/${dbMatch.id_football_data}`);
-                footballDataMatch = data;
-            } catch (err) {
-                console.warn('No se pudo traer detalles de football-data para partido', dbMatch.id_football_data);
-            }
-        }
+    // 1. Obtener de Supabase
+    const { data: dbMatch, error } = await supabase
+      .from('partidos')
+      .select('*')
+      .eq(esUUID ? 'id' : 'id_football_data', partidoId)
+      .maybeSingle();
 
-        // 3. FALLBACK: Si no hay estadísticas, buscamos en Sofascore on-demand
-        //    Sofascore es gratuito, sin API key, y cubre Libertadores 2026 con stats completas
-        if (Object.keys(dbMatch.estadisticas || {}).length === 0 && dbMatch.estado === 'finalizado') {
-            console.log(`🔍 Buscando estadísticas en Sofascore para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}...`);
-
-            try {
-                // Usar la fecha del partido para buscar en Sofascore
-                const fechaPartido = new Date(dbMatch.fecha_utc);
-                const fechaStr = fechaPartido.toISOString().split('T')[0];
-
-                const { data: ssData } = await axios.get(
-                    `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fechaStr}`,
-                    { headers: SOFASCORE_HEADERS, timeout: 10000 }
-                );
-                const events = ssData.events || [];
-
-                // Buscar el partido por nombres de equipos
-                const ssMatch = events.find(e => {
-                    const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_local);
-                    const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_visitante);
-                    const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_visitante);
-                    const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_local);
-                    return (homeOk && awayOk) || (homeInv && awayInv);
-                });
-
-                if (ssMatch) {
-                    console.log(`   ✅ Encontrado: ${ssMatch.homeTeam?.name} vs ${ssMatch.awayTeam?.name} (ID: ${ssMatch.id})`);
-
-                    // Obtener estadísticas
-                    const { data: statsData } = await axios.get(
-                        `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
-                        { headers: SOFASCORE_HEADERS, timeout: 10000 }
-                    );
-                    let estadisticas = parseSofascoreStats(statsData) || {};
-                    const goles = await fetchSofascoreGoals(ssMatch.id, dbMatch.equipo_local, dbMatch.equipo_visitante);
-                    if (goles) estadisticas.goles_detalle = goles;
-                    else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
-
-                    if (Object.keys(estadisticas).length > 0) {
-                        dbMatch.estadisticas = { ...(dbMatch.estadisticas || {}), ...estadisticas };
-                        console.log(`   📊 Stats/Goles guardados en memoria`);
-                    }
-
-                    if (goles && (!footballDataMatch?.goals || footballDataMatch.goals.length === 0)) {
-                        footballDataMatch = footballDataMatch || {};
-                        footballDataMatch.goals = goles;
-                    }
-
-                    // Guardar en la DB para futuras consultas
-                    if (Object.keys(dbMatch.estadisticas || {}).length > 0) {
-                        await supabase.from('partidos').update({
-                            estadisticas: dbMatch.estadisticas
-                        }).eq('id', dbMatch.id);
-                        console.log('   💾 Estadísticas guardadas en BD.');
-                    }
-                } else {
-                    console.warn(`   ⚠️ No se encontró en Sofascore: ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante} (fecha: ${fechaStr})`);
-                }
-            } catch (err) {
-                console.warn('   ⚠️ Fallback a Sofascore falló:', err.message);
-            }
-        }
-
-        res.json({
-            id: dbMatch.id,
-            grupo: dbMatch.fase,
-            fase: dbMatch.fase,
-            fecha_utc: dbMatch.fecha_utc,
-            equipo_local: dbMatch.equipo_local,
-            equipo_visitante: dbMatch.equipo_visitante,
-            escudo_local: dbMatch.escudo_local,
-            escudo_visitante: dbMatch.escudo_visitante,
-            goles_local: dbMatch.goles_local,
-            goles_visitante: dbMatch.goles_visitante,
-            estado: dbMatch.estado,
-            minuto: dbMatch.minuto,
-            estadisticas: dbMatch.estadisticas || {},
-            estadio: footballDataMatch?.venue || null,
-            arbitro: footballDataMatch?.referees?.map(r => r.name).join(', ') || null,
-            competicion: footballDataMatch?.competition?.name || 'Mundial 2026',
-            goles_detalle: (footballDataMatch?.goals?.length > 0) ? footballDataMatch.goals : (dbMatch.estadisticas?.goles_detalle || []),
-        });
-    } catch (err) {
-        console.error('Error /api/fixture/:id:', err.message);
-        res.status(500).json({ error: 'Error obteniendo partido' });
+    if (error || !dbMatch) {
+      return res.status(404).json({ error: 'Partido no encontrado en BD' });
     }
+
+    let footballDataMatch = null;
+    // 2. Si tenemos el id_football_data, traemos detalles extra (goles, arbitro)
+    if (dbMatch.id_football_data) {
+      try {
+        const { data } = await footballData.get(`/matches/${dbMatch.id_football_data}`);
+        footballDataMatch = data;
+      } catch (err) {
+        console.warn('No se pudo traer detalles de football-data para partido', dbMatch.id_football_data);
+      }
+    }
+
+    // 3. FALLBACK: Si no hay estadísticas, buscamos en Sofascore on-demand
+    //    Sofascore es gratuito, sin API key, y cubre Libertadores 2026 con stats completas
+    const hasStats = dbMatch.estadisticas && Object.keys(dbMatch.estadisticas).filter(k => k !== 'sofascore_id').length > 0;
+    if (!hasStats && dbMatch.estado === 'finalizado') {
+      console.log(`🔍 Buscando estadísticas en Sofascore para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}...`);
+
+      let sofascoreSuccess = false;
+      try {
+        let ssMatch = null;
+        const cachedSofaId = dbMatch.estadisticas?.sofascore_id;
+
+        if (cachedSofaId) {
+          try {
+            console.log(`   🎯 Usando sofascore_id cacheado ${cachedSofaId} para ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}`);
+            const { data: eventDetail } = await safeSofascoreGet(
+              `https://api.sofascore.com/api/v1/event/${cachedSofaId}`,
+              10000
+            );
+            ssMatch = eventDetail.event;
+          } catch (err) {
+            console.warn(`   ⚠️ Error al consultar evento directo por ID ${cachedSofaId}:`, err.message);
+          }
+        }
+
+        if (!ssMatch) {
+          // Usar la fecha del partido para buscar en Sofascore
+          const fechaPartido = new Date(dbMatch.fecha_utc);
+          const fechaStr = fechaPartido.toISOString().split('T')[0];
+
+          const { data: ssData } = await safeSofascoreGet(
+            `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fechaStr}`,
+            10000
+          );
+          const events = ssData.events || [];
+
+          // Buscar el partido por nombres de equipos
+          ssMatch = events.find(e => {
+            const homeOk = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_local);
+            const awayOk = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_visitante);
+            const homeInv = sofascoreTeamMatch(e.homeTeam?.name || '', dbMatch.equipo_visitante);
+            const awayInv = sofascoreTeamMatch(e.awayTeam?.name || '', dbMatch.equipo_local);
+            return (homeOk && awayOk) || (homeInv && awayInv);
+          });
+        }
+
+        if (ssMatch) {
+          console.log(`   ✅ Encontrado: ${ssMatch.homeTeam?.name} vs ${ssMatch.awayTeam?.name} (ID: ${ssMatch.id})`);
+
+          const isHomeMatchedDirectly = sofascoreTeamMatch(ssMatch.homeTeam?.name || '', dbMatch.equipo_local);
+          const golesL = isHomeMatchedDirectly ? (ssMatch.homeScore?.current ?? null) : (ssMatch.awayScore?.current ?? null);
+          const golesV = isHomeMatchedDirectly ? (ssMatch.awayScore?.current ?? null) : (ssMatch.homeScore?.current ?? null);
+
+          // Obtener estadísticas
+          const { data: statsData } = await safeSofascoreGet(
+            `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
+            10000
+          );
+          let estadisticas = parseSofascoreStats(statsData) || {};
+          const goles = await fetchSofascoreGoals(ssMatch.id, dbMatch.equipo_local, dbMatch.equipo_visitante);
+          if (goles) estadisticas.goles_detalle = goles;
+          else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
+
+          // Asegurar que guardamos sofascore_id
+          estadisticas.sofascore_id = ssMatch.id;
+
+          if (Object.keys(estadisticas).length > 0) {
+            dbMatch.estadisticas = { ...(dbMatch.estadisticas || {}), ...estadisticas };
+            console.log(`   📊 Stats/Goles guardados en memoria`);
+          }
+
+          if (goles && (!footballDataMatch?.goals || footballDataMatch.goals.length === 0)) {
+            footballDataMatch = footballDataMatch || {};
+            footballDataMatch.goals = goles;
+          }
+
+          // Guardar en la DB para futuras consultas
+          if (Object.keys(dbMatch.estadisticas || {}).length > 0) {
+            const updatePayload = {
+              estadisticas: dbMatch.estadisticas
+            };
+            if (golesL !== null && golesV !== null) {
+              updatePayload.goles_local = golesL;
+              updatePayload.goles_visitante = golesV;
+              dbMatch.goles_local = golesL;
+              dbMatch.goles_visitante = golesV;
+            }
+            await supabase.from('partidos').update(updatePayload).eq('id', dbMatch.id);
+            console.log('   💾 Estadísticas y goles guardados en BD.');
+          }
+          sofascoreSuccess = true;
+        } else {
+          console.warn(`   ⚠️ No se encontró en Sofascore: ${dbMatch.equipo_local} vs ${dbMatch.equipo_visitante}`);
+        }
+      } catch (err) {
+        console.warn('   ⚠️ Fallback a Sofascore falló:', err.message);
+      }
+
+      // Si Sofascore falló o no se encontró el partido, usamos fallback de API-Football
+      if (!sofascoreSuccess) {
+        await intentarApiFootballFallback(dbMatch);
+      }
+    }
+
+    res.json({
+      id: dbMatch.id,
+      grupo: dbMatch.fase,
+      fase: dbMatch.fase,
+      fecha_utc: dbMatch.fecha_utc,
+      equipo_local: dbMatch.equipo_local,
+      equipo_visitante: dbMatch.equipo_visitante,
+      escudo_local: dbMatch.escudo_local,
+      escudo_visitante: dbMatch.escudo_visitante,
+      goles_local: dbMatch.goles_local,
+      goles_visitante: dbMatch.goles_visitante,
+      estado: dbMatch.estado,
+      minuto: dbMatch.minuto,
+      estadisticas: dbMatch.estadisticas || {},
+      estadio: footballDataMatch?.venue || null,
+      arbitro: footballDataMatch?.referees?.map(r => r.name).join(', ') || null,
+      competicion: footballDataMatch?.competition?.name || 'Mundial 2026',
+      goles_detalle: (footballDataMatch?.goals?.length > 0) ? footballDataMatch.goals : (dbMatch.estadisticas?.goles_detalle || []),
+    });
+  } catch (err) {
+    console.error('Error /api/fixture/:id:', err.message);
+    res.status(500).json({ error: 'Error obteniendo partido' });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: STANDINGS / POSICIONES POR GRUPO
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/standings', async (req, res) => {
-    try {
-        let cached = getCached('standings');
-        if (cached) return res.json(cached);
+  try {
+    const { data, error } = await supabase
+      .from('posiciones')
+      .select('*')
+      .order('grupo', { ascending: true })
+      .order('posicion', { ascending: true });
 
-        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/standings`);
-        const standings = (data.standings || []).map(s => ({
-            grupo: s.group || s.stage,
-            tipo: s.type,
-            tabla: (s.table || []).map(t => ({
-                posicion: t.position,
-                equipo: t.team?.name || '',
-                equipo_short: t.team?.shortName || t.team?.tla || '',
-                escudo: t.team?.crest || null,
-                pj: t.playedGames,
-                g: t.won,
-                e: t.draw,
-                p: t.lost,
-                gf: t.goalsFor,
-                gc: t.goalsAgainst,
-                dg: t.goalDifference,
-                pts: t.points,
-            })),
-        }));
+    if (error) throw error;
 
-        setCache('standings', standings);
-        res.json(standings);
-    } catch (err) {
-        console.error('Error /api/standings:', err.message);
-        res.status(500).json({ error: 'Error obteniendo standings' });
-    }
+    // Agrupar por grupo para mantener el formato esperado por el frontend
+    const gruposMap = {};
+    (data || []).forEach(row => {
+      const g = row.grupo;
+      if (!gruposMap[g]) {
+        gruposMap[g] = {
+          grupo: g,
+          tipo: 'TOTAL',
+          tabla: []
+        };
+      }
+      gruposMap[g].tabla.push({
+        posicion: row.posicion,
+        equipo: row.equipo,
+        equipo_short: row.equipo_short,
+        escudo: row.escudo,
+        pj: row.pj || 0,
+        g: row.g || 0,
+        e: row.e || 0,
+        p: row.p || 0,
+        gf: row.gf || 0,
+        gc: row.gc || 0,
+        dg: row.dg || 0,
+        pts: row.pts || 0,
+      });
+    });
+
+    res.json(Object.values(gruposMap));
+  } catch (err) {
+    console.error('Error /api/standings:', err.message);
+    res.status(500).json({ error: 'Error obteniendo standings' });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: GOLEADORES DEL TORNEO
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/scorers', async (req, res) => {
-    try {
-        let cached = getCached('scorers');
-        if (cached) return res.json(cached);
+  try {
+    const { data, error } = await supabase
+      .from('goleadores')
+      .select('*')
+      .order('goles', { ascending: false })
+      .limit(20);
 
-        const { data } = await footballData.get(`/competitions/${COMPETITION_ID}/scorers?limit=20`);
-        const scorers = (data.scorers || []).map(s => ({
-            nombre: s.player?.name || '',
-            equipo: s.team?.name || '',
-            equipo_short: s.team?.shortName || s.team?.tla || '',
-            escudo: s.team?.crest || null,
-            goles: s.goals || 0,
-            asistencias: s.assists || 0,
-            penales: s.penalties || 0,
-            partidos: s.playedMatches || 0,
-        }));
+    if (error) throw error;
 
-        setCache('scorers', scorers);
-        res.json(scorers);
-    } catch (err) {
-        console.error('Error /api/scorers:', err.message);
-        res.json([]); // Devolver vacío si el torneo no empezó
-    }
+    const scorers = (data || []).map(s => ({
+      nombre: s.nombre,
+      equipo: s.equipo,
+      equipo_short: s.equipo_short,
+      escudo: s.escudo,
+      goles: s.goles || 0,
+      asistencias: s.asistencias || 0,
+      penales: s.penales || 0,
+      partidos: s.partidos || 0,
+    }));
+
+    res.json(scorers);
+  } catch (err) {
+    console.error('Error /api/scorers:', err.message);
+    res.json([]); // Devolver vacío si hay error
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: TARJETAS (API-Football vía Supabase)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/tarjetas', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('tarjetas')
-            .select('*');
+  try {
+    const { data, error } = await supabase
+      .from('tarjetas')
+      .select('*');
 
-        if (error) throw error;
-        const sorted = data.sort((a,b) => (b.rojas || 0) - (a.rojas || 0) || (b.amarillas || 0) - (a.amarillas || 0));
-        res.json(sorted);
-    } catch (err) {
-        console.error('Error /api/tarjetas:', err.message);
-        res.json([]);
-    }
+    if (error) throw error;
+    const sorted = data.sort((a, b) => (b.rojas || 0) - (a.rojas || 0) || (b.amarillas || 0) - (a.amarillas || 0));
+    res.json(sorted);
+  } catch (err) {
+    console.error('Error /api/tarjetas:', err.message);
+    res.json([]);
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: PARTIDOS EN VIVO (API-Football — solo cuando hay acción)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/live', async (req, res) => {
-    try {
-        let cached = getCached('live');
-        if (cached) return res.json(cached);
+  try {
+    const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
+    const { data, error } = await supabase
+      .from('partidos')
+      .select('*')
+      .eq('estado', 'en_curso')
+      .eq('edicion_mundial', activeEdicion);
 
-        const { data } = await apiFootball.get('/fixtures', {
-            params: { league: LIVE_LEAGUE_ID, season: 2026, live: 'all' }
-        });
+    if (error) throw error;
 
-        const partidos = (data.response || []).map(f => ({
-            id: f.fixture.id,
-            equipo_local: f.teams.home.name,
-            equipo_visitante: f.teams.away.name,
-            escudo_local: f.teams.home.logo,
-            escudo_visitante: f.teams.away.logo,
-            goles_local: f.goals.home,
-            goles_visitante: f.goals.away,
-            minuto: f.fixture.status.elapsed,
-            estado_corto: f.fixture.status.short,
-            estado_largo: f.fixture.status.long,
-            estadio: f.fixture.venue?.name || '',
-            ciudad: f.fixture.venue?.city || '',
-            eventos: (f.events || []).map(e => ({
-                minuto: e.time?.elapsed,
-                extra: e.time?.extra,
-                equipo: e.team?.name,
-                jugador: e.player?.name,
-                asistencia: e.assist?.name,
-                tipo: e.type,
-                detalle: e.detail,
-            })),
-        }));
+    const partidos = (data || []).map(p => ({
+      id: p.id,
+      equipo_local: p.equipo_local,
+      equipo_visitante: p.equipo_visitante,
+      escudo_local: p.escudo_local,
+      escudo_visitante: p.escudo_visitante,
+      goles_local: p.goles_local,
+      goles_visitante: p.goles_visitante,
+      minuto: p.minuto || 'Live',
+      estado_corto: 'LIVE',
+      estado_largo: 'En Curso',
+      estadio: '',
+      ciudad: '',
+      eventos: [],
+    }));
 
-        setCache('live', partidos);
-        // Cache de live dura solo 30 segundos
-        cache.live.ts = Date.now() - CACHE_TTL + 30000;
-        res.json(partidos);
-    } catch (err) {
-        console.error('Error /api/live:', err.message);
-        res.json([]);
-    }
+    res.json(partidos);
+  } catch (err) {
+    console.error('Error /api/live:', err.message);
+    res.json([]);
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // 1. ENDPOINT DE CATEGORÍAS (Para el filtro HTML)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/categorias', async (req, res) => {
-    try {
-        // Armamos el filtro basándonos en los países que SÍ tienen productos en tu tienda.
-        const { data, error } = await supabase
-            .from('productos_ml')
-            .select('categoria_relacionada')
-            .eq('activo', true);
-            
-        if (error) throw error;
-        
-        // Filtramos para obtener una lista de países únicos
-        const categoriasUnicas = [...new Set(data.map(item => item.categoria_relacionada))].filter(Boolean);
-        res.json(categoriasUnicas);
-    } catch (error) { 
-        console.error("Error al obtener categorías:", error.message);
-        res.status(500).json({ error: 'Error al obtener categorías' }); 
-    }
+  try {
+    // Armamos el filtro basándonos en los países que SÍ tienen productos en tu tienda.
+    const { data, error } = await supabase
+      .from('productos_ml')
+      .select('categoria_relacionada')
+      .eq('activo', true);
+
+    if (error) throw error;
+
+    // Filtramos para obtener una lista de países únicos
+    const categoriasUnicas = [...new Set(data.map(item => item.categoria_relacionada))].filter(Boolean);
+    res.json(categoriasUnicas);
+  } catch (error) {
+    console.error("Error al obtener categorías:", error.message);
+    res.status(500).json({ error: 'Error al obtener categorías' });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
@@ -1086,173 +1783,173 @@ app.get('/api/categorias', async (req, res) => {
 //    Si GNews falla, sirve desde la tabla 'articulos'.
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/noticias', async (req, res) => {
-    const { pais } = req.query;
-    const categoria = (pais && pais !== '' && pais !== 'Todos') ? pais : null;
+  const { pais } = req.query;
+  const categoria = (pais && pais !== '' && pais !== 'Todos') ? pais : null;
 
-    console.log(`📰 [NOTICIAS] Pedido recibido — país: ${categoria || 'Todos'}`);
+  console.log(`📰 [NOTICIAS] Pedido recibido — país: ${categoria || 'Todos'}`);
 
-    // ── 1. Intentar GNews directamente ──
-    try {
-        let queryBusqueda = 'Mundial FIFA 2026';
-        if (categoria) queryBusqueda += ` ${categoria}`;
+  // ── 1. Intentar GNews directamente ──
+  try {
+    let queryBusqueda = 'Mundial FIFA 2026';
+    if (categoria) queryBusqueda += ` ${categoria}`;
 
-        console.log(`   🔍 Buscando en GNews: "${queryBusqueda}"`);
+    console.log(`   🔍 Buscando en GNews: "${queryBusqueda}"`);
 
-        const response = await axios.get('https://gnews.io/api/v4/search', {
-            params: {
-                q: queryBusqueda,
-                lang: 'es',
-                max: 6,
-                token: process.env.GNEWS_API_KEY
-            },
-            timeout: 8000
-        });
+    const response = await axios.get('https://gnews.io/api/v4/search', {
+      params: {
+        q: queryBusqueda,
+        lang: 'es',
+        max: 6,
+        token: process.env.GNEWS_API_KEY
+      },
+      timeout: 8000
+    });
 
-        console.log(`   ✅ GNews respondió: ${response.data.totalArticles} artículos encontrados`);
+    console.log(`   ✅ GNews respondió: ${response.data.totalArticles} artículos encontrados`);
 
-        const noticias = (response.data.articles || []).map(a => ({
-            titulo:  a.title,
-            imagen:  a.image || null,
-            link:    a.url || '#',
-            fuente:  a.source?.name || '',
-        }));
+    const noticias = (response.data.articles || []).map(a => ({
+      titulo: a.title,
+      imagen: a.image || null,
+      link: a.url || '#',
+      fuente: a.source?.name || '',
+    }));
 
-        // Enviar respuesta al frontend INMEDIATAMENTE
-        res.json(noticias);
+    // Enviar respuesta al frontend INMEDIATAMENTE
+    res.json(noticias);
 
-        // Guardar en BD en segundo plano (sin bloquear respuesta)
-        guardarArticulosEnBD(noticias, categoria).catch(err =>
-            console.warn('   ⚠️ Error guardando en caché:', err.message)
-        );
+    // Guardar en BD en segundo plano (sin bloquear respuesta)
+    guardarArticulosEnBD(noticias, categoria).catch(err =>
+      console.warn('   ⚠️ Error guardando en caché:', err.message)
+    );
 
-        return; // Ya respondimos, no seguir
+    return; // Ya respondimos, no seguir
 
-    } catch (error) {
-        const status = error.response?.status;
-        if (status === 429) {
-            console.warn('   ⚠️ GNews rate limit (429)');
-        } else if (status === 403) {
-            console.warn('   ⚠️ GNews API key inválida (403)');
-        } else {
-            console.warn('   ⚠️ GNews error:', error.message);
-        }
+  } catch (error) {
+    const status = error.response?.status;
+    if (status === 429) {
+      console.warn('   ⚠️ GNews rate limit (429)');
+    } else if (status === 403) {
+      console.warn('   ⚠️ GNews API key inválida (403)');
+    } else {
+      console.warn('   ⚠️ GNews error:', error.message);
+    }
+  }
+
+  // ── 2. Fallback: servir desde tabla 'articulos' ──
+  console.log('   📦 Sirviendo noticias desde caché en BD...');
+  try {
+    let query = supabase
+      .from('articulos')
+      .select('titulo, contenido, categoria, imagen_url')
+      .eq('publicado', true)
+      .order('created_at', { ascending: false })
+      .limit(12);
+
+    if (categoria) {
+      query = query.eq('categoria', categoria);
     }
 
-    // ── 2. Fallback: servir desde tabla 'articulos' ──
-    console.log('   📦 Sirviendo noticias desde caché en BD...');
-    try {
-        let query = supabase
-            .from('articulos')
-            .select('titulo, contenido, categoria, imagen_url')
-            .eq('publicado', true)
-            .order('created_at', { ascending: false })
-            .limit(12);
+    const { data, error } = await query;
+    if (error) throw error;
 
-        if (categoria) {
-            query = query.eq('categoria', categoria);
-        }
+    const noticias = (data || []).map(n => ({
+      titulo: n.titulo,
+      imagen: n.imagen_url,
+      link: '#',
+    }));
 
-        const { data, error } = await query;
-        if (error) throw error;
-
-        const noticias = (data || []).map(n => ({
-            titulo:  n.titulo,
-            imagen:  n.imagen_url,
-            link:    '#',
-        }));
-
-        console.log(`   📦 ${noticias.length} noticias desde BD`);
-        return res.json(noticias);
-    } catch (error) {
-        console.error('   ❌ Error BD:', error.message);
-        return res.json([]);
-    }
+    console.log(`   📦 ${noticias.length} noticias desde BD`);
+    return res.json(noticias);
+  } catch (error) {
+    console.error('   ❌ Error BD:', error.message);
+    return res.json([]);
+  }
 });
 
 // Función auxiliar: guarda artículos en la tabla 'articulos' (en background)
 async function guardarArticulosEnBD(noticias, categoria) {
-    for (const n of noticias) {
-        try {
-            const { data: existing } = await supabase
-                .from('articulos')
-                .select('id')
-                .eq('titulo', n.titulo)
-                .limit(1);
+  for (const n of noticias) {
+    try {
+      const { data: existing } = await supabase
+        .from('articulos')
+        .select('id')
+        .eq('titulo', n.titulo)
+        .limit(1);
 
-            if (!existing || existing.length === 0) {
-                await supabase.from('articulos').insert({
-                    titulo:     n.titulo,
-                    contenido:  n.titulo, // Usamos titulo como contenido mínimo
-                    categoria:  categoria || 'General',
-                    imagen_url: n.imagen,
-                    publicado:  true,
-                });
-            }
-        } catch (e) {
-            // Silenciar errores individuales de insert
-        }
+      if (!existing || existing.length === 0) {
+        await supabase.from('articulos').insert({
+          titulo: n.titulo,
+          contenido: n.titulo, // Usamos titulo como contenido mínimo
+          categoria: categoria || 'General',
+          imagen_url: n.imagen,
+          publicado: true,
+        });
+      }
+    } catch (e) {
+      // Silenciar errores individuales de insert
     }
-    console.log('   💾 Caché de artículos actualizado');
+  }
+  console.log('   💾 Caché de artículos actualizado');
 }
 
 // ══════════════════════════════════════════════════════════════════
 // 3. ENDPOINT DE PRODUCTOS (Tabla: productos_ml)
 // ══════════════════════════════════════════════════════════════════
 app.get('/api/productos', async (req, res) => {
-    const { pais } = req.query;
+  const { pais } = req.query;
 
-    try {
-        let query = supabase
-            .from('productos_ml')
-            .select('*')
-            .eq('activo', true);
+  try {
+    let query = supabase
+      .from('productos_ml')
+      .select('*')
+      .eq('activo', true);
 
-        // Diccionario de traducción para los equipos que vienen en inglés desde la API de fixtures
-        let searchTerm = pais;
-        if (pais) {
-            const mapNombres = {
-                'brazil': 'brasil', 'germany': 'alemania', 'france': 'francia',
-                'spain': 'españa', 'england': 'inglaterra', 'netherlands': 'países bajos',
-                'italy': 'italia', 'japan': 'japón', 'morocco': 'marruecos',
-                'croatia': 'croacia', 'belgium': 'bélgica', 'switzerland': 'suiza',
-                'united states': 'estados unidos', 'usa': 'estados unidos',
-                'scotland': 'escocia', 'wales': 'gales', 'ireland': 'irlanda',
-                'sweden': 'suecia', 'denmark': 'dinamarca', 'norway': 'noruega',
-                'finland': 'finlandia', 'poland': 'polonia', 'portugal': 'portugal',
-                'russia': 'rusia', 'ukraine': 'ucrania', 'turkey': 'turquía',
-                'greece': 'grecia', 'serbia': 'serbia', 'romania': 'rumania',
-                'hungary': 'hungría', 'austria': 'austria', 'czech republic': 'república checa',
-                'argentina': 'argentina', 'colombia': 'colombia', 'uruguay': 'uruguay',
-                'chile': 'chile', 'peru': 'perú', 'ecuador': 'ecuador',
-                'paraguay': 'paraguay', 'venezuela': 'venezuela', 'bolivia': 'bolivia',
-                'mexico': 'méxico', 'canada': 'canadá', 'costa rica': 'costa rica',
-                'senegal': 'senegal', 'cameroon': 'camerún', 'ghana': 'ghana',
-                'nigeria': 'nigeria', 'egypt': 'egipto', 'algeria': 'argelia',
-                'ivory coast': 'costa de marfil', 'tunisia': 'túnez', 'south korea': 'corea del sur',
-                'australia': 'australia', 'iran': 'irán', 'saudi arabia': 'arabia saudita'
-            };
-            const normalize = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-            const normalizedPais = normalize(pais);
-            
-            // Buscar si hay traducción, sino usar el original
-            const translated = Object.keys(mapNombres).find(k => normalize(k) === normalizedPais);
-            if (translated) {
-                searchTerm = mapNombres[translated];
-            }
-        }
+    // Diccionario de traducción para los equipos que vienen en inglés desde la API de fixtures
+    let searchTerm = pais;
+    if (pais) {
+      const mapNombres = {
+        'brazil': 'brasil', 'germany': 'alemania', 'france': 'francia',
+        'spain': 'españa', 'england': 'inglaterra', 'netherlands': 'países bajos',
+        'italy': 'italia', 'japan': 'japón', 'morocco': 'marruecos',
+        'croatia': 'croacia', 'belgium': 'bélgica', 'switzerland': 'suiza',
+        'united states': 'estados unidos', 'usa': 'estados unidos',
+        'scotland': 'escocia', 'wales': 'gales', 'ireland': 'irlanda',
+        'sweden': 'suecia', 'denmark': 'dinamarca', 'norway': 'noruega',
+        'finland': 'finlandia', 'poland': 'polonia', 'portugal': 'portugal',
+        'russia': 'rusia', 'ukraine': 'ucrania', 'turkey': 'turquía',
+        'greece': 'grecia', 'serbia': 'serbia', 'romania': 'rumania',
+        'hungary': 'hungría', 'austria': 'austria', 'czech republic': 'república checa',
+        'argentina': 'argentina', 'colombia': 'colombia', 'uruguay': 'uruguay',
+        'chile': 'chile', 'peru': 'perú', 'ecuador': 'ecuador',
+        'paraguay': 'paraguay', 'venezuela': 'venezuela', 'bolivia': 'bolivia',
+        'mexico': 'méxico', 'canada': 'canadá', 'costa rica': 'costa rica',
+        'senegal': 'senegal', 'cameroon': 'camerún', 'ghana': 'ghana',
+        'nigeria': 'nigeria', 'egypt': 'egipto', 'algeria': 'argelia',
+        'ivory coast': 'costa de marfil', 'tunisia': 'túnez', 'south korea': 'corea del sur',
+        'australia': 'australia', 'iran': 'irán', 'saudi arabia': 'arabia saudita'
+      };
+      const normalize = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const normalizedPais = normalize(pais);
 
-        // Filtrar por país/selección si se especifica
-        if (searchTerm && searchTerm !== '' && searchTerm !== 'Todos') {
-            query = query.ilike('categoria_relacionada', `%${searchTerm}%`);
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        res.json(data || []);
-    } catch (error) {
-        console.error('Error en productos:', error.message);
-        res.status(500).json({ error: 'Error al obtener productos' });
+      // Buscar si hay traducción, sino usar el original
+      const translated = Object.keys(mapNombres).find(k => normalize(k) === normalizedPais);
+      if (translated) {
+        searchTerm = mapNombres[translated];
+      }
     }
+
+    // Filtrar por país/selección si se especifica
+    if (searchTerm && searchTerm !== '' && searchTerm !== 'Todos') {
+      query = query.ilike('categoria_relacionada', `%${searchTerm}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    console.error('Error en productos:', error.message);
+    res.status(500).json({ error: 'Error al obtener productos' });
+  }
 });
 
 // ─── ENDPOINT: Historia de Mundiales ───
@@ -1274,74 +1971,223 @@ const equipoCache = {};
 const EQUIPO_CACHE_TTL = 60 * 60 * 1000; // 1 hora
 
 app.get('/api/equipo/:nombre', async (req, res) => {
-    let { nombre } = req.params;
-    nombre = nombre.trim();
-    
-    // Verificar caché
-    const cacheKey = nombre.toLowerCase();
-    if (equipoCache[cacheKey] && (Date.now() - equipoCache[cacheKey].ts < EQUIPO_CACHE_TTL)) {
-        console.log(`   📦 Sirviendo perfil de ${nombre} desde caché`);
-        return res.json(equipoCache[cacheKey].data);
+  let { nombre } = req.params;
+  nombre = nombre.trim();
+
+  // Verificar caché
+  const cacheKey = nombre.toLowerCase();
+  const cached = equipoCache[cacheKey];
+  if (cached) {
+    const ttl = cached.ttl ?? EQUIPO_CACHE_TTL;
+    if (Date.now() - cached.ts < ttl) {
+      console.log(`   📦 Sirviendo perfil de ${nombre} desde caché (${ttl === EQUIPO_CACHE_TTL ? 'completo' : 'corto/fallback'})`);
+      return res.json(cached.data);
     }
-    
+  }
+
+  try {
+    console.log(`\n🔍 [EQUIPO] Buscando información para: ${nombre}`);
+
+    // Query our Supabase partidos table first for the team, to ensure we have its local matches and logo as fallback
+    const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
+    let dbMatches = [];
     try {
-        console.log(`\n🔍 [EQUIPO] Buscando información para: ${nombre}`);
-        
-        // 1. Mapeo a inglés si es necesario para api-football
-        const mapNombresEn = {
-            'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
-            'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
-            'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
-            'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
-            'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
-            'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
-            'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
-            'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
-            'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
-            'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
-            'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
-            'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
-            'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
-        };
-        const searchName = mapNombresEn[nombre.toLowerCase()] || nombre;
-        
-        // 2. Buscar ID del equipo
-        const { data: teamData } = await apiFootball.get('/teams', { params: { search: searchName } });
-        
-        if (!teamData.response || teamData.response.length === 0) {
-            return res.status(404).json({ error: 'Equipo no encontrado en API' });
-        }
-        
+      const { data } = await supabase
+        .from('partidos')
+        .select('*')
+        .eq('edicion_mundial', activeEdicion)
+        .or(`equipo_local.ilike."${nombre}",equipo_visitante.ilike."${nombre}"`)
+        .order('fecha_utc', { ascending: true });
+      dbMatches = data || [];
+    } catch (dbErr) {
+      console.warn('   ⚠️ Error querying local Supabase matches for team:', dbErr.message);
+    }
+
+    // Determine team logo and correct casing from dbMatches
+    let foundLogo = null;
+    let correctName = nombre;
+    dbMatches.forEach(m => {
+      if (m.equipo_local.toLowerCase() === nombre.toLowerCase()) {
+        if (m.escudo_local) foundLogo = m.escudo_local;
+        correctName = m.equipo_local;
+      } else if (m.equipo_visitante.toLowerCase() === nombre.toLowerCase()) {
+        if (m.escudo_visitante) foundLogo = m.escudo_visitante;
+        correctName = m.equipo_visitante;
+      }
+    });
+
+    let responseData = null;
+
+    // We will attempt to fetch from API-Football. If it fails (due to rate-limit/error/not found), we catch and gracefully fall back.
+    try {
+      // 1. Mapeo a inglés si es necesario para api-football
+      const mapNombresEn = {
+        'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
+        'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
+        'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
+        'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
+        'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
+        'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
+        'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
+        'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
+        'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
+        'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
+        'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
+        'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
+        'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
+      };
+      const searchName = mapNombresEn[nombre.toLowerCase()] || nombre;
+
+      // 2. Buscar ID del equipo
+      const { data: teamData } = await apiFootball.get('/teams', { params: { search: searchName } });
+
+      if (teamData.response && teamData.response.length > 0) {
         // Tomamos el primer resultado que sea selección nacional (o el primero)
         const teamInfo = teamData.response.find(t => t.team.national === true) || teamData.response[0];
         const teamId = teamInfo.team.id;
-        
-        console.log(`   ✅ Equipo encontrado: ${teamInfo.team.name} (ID: ${teamId})`);
-        
+
+        console.log(`   ✅ Equipo encontrado en API: ${teamInfo.team.name} (ID: ${teamId})`);
+
         // 3. Consultas en paralelo (Próximos, Últimos, Plantel)
         const [nextRes, lastRes, squadRes] = await Promise.all([
-            apiFootball.get('/fixtures', { params: { team: teamId, next: 5 } }).catch(() => ({ data: { response: [] } })),
-            apiFootball.get('/fixtures', { params: { team: teamId, last: 5 } }).catch(() => ({ data: { response: [] } })),
-            apiFootball.get('/players/squads', { params: { team: teamId } }).catch(() => ({ data: { response: [] } }))
+          apiFootball.get('/fixtures', { params: { team: teamId, next: 5 } }).catch(() => ({ data: { response: [] } })),
+          apiFootball.get('/fixtures', { params: { team: teamId, last: 5 } }).catch(() => ({ data: { response: [] } })),
+          apiFootball.get('/players/squads', { params: { team: teamId } }).catch(() => ({ data: { response: [] } }))
         ]);
-        
-        const responseData = {
-            info: teamInfo.team,
-            venue: teamInfo.venue,
-            next_matches: nextRes.data.response || [],
-            last_matches: lastRes.data.response || [],
-            squad: squadRes.data.response[0]?.players || []
+
+        responseData = {
+          info: teamInfo.team,
+          venue: teamInfo.venue,
+          next_matches: nextRes.data.response || [],
+          last_matches: lastRes.data.response || [],
+          squad: squadRes.data.response[0]?.players || []
         };
-        
-        // Guardar en caché
-        equipoCache[cacheKey] = { data: responseData, ts: Date.now() };
-        
-        res.json(responseData);
-        
-    } catch (error) {
-        console.error('❌ Error obteniendo perfil de equipo:', error.message);
-        res.status(500).json({ error: 'Error interno obteniendo datos del equipo' });
+      }
+    } catch (apiErr) {
+      console.warn('   ⚠️ Error or rate-limit from API-Football for team profile, using DB fallback:', apiErr.message);
     }
+
+    // Fallback: Si no pudimos obtener la data de API-Football, armamos una respuesta coherente con los datos de Supabase
+    if (!responseData) {
+      console.log('   📦 [FALLBACK] Serving mapped local database team profile');
+      const fallbackTeamId = 99999;
+      
+      // Separar partidos jugados vs programados para mapearlos
+      const lastDb = dbMatches.filter(m => m.estado === 'finalizado');
+      const nextDb = dbMatches.filter(m => m.estado !== 'finalizado');
+
+      const mapMatch = (m) => {
+        const isHome = m.equipo_local.toLowerCase() === nombre.toLowerCase();
+        const homeWinner = m.goles_local > m.goles_visitante;
+        const awayWinner = m.goles_visitante > m.goles_local;
+        
+        return {
+          fixture: {
+            id: m.id_football_data || m.id,
+            date: m.fecha_utc,
+            status: {
+              short: m.estado === 'finalizado' ? 'FT' : 'NS'
+            }
+          },
+          teams: {
+            home: {
+              id: isHome ? fallbackTeamId : 88888,
+              name: m.equipo_local,
+              logo: m.escudo_local,
+              winner: m.estado === 'finalizado' ? homeWinner : null
+            },
+            away: {
+              id: !isHome ? fallbackTeamId : 88888,
+              name: m.equipo_visitante,
+              logo: m.escudo_visitante,
+              winner: m.estado === 'finalizado' ? awayWinner : null
+            }
+          },
+          goals: {
+            home: m.goles_local,
+            away: m.goles_visitante
+          }
+        };
+      };
+
+      let sofascoreSquad = [];
+      try {
+        console.log(`   📡 [FALLBACK] Intentando obtener plantel desde Sofascore para ${nombre}...`);
+        const searchUrl = `https://api.sofascore.com/api/v1/search/all?q=${encodeURIComponent(nombre)}`;
+        const { data: searchData } = await safeSofascoreGet(searchUrl, 8000);
+        const results = searchData.results || [];
+        const teams = results.filter(r => r.type === 'team' && r.entity?.sport?.slug === 'football');
+        
+        let targetTeam = null;
+        if (teams.length > 0) {
+          targetTeam = teams.find(t => sofascoreTeamMatch(t.entity.name, nombre)) || teams[0];
+        }
+
+        if (targetTeam) {
+          const teamId = targetTeam.entity.id;
+          console.log(`   ✅ Equipo encontrado en Sofascore: ${targetTeam.entity.name} (ID: ${teamId})`);
+          const playersUrl = `https://api.sofascore.com/api/v1/team/${teamId}/players`;
+          const { data: squadData } = await safeSofascoreGet(playersUrl, 8000);
+          const players = squadData.players || [];
+          
+          sofascoreSquad = players.map(p => {
+            let posStr = 'Midfielder';
+            if (p.player.position === 'G') posStr = 'Goalkeeper';
+            else if (p.player.position === 'D') posStr = 'Defender';
+            else if (p.player.position === 'M') posStr = 'Midfielder';
+            else if (p.player.position === 'F') posStr = 'Attacker';
+
+            let age = null;
+            if (p.player.dateOfBirthTimestamp) {
+              age = Math.floor((Date.now() / 1000 - p.player.dateOfBirthTimestamp) / (365.25 * 24 * 60 * 60));
+            }
+
+            return {
+              name: p.player.name,
+              position: posStr,
+              photo: `https://api.sofascore.com/api/v1/player/${p.player.id}/image`,
+              age: age
+            };
+          });
+          console.log(`   ✅ Plantel de ${sofascoreSquad.length} jugadores cargado exitosamente desde Sofascore`);
+        } else {
+          console.warn(`   ⚠️ No se encontró el equipo en Sofascore.`);
+        }
+      } catch (sofaSquadErr) {
+        console.warn(`   ⚠️ Error al obtener plantel de Sofascore:`, sofaSquadErr.message);
+        if (sofaSquadErr.response) {
+          console.warn(`      Status:`, sofaSquadErr.response.status);
+          console.warn(`      Headers:`, JSON.stringify(sofaSquadErr.response.headers));
+          console.warn(`      Body:`, JSON.stringify(sofaSquadErr.response.data));
+        }
+      }
+
+      responseData = {
+        info: {
+          id: fallbackTeamId,
+          name: correctName,
+          logo: foundLogo || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%230a2a4a"/><text x="50" y="55" font-size="30" text-anchor="middle" fill="white">⚽</text></svg>',
+          national: true,
+          country: correctName
+        },
+        venue: null,
+        next_matches: nextDb.map(mapMatch),
+        last_matches: lastDb.map(mapMatch),
+        squad: sofascoreSquad
+      };
+    }
+
+    // Guardar en caché con TTL dinámico (10 segundos si es fallback/lista vacía, de lo contrario 1 hora)
+    const isFallback = !responseData.squad || responseData.squad.length === 0;
+    const ttl = isFallback ? 10000 : EQUIPO_CACHE_TTL;
+    equipoCache[cacheKey] = { data: responseData, ts: Date.now(), ttl };
+
+    res.json(responseData);
+
+  } catch (error) {
+    console.error('❌ Error obteniendo perfil de equipo:', error.message);
+    res.status(500).json({ error: 'Error interno obteniendo datos del equipo' });
+  }
 });
 
 
@@ -1349,10 +2195,10 @@ app.get('/api/equipo/:nombre', async (req, res) => {
 // MIDDLEWARE DE ERRORES (Express 5 — atrapa errores de rutas async)
 // ══════════════════════════════════════════════════════════════════
 app.use((err, req, res, next) => {
-    console.error('💥 Error en ruta:', err.message);
-    if (!res.headersSent) {
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+  console.error('💥 Error en ruta:', err.message);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 
@@ -1544,7 +2390,7 @@ function parsearCalendario(textoRespuesta) {
     return { texto: textoRespuesta, calendario: null };
   }
 
-  const texto     = textoRespuesta.substring(0, idx).trim();
+  const texto = textoRespuesta.substring(0, idx).trim();
   const jsonParte = textoRespuesta.substring(idx + separador.length).trim();
 
   try {
@@ -1580,93 +2426,104 @@ function parsearCalendario(textoRespuesta) {
 //     }
 //   }
 // ══════════════════════════════════════════════════════════════════
-app.post('/api/chat', async (req, res) => { 
-  const { mensaje, historial = [] } = req.body; 
- 
-  if (!mensaje || typeof mensaje !== 'string' || mensaje.trim().length === 0) { 
-    return res.status(400).json({ error: 'El campo "mensaje" es requerido.' }); 
-  } 
- 
-  try { 
+app.post('/api/chat', async (req, res) => {
+  const { mensaje, historial = [] } = req.body;
+
+  if (!mensaje || typeof mensaje !== 'string' || mensaje.trim().length === 0) {
+    return res.status(400).json({ error: 'El campo "mensaje" es requerido.' });
+  }
+
+  try {
     // ── PASO 1: Buscar productos relevantes ANTES de llamar a Gemini ── 
     // Detectamos qué selección menciona el usuario en su mensaje 
-    const selecciones = [ 
-      'Argentina', 'Brasil', 'Francia', 'España', 'Alemania', 
-      'Inglaterra', 'Uruguay', 'México', 'Colombia', 'Portugal', 
-      'Croacia', 'Marruecos', 'Países Bajos', 'Holanda', 'Portugal' 
-    ]; 
- 
-    const seleccionDetectada = selecciones.find(s => 
-      mensaje.toLowerCase().includes(s.toLowerCase()) 
-    ); 
- 
+    const selecciones = [
+      'Argentina', 'Brasil', 'Francia', 'España', 'Alemania',
+      'Inglaterra', 'Uruguay', 'México', 'Colombia', 'Portugal',
+      'Croacia', 'Marruecos', 'Países Bajos', 'Holanda', 'Portugal'
+    ];
+
+    const seleccionDetectada = selecciones.find(s =>
+      mensaje.toLowerCase().includes(s.toLowerCase())
+    );
+
     // Traemos productos de Supabase según la selección detectada 
     // Si no hay selección específica, traemos productos generales (los primeros 3) 
-    let productosParaGemini = []; 
-    let queryProductos = supabase 
-      .from('productos_ml') 
-      .select('nombre, precio, link_afiliado, imagen_url, categoria_relacionada') 
-      .eq('activo', true) 
-      .limit(3); 
- 
-    if (seleccionDetectada) { 
-      queryProductos = queryProductos.eq('categoria_relacionada', seleccionDetectada); 
-    } 
- 
-    const { data: productosDB } = await queryProductos; 
-    productosParaGemini = productosDB || []; 
- 
+    let productosParaGemini = [];
+    let queryProductos = supabase
+      .from('productos_ml')
+      .select('nombre, precio, link_afiliado, imagen_url, categoria_relacionada')
+      .eq('activo', true)
+      .limit(3);
+
+    if (seleccionDetectada) {
+      queryProductos = queryProductos.eq('categoria_relacionada', seleccionDetectada);
+    }
+
+    const { data: productosDB } = await queryProductos;
+    productosParaGemini = productosDB || [];
+
     // ── PASO 2: Construir el contexto de productos para Gemini ── 
     // Le "mostramos" los productos reales a Gemini antes de que responda 
-    let contextoProductos = ''; 
-    if (productosParaGemini.length > 0) { 
+    let contextoProductos = '';
+    if (productosParaGemini.length > 0) {
       contextoProductos = ` 
 PRODUCTOS DISPONIBLES EN NUESTRA TIENDA (usá estos datos reales al 
 recomendar): 
-${productosParaGemini.map((p, i) => 
-  `${i + 1}. "${p.nombre}" — $${p.precio} — Link: ${p.link_afiliado}` 
-).join('\n')} 
+${productosParaGemini.map((p, i) =>
+        `${i + 1}. "${p.nombre}" — $${p.precio} — Link: ${p.link_afiliado}`
+      ).join('\n')} 
  
 Cuando recomiendes productos, mencioná el nombre exacto y el precio real de la lista 
 anterior. 
-`; 
-    } else { 
+`;
+    } else {
       contextoProductos = ` 
 No hay productos disponibles en la tienda para esta selección por el momento. 
 Si querés recomendar algo, hacelo de forma genérica sin inventar precios ni links. 
-`; 
-    } 
- 
+`;
+    }
+
     // ── PASO 3: Llamar a Gemini con el contexto de productos ── 
     const mensajeConContexto = `${contextoProductos}\n\nPREGUNTA DEL USUARIO: 
-${mensaje.trim()}`; 
-    const respuestaCompleta  = await llamarGemini(historial, mensajeConContexto); 
- 
+${mensaje.trim()}`;
+    const respuestaCompleta = await llamarGemini(historial, mensajeConContexto);
+
     // ── PASO 4: Parsear calendario y devolver respuesta ── 
-    const { texto, calendario } = parsearCalendario(respuestaCompleta); 
- 
-    res.json({ 
-      respuesta:  texto, 
-      productos:  productosParaGemini,  // productos reales de la BD 
-      calendario, 
-    }); 
- 
-  } catch (err) { 
-    console.error('❌[/api/chat] Error:', err.message); 
-    res.status(500).json({ 
-      error:     'No pude procesar tu pregunta.', 
-      respuesta: '¡Ups! Tuve un problema técnico. Intentá de nuevo. ⚽' 
-    }); 
-  } 
+    const { texto, calendario } = parsearCalendario(respuestaCompleta);
+
+    res.json({
+      respuesta: texto,
+      productos: productosParaGemini,  // productos reales de la BD 
+      calendario,
+    });
+
+  } catch (err) {
+    console.error('❌[/api/chat] Error:', err.message);
+    res.status(500).json({
+      error: 'No pude procesar tu pregunta.',
+      respuesta: '¡Ups! Tuve un problema técnico. Intentá de nuevo. ⚽'
+    });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════
 // ARRANQUE DEL SERVIDOR
 // ══════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 API de Mundialito escuchando peticiones en puerto ${PORT}`);
-    console.log(`   📡 Probar: http://localhost:${PORT}/api/health`);
-    console.log(`   📰 Noticias: http://localhost:${PORT}/api/noticias`);
-    console.log(`   🛒 Productos: http://localhost:${PORT}/api/productos`);
+const server = app.listen(PORT, () => {
+  console.log(`🚀 API de Mundialito escuchando peticiones en puerto ${PORT}`);
+  console.log(`   📡 Probar: http://localhost:${PORT}/api/health`);
+  console.log(`   📰 Noticias: http://localhost:${PORT}/api/noticias`);
+  console.log(`   🛒 Productos: http://localhost:${PORT}/api/productos`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.warn(`⚠️ Puerto ${PORT} ya está en uso. Probando puerto ${PORT + 1}...`);
+    app.listen(PORT + 1, () => {
+      console.log(`🚀 API de Mundialito escuchando en puerto alternativo ${PORT + 1}`);
+    });
+  } else {
+    console.error('💥 Error iniciando servidor:', err.message);
+  }
 });
