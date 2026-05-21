@@ -104,11 +104,42 @@
       <span class="logo-badge">MUNDIAL 2026</span>
     </div>
     <div class="header-right">
-      <div class="live-pill">
-        <span class="live-dot"></span>
-        <span class="live-label">EN VIVO</span>
-      </div>
-    </div>
+
+  <!-- Pill "EN VIVO" que ya tenías -->
+  <div class="live-pill">
+    <span class="live-dot"></span>
+    <span class="live-label">EN VIVO</span>
+  </div>
+
+  <!-- ── ÁREA DE USUARIO (nuevo) ──
+       data-auth="guest"  → visible solo cuando NO está logueado
+       data-auth="user"   → visible solo cuando SÍ está logueado
+       (auth.js ya maneja esto con actualizarUILogueado/Deslogueado) -->
+
+  <!-- Botón "Ingresar" para invitados -->
+  <button data-auth="guest"
+          class="perfil-header-login-btn"
+          style="display:none"
+          data-open-auth>
+    Ingresar
+  </button>
+
+  <!-- Mini perfil para usuarios logueados -->
+  <div data-auth="user"
+       class="perfil-header-user"
+       style="display:none"
+       onclick="switchTab('perfil', document.querySelector('[onclick*=perfil]'))"
+       title="Ver mi perfil">
+    <img id="user-avatar"
+         src="https://via.placeholder.com/32"
+         alt="avatar"
+         class="perfil-header-avatar"/>
+    <span id="user-username" class="perfil-header-name">—</span>
+    <span id="user-puntos-prode" class="perfil-header-pts">0 pts</span>
+  </div>
+
+</div>
+
   </div>
 </header>
 
@@ -135,6 +166,7 @@
     <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
     <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
     <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
+    <button class="tab-btn" onclick="switchTab('perfil', this)">👤 Mi Perfil</button>
   </div>
 
   <!-- ══ PANEL: EN VIVO ══ -->
@@ -397,7 +429,117 @@
 
   </div>
 </div>
-  <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
+  <div id="panel-perfil" class="panel">
+
+  <!-- ── HERO del perfil ── -->
+  <div class="perfil-hero">
+
+    <!-- Avatar con botón de edición superpuesto -->
+    <div class="perfil-avatar-wrap">
+      <img id="perfil-avatar-img"
+           src="https://via.placeholder.com/100"
+           alt="Avatar"
+           class="perfil-avatar-img"/>
+      <!-- Overlay de cámara que aparece al hacer hover -->
+      <label class="perfil-avatar-overlay" for="perfil-avatar-input" title="Cambiar foto">
+        📷
+      </label>
+      <!-- Input de archivo oculto -->
+      <input type="file"
+             id="perfil-avatar-input"
+             accept="image/*"
+             style="display:none"
+             onchange="perfilSubirAvatar(this)"/>
+      <!-- Indicador de carga -->
+      <div class="perfil-avatar-loading" id="perfil-avatar-loading" style="display:none">
+        <div class="perfil-spinner"></div>
+      </div>
+    </div>
+
+    <!-- Info principal -->
+    <div class="perfil-info">
+      <!-- Modo vista: muestra username con botón editar -->
+      <div id="perfil-vista-username" class="perfil-username-display">
+        <span id="perfil-username-texto" class="perfil-username">cargando...</span>
+        <button class="perfil-edit-btn" onclick="perfilActivarEdicion()" title="Editar username">✏️</button>
+      </div>
+
+      <!-- Modo edición: input para cambiar username -->
+      <div id="perfil-edit-username" class="perfil-username-edit" style="display:none">
+        <input type="text"
+               id="perfil-username-input"
+               class="perfil-input"
+               placeholder="nuevo_username"
+               maxlength="20"
+               onkeydown="perfilKeydownUsername(event)"/>
+        <button class="perfil-save-btn" onclick="perfilGuardarUsername()">Guardar</button>
+        <button class="perfil-cancel-btn" onclick="perfilCancelarEdicion()">Cancelar</button>
+      </div>
+
+      <div id="perfil-email-texto" class="perfil-email">-</div>
+      <div class="perfil-miembro-desde" id="perfil-miembro-desde">Miembro desde -</div>
+    </div>
+
+    <!-- Stats rápidas en el hero -->
+    <div class="perfil-hero-stats">
+      <div class="perfil-hero-stat">
+        <div class="perfil-hero-stat-num" id="perfil-stat-pts">—</div>
+        <div class="perfil-hero-stat-lbl">Puntos Prode</div>
+      </div>
+      <div class="perfil-hero-stat">
+        <div class="perfil-hero-stat-num" id="perfil-stat-pos">—</div>
+        <div class="perfil-hero-stat-lbl">Posición Global</div>
+      </div>
+      <div class="perfil-hero-stat">
+        <div class="perfil-hero-stat-num" id="perfil-stat-exactos">—</div>
+        <div class="perfil-hero-stat-lbl">Exactos</div>
+      </div>
+      <div class="perfil-hero-stat">
+        <div class="perfil-hero-stat-num" id="perfil-stat-racha">—</div>
+        <div class="perfil-hero-stat-lbl">Racha actual</div>
+      </div>
+    </div>
+
+    <!-- Mensaje de feedback (errores / éxito) -->
+    <div id="perfil-msg" class="perfil-msg" style="display:none"></div>
+  </div>
+
+  <!-- ── HISTORIAL DEL PRODE ── -->
+  <div class="perfil-seccion">
+    <p class="section-label">Historial del Prode</p>
+
+    <div id="perfil-historial-wrap">
+      <!-- Estado de carga -->
+      <div id="perfil-historial-loading" class="perfil-empty">
+        <span>⏳</span> Cargando historial...
+      </div>
+      <!-- Tabla de historial (se llena dinámicamente) -->
+      <div id="perfil-historial" style="display:none">
+        <div class="perfil-prode-hdr">
+          <span>PARTIDO</span>
+          <span style="text-align:center">TU PRONÓSTICO</span>
+          <span style="text-align:center">RESULTADO</span>
+          <span style="text-align:center">PUNTOS</span>
+        </div>
+        <div id="perfil-prode-rows"></div>
+      </div>
+      <!-- Estado vacío -->
+      <div id="perfil-historial-empty" class="perfil-empty" style="display:none">
+        <span>⚽</span>
+        <p>Todavía no hiciste ningún pronóstico.<br>¡Anotate en el Prode desde la solapa de partidos!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ZONA DE PELIGRO ── -->
+  <div class="perfil-seccion perfil-danger-zone">
+    <p class="section-label" style="color:var(--red)">Sesión</p>
+    <button class="perfil-logout-btn" onclick="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </div>
+
+</div>
   </div>
 
 </div><!-- /main -->
