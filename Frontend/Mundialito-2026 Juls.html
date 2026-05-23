@@ -1,1073 +1,929 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mundialito — Mundial 2026</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="prode.css">
-
+ 
 </head>
-
 <body>
 
-  <!-- ══════════════════════════════════════
+<!-- ══════════════════════════════════════
      AUTH OVERLAY — se oculta al loguearse
 ══════════════════════════════════════ -->
-  <div id="auth-overlay">
-    <div class="auth-card">
+<div id="auth-overlay">
+  <div class="auth-card">
 
-      <!-- Logo -->
-      <div class="auth-logo">
-        <span class="auth-logo-icon">⚽</span>
-        <div class="auth-logo-title"><span>MUNDIALITO</span></div>
-        <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
-      </div>
-
-      <!-- Google OAuth -->
-      <button class="btn-google" id="btn-google-login">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#4285F4"
-            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-          <path fill="#34A853"
-            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-          <path fill="#FBBC05"
-            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-          <path fill="#EA4335"
-            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-        </svg>
-        Continuar con Google
-      </button>
-
-      <div class="auth-divider"><span class="auth-divider-text">o ingresá con token</span></div>
-
-      <!-- Token / Email form -->
-      <div class="auth-form" id="auth-form-token">
-        <!-- Solo visible en modo registro -->
-        <div class="auth-field" id="auth-username-field" style="display:none">
-          <label class="auth-label">Nombre de usuario</label>
-          <input class="auth-input" type="text" id="auth-username" placeholder="tu_nombre" autocomplete="username" />
-        </div>
-        <div class="auth-field">
-          <label class="auth-label">Email</label>
-          <input class="auth-input" type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email" />
-        </div>
-        <div class="auth-field" id="auth-password-field">
-          <label class="auth-label">Contraseña</label>
-          <input class="auth-input" type="password" id="auth-password" placeholder="••••••••"
-            autocomplete="current-password" />
-        </div>
-        <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-          <a href="#" id="auth-forgot-password"
-            style="font-size: 12px; color: var(--gold); text-decoration: none;">¿Olvidaste tu contraseña?</a>
-        </div>
-        <button class="btn-token" id="btn-token-login">Ingresar</button>
-        <div class="auth-msg" id="auth-message"></div>
-      </div>
-
-      <!-- Forgot Password Form -->
-      <div class="auth-form" id="auth-form-forgot" style="display:none">
-        <div class="auth-field">
-          <label class="auth-label">Email para recuperar</label>
-          <input class="auth-input" type="email" id="auth-forgot-email" placeholder="tu@email.com" />
-        </div>
-        <button class="btn-token" id="btn-forgot-send">Enviar link de recuperación</button>
-        <button class="btn-token" id="btn-forgot-back"
-          style="background: var(--navy2); border: 1px solid var(--border); margin-top: 10px;">Volver al login</button>
-        <div class="auth-msg" id="auth-forgot-message"></div>
-      </div>
-
-      <!-- Reset Password Form (cuando vuelve de email) -->
-      <div class="auth-form" id="auth-form-reset" style="display:none">
-        <div class="auth-field">
-          <label class="auth-label">Nueva contraseña</label>
-          <input class="auth-input" type="password" id="auth-reset-password" placeholder="••••••••" />
-        </div>
-        <button class="btn-token" id="btn-reset-save">Actualizar contraseña</button>
-        <div class="auth-msg" id="auth-reset-message"></div>
-      </div>
-
-      <div class="auth-toggle">
-        <a id="auth-mode-toggle">¿No tenés cuenta? Registrate</a>
-      </div>
-
+    <!-- Logo -->
+    <div class="auth-logo">
+      <span class="auth-logo-icon">⚽</span>
+      <div class="auth-logo-title"><span>MUNDIALITO</span></div>
+      <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
     </div>
-  </div>
 
-  <!-- ══════════════════════════════════════
+    <!-- Google OAuth -->
+    <button class="btn-google" id="btn-google-login">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuar con Google
+    </button>
+
+    <div class="auth-divider"><span class="auth-divider-text">o ingresá con token</span></div>
+
+    <!-- Token / Email form -->
+    <div class="auth-form" id="auth-form-token">
+      <!-- Solo visible en modo registro -->
+      <div class="auth-field" id="auth-username-field" style="display:none">
+        <label class="auth-label">Nombre de usuario</label>
+        <input class="auth-input" type="text" id="auth-username" placeholder="tu_nombre" autocomplete="username"/>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email"/>
+      </div>
+      <div class="auth-field" id="auth-password-field">
+        <label class="auth-label">Contraseña</label>
+        <input class="auth-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+        <a href="#" id="auth-forgot-password" style="font-size: 12px; color: var(--gold); text-decoration: none;">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button class="btn-token" id="btn-token-login">Ingresar</button>
+      <div class="auth-msg" id="auth-message"></div>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div class="auth-form" id="auth-form-forgot" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Email para recuperar</label>
+        <input class="auth-input" type="email" id="auth-forgot-email" placeholder="tu@email.com"/>
+      </div>
+      <button class="btn-token" id="btn-forgot-send">Enviar link de recuperación</button>
+      <button class="btn-token" id="btn-forgot-back" style="background: var(--navy2); border: 1px solid var(--border); margin-top: 10px;">Volver al login</button>
+      <div class="auth-msg" id="auth-forgot-message"></div>
+    </div>
+
+    <!-- Reset Password Form (cuando vuelve de email) -->
+    <div class="auth-form" id="auth-form-reset" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Nueva contraseña</label>
+        <input class="auth-input" type="password" id="auth-reset-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn-token" id="btn-reset-save">Actualizar contraseña</button>
+      <div class="auth-msg" id="auth-reset-message"></div>
+    </div>
+
+    <div class="auth-toggle">
+      <a id="auth-mode-toggle">¿No tenés cuenta? Registrate</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      APP — se muestra solo si está autenticado
 ══════════════════════════════════════ -->
-  <div id="app-wrapper">
+<div id="app-wrapper">
 
-    <!-- ══════════════════════════════════════
+<!-- ══════════════════════════════════════
      HEADER
 ══════════════════════════════════════ -->
-    <header>
-      <div class="header-inner">
-        <div class="logo">
-          <span class="logo-icon">⚽</span>
-          <span class="logo-text"><span>MUNDIALITO</span></span>
-          <span class="logo-badge">MUNDIAL 2026</span>
-        </div>
-        <div class="header-right">
-
-          <!-- Pill "EN VIVO" que ya tenías -->
-          <div class="live-pill">
-            <span class="live-dot"></span>
-            <span class="live-label">EN VIVO</span>
-          </div>
-
-          <!-- ── ÁREA DE USUARIO (nuevo) ──
-       data-auth="guest"  → visible solo cuando NO está logueado
-       data-auth="user"   → visible solo cuando SÍ está logueado
-       (auth.js ya maneja esto con actualizarUILogueado/Deslogueado) -->
-
-          <!-- Botón "Ingresar" para invitados -->
-          <button data-auth="guest" class="perfil-header-login-btn" style="display:none" data-open-auth>
-            Ingresar
-          </button>
-
-          <!-- Mini perfil para usuarios logueados -->
-          <div data-auth="user" class="perfil-header-user" style="display:none"
-            onclick="switchTab('perfil', document.querySelector('[onclick*=perfil]'))" title="Ver mi perfil">
-            <img id="user-avatar" src="https://via.placeholder.com/32" alt="avatar" class="perfil-header-avatar" />
-            <span id="user-username" class="perfil-header-name">—</span>
-            <span id="user-puntos-prode" class="perfil-header-pts">0 pts</span>
-          </div>
-
-        </div>
-
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">⚽</span>
+      <span class="logo-text"><span>MUNDIALITO</span></span>
+      <span class="logo-badge">MUNDIAL 2026</span>
+    </div>
+    <div class="header-right">
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        <span class="live-label">EN VIVO</span>
       </div>
-    </header>
+    </div>
+  </div>
+</header>
 
-    <!-- ══════════════════════════════════════
+<!-- ══════════════════════════════════════
      TICKER
 ══════════════════════════════════════ -->
-    <div class="ticker-wrap">
-      <div class="ticker-track" id="tickerTrack"></div>
-    </div>
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
 
-    <!-- ══════════════════════════════════════
+<!-- ══════════════════════════════════════
      CONTENIDO PRINCIPAL
 ══════════════════════════════════════ -->
-    <div class="main">
+<div class="main">
 
-      <!-- TABS DE NAVEGACIÓN -->
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
-        <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
-        <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
-        <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
-        <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
-        <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
-        <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
-        <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
-        <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
-      </div>
+  <!-- TABS DE NAVEGACIÓN -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
+    <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
+    <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
+    <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
+    <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
+    <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+    <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
+    <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
+    <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
+    <button class="tab-btn" data-prode-tab onclick="switchTab('prode', this); window.dispatchEvent(new Event('prode-tab-activated'))">🏆 Prode</button>
+  </div>
 
-      <!-- ══ PANEL: EN VIVO ══ -->
-      <div id="panel-live" class="panel active">
-        <div class="live-grid">
-          <div>
-            <p class="section-label">Partidos en curso</p>
-            <div id="live-matches-container">
-              <div style="text-align:center;padding:30px;color:var(--text3)">
-                <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
-                <div style="font-size:14px">No hay partidos en vivo en este momento</div>
-                <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SIDEBAR -->
-          <div>
-            <div class="sidebar-card">
-              <div class="sidebar-hdr">
-                <span class="sidebar-hdr-dot"></span>
-                <span class="sidebar-hdr-text">Top Goleadores</span>
-              </div>
-              <div id="liveScorers"></div>
-            </div>
-
-            <div class="sidebar-card">
-              <div class="sidebar-hdr">
-                <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
-                <span class="sidebar-hdr-text">Últimas Tarjetas</span>
-              </div>
-              <div id="liveCards">
-                <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
-              </div>
-            </div>
+  <!-- ══ PANEL: EN VIVO ══ -->
+  <div id="panel-live" class="panel active">
+    <div class="live-grid">
+      <div>
+        <p class="section-label">Partidos en curso</p>
+        <div id="live-matches-container">
+          <div style="text-align:center;padding:30px;color:var(--text3)">
+            <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+            <div style="font-size:14px">No hay partidos en vivo en este momento</div>
+            <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026</div>
           </div>
         </div>
       </div>
 
-      <!-- ══ PANEL: GRUPOS ══ -->
-      <div id="panel-groups" class="panel">
-        <div class="grp-selector" id="grpSelector"></div>
-        <div class="grp-layout" id="grpContent"></div>
-      </div>
-
-      <!-- ══ PANEL: FIXTURE ══ -->
-      <div id="panel-fixtures" class="panel">
-        <p class="section-label">Fixture completo — Todos los grupos</p>
-        <div class="fixture-grid" id="fixtureContent"></div>
-      </div>
-
-      <!-- ══ PANEL: GOLEADORES ══ -->
-      <div id="panel-scorers" class="panel">
-        <p class="section-label">Tabla de goleadores — Mundial 2026</p>
-        <div class="sc-tbl">
-          <div class="sc-hdr">
-            <span>#</span><span></span><span>JUGADOR</span>
-            <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
+      <!-- SIDEBAR -->
+      <div>
+        <div class="sidebar-card">
+          <div class="sidebar-hdr">
+            <span class="sidebar-hdr-dot"></span>
+            <span class="sidebar-hdr-text">Top Goleadores</span>
           </div>
-          <div id="scorersBody"></div>
+          <div id="liveScorers"></div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-hdr">
+            <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
+            <span class="sidebar-hdr-text">Últimas Tarjetas</span>
+          </div>
+          <div id="liveCards">
+            <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- ══ PANEL: TARJETAS ══ -->
-      <div id="panel-cards" class="panel">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+  <!-- ══ PANEL: GRUPOS ══ -->
+  <div id="panel-groups" class="panel">
+    <div class="grp-selector" id="grpSelector"></div>
+    <div class="grp-layout" id="grpContent"></div>
+  </div>
 
-          <!-- Panel: Amarillas -->
-          <div>
-            <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
-            <div class="cd-tbl">
-              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-              </div>
-              <div id="cardsBodyYellow"></div>
-            </div>
+  <!-- ══ PANEL: FIXTURE ══ -->
+  <div id="panel-fixtures" class="panel">
+    <p class="section-label">Fixture completo — Todos los grupos</p>
+    <div class="fixture-grid" id="fixtureContent"></div>
+  </div>
+
+  <!-- ══ PANEL: GOLEADORES ══ -->
+  <div id="panel-scorers" class="panel">
+    <p class="section-label">Tabla de goleadores — Mundial 2026</p>
+    <div class="sc-tbl">
+      <div class="sc-hdr">
+        <span>#</span><span></span><span>JUGADOR</span>
+        <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
+      </div>
+      <div id="scorersBody"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: TARJETAS ══ -->
+  <div id="panel-cards" class="panel">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+      
+      <!-- Panel: Amarillas -->
+      <div>
+        <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
+        <div class="cd-tbl">
+          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
           </div>
-
-          <!-- Panel: Rojas -->
-          <div>
-            <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
-            <div class="cd-tbl">
-              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-              </div>
-              <div id="cardsBodyRed"></div>
-            </div>
-          </div>
-
+          <div id="cardsBodyYellow"></div>
         </div>
       </div>
 
-      <!-- ══ PANEL: EDICIONES PASADAS ══ -->
-      <div id="panel-history" class="panel">
-
-        <!-- Estadísticas globales del torneo -->
-        <div class="hist-hero">
-          <div class="hist-stat">
-            <div class="hist-stat-num"><span>22</span></div>
-            <div class="hist-stat-lbl">Ediciones celebradas</div>
+      <!-- Panel: Rojas -->
+      <div>
+        <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
+        <div class="cd-tbl">
+          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
           </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">8</div>
-            <div class="hist-stat-lbl">Campeones distintos</div>
-          </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">5</div>
-            <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
-          </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">8<span>5</span></div>
-            <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
-          </div>
-        </div>
-
-        <!-- Campeonatos por confederación -->
-        <p class="section-label">Títulos por confederación (1930–2022)</p>
-        <div
-          style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
-          <div class="conf-bar-wrap">
-            <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span
-                class="conf-count">9</span></div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:100%"></div>
-            </div>
-          </div>
-          <div class="conf-bar-wrap" style="margin-top:14px">
-            <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span>
-            </div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div>
-            </div>
-          </div>
-          <div class="conf-bar-wrap" style="margin-top:14px">
-            <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span
-                class="conf-count">0</span></div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:3%;background:var(--border)"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Selector de edición -->
-        <p class="section-label">Explorar edición</p>
-        <div class="edition-selector" id="editionSelector"></div>
-        <div id="editionCards"></div>
-
-      </div>
-
-      <!-- ══ PANEL: NOTICIAS ══ -->
-      <div id="panel-noticias" class="panel">
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-          <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
-          <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)"
-            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
-            <option value="">🌎 Ver Todo el Mundial</option>
-          </select>
-        </div>
-        <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
-          Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
-        </p>
-        <div id="grid-noticias" class="cards-grid"></div>
-      </div>
-      <!-- ══ PANEL: TIENDA ══ -->
-      <div id="panel-tienda" class="panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
-          <select id="filtro-tienda" onchange="window.cargarProductos(this.value)"
-            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
-            <option value="">🌎 Todo el Mundial</option>
-          </select>
-        </div>
-        <div id="grid-productos" class="cards-grid"></div>
-      </div>
-
-      <div id="panel-chatbot" class="panel">
-
-        <!-- Encabezado del panel -->
-        <div class="chatbot-panel-header">
-          <div class="chatbot-panel-title">
-            <span class="chatbot-panel-icon">🤖</span>
-            <div>
-              <div class="chatbot-panel-name">Mundialito Bot</div>
-              <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
-            </div>
-          </div>
-          <div class="chatbot-status-badge">
-            <span class="chatbot-status-dot"></span>
-            En línea
-          </div>
-        </div>
-
-        <!-- Layout de dos columnas: chat + sidebar de productos -->
-        <div class="chatbot-layout">
-
-          <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
-          <div class="chatbot-main">
-
-            <!-- Mensajes del chat -->
-            <div class="chatbot-mensajes" id="chatbot-mensajes">
-              <!-- Mensaje inicial del bot -->
-              <div class="chatbot-msg chatbot-msg--bot">
-                <div class="chatbot-msg-avatar">⚽</div>
-                <div class="chatbot-msg-contenido">
-                  <div class="chatbot-msg-texto">
-                    ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
-                    Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial.
-                    También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
-                  </div>
-                  <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
-                  <div class="chatbot-sugerencias">
-                    <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el
-                      Mundial?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos
-                      participan?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para
-                      ganar?</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Input del usuario -->
-            <div class="chatbot-input-area">
-              <div class="chatbot-input-wrap">
-                <textarea id="chatbot-input" class="chatbot-textarea" placeholder="Preguntame sobre el Mundial 2026..."
-                  rows="1" maxlength="500" onkeydown="chatbotKeydown(event)"
-                  oninput="autoResizeTextarea(this)"></textarea>
-                <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-              </div>
-              <div class="chatbot-input-footer">
-                <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
-                <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
-          <div class="chatbot-sidebar">
-            <div class="chatbot-sidebar-titulo">
-              <span>🛒</span> Productos sugeridos
-            </div>
-            <div id="chatbot-productos" class="chatbot-productos-lista">
-              <!-- Estado vacío inicial -->
-              <div class="chatbot-sidebar-empty">
-                <span>⚽</span>
-                <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
-              </div>
-            </div>
-
-            <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
-            <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
-              <div class="chatbot-sidebar-titulo" style="margin-top:20px">
-                <span>📅</span> Agendar en Google Calendar
-              </div>
-              <div id="chatbot-calendario-info" class="chatbot-calendario-info">
-                <!-- Información del evento se inyecta dinámicamente -->
-              </div>
-              <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
-                📅 Agregar a mi Google Calendar
-              </button>
-            </div>
-          </div>
-
+          <div id="cardsBodyRed"></div>
         </div>
       </div>
-      <div id="panel-perfil" class="panel">
 
-        <!-- ── HERO del perfil ── -->
-        <div class="perfil-hero">
+    </div>
+  </div>
 
-          <!-- Avatar con botón de edición superpuesto -->
-          <div class="perfil-avatar-wrap">
-            <img id="perfil-avatar-img" src="https://via.placeholder.com/100" alt="Avatar" class="perfil-avatar-img" />
-            <!-- Overlay de cámara que aparece al hacer hover -->
-            <label class="perfil-avatar-overlay" for="perfil-avatar-input" title="Cambiar foto">
-              📷
-            </label>
-            <!-- Input de archivo oculto -->
-            <input type="file" id="perfil-avatar-input" accept="image/*" style="display:none"
-              onchange="perfilSubirAvatar(this)" />
-            <!-- Indicador de carga -->
-            <div class="perfil-avatar-loading" id="perfil-avatar-loading" style="display:none">
-              <div class="perfil-spinner"></div>
-            </div>
-          </div>
+  <!-- ══ PANEL: EDICIONES PASADAS ══ -->
+  <div id="panel-history" class="panel">
 
-          <!-- Info principal -->
-          <div class="perfil-info">
-            <!-- Modo vista: muestra username con botón editar -->
-            <div id="perfil-vista-username" class="perfil-username-display">
-              <span id="perfil-username-texto" class="perfil-username">cargando...</span>
-              <button class="perfil-edit-btn" onclick="perfilActivarEdicion()" title="Editar username">✏️</button>
-            </div>
-
-            <!-- Modo edición: input para cambiar username -->
-            <div id="perfil-edit-username" class="perfil-username-edit" style="display:none">
-              <input type="text" id="perfil-username-input" class="perfil-input" placeholder="nuevo_username"
-                maxlength="20" onkeydown="perfilKeydownUsername(event)" />
-              <button class="perfil-save-btn" onclick="perfilGuardarUsername()">Guardar</button>
-              <button class="perfil-cancel-btn" onclick="perfilCancelarEdicion()">Cancelar</button>
-            </div>
-
-            <div id="perfil-email-texto" class="perfil-email">-</div>
-            <div class="perfil-miembro-desde" id="perfil-miembro-desde">Miembro desde -</div>
-          </div>
-
-          <!-- Stats rápidas en el hero -->
-          <div class="perfil-hero-stats">
-            <div class="perfil-hero-stat">
-              <div class="perfil-hero-stat-num" id="perfil-stat-pts">—</div>
-              <div class="perfil-hero-stat-lbl">Puntos Prode</div>
-            </div>
-            <div class="perfil-hero-stat">
-              <div class="perfil-hero-stat-num" id="perfil-stat-pos">—</div>
-              <div class="perfil-hero-stat-lbl">Posición Global</div>
-            </div>
-            <div class="perfil-hero-stat">
-              <div class="perfil-hero-stat-num" id="perfil-stat-exactos">—</div>
-              <div class="perfil-hero-stat-lbl">Exactos</div>
-            </div>
-            <div class="perfil-hero-stat">
-              <div class="perfil-hero-stat-num" id="perfil-stat-racha">—</div>
-              <div class="perfil-hero-stat-lbl">Racha actual</div>
-            </div>
-          </div>
-
-          <!-- Mensaje de feedback (errores / éxito) -->
-          <div id="perfil-msg" class="perfil-msg" style="display:none"></div>
-        </div>
-
-        <!-- ── HISTORIAL DEL PRODE ── -->
-        <div class="perfil-seccion">
-          <p class="section-label">Historial del Prode</p>
-
-          <div id="perfil-historial-wrap">
-            <!-- Estado de carga -->
-            <div id="perfil-historial-loading" class="perfil-empty">
-              <span>⏳</span> Cargando historial...
-            </div>
-            <!-- Tabla de historial (se llena dinámicamente) -->
-            <div id="perfil-historial" style="display:none">
-              <div class="perfil-prode-hdr">
-                <span>PARTIDO</span>
-                <span style="text-align:center">TU PRONÓSTICO</span>
-                <span style="text-align:center">RESULTADO</span>
-                <span style="text-align:center">PUNTOS</span>
-              </div>
-              <div id="perfil-prode-rows"></div>
-            </div>
-            <!-- Estado vacío -->
-            <div id="perfil-historial-empty" class="perfil-empty" style="display:none">
-              <span>⚽</span>
-              <p>Todavía no hiciste ningún pronóstico.<br>¡Anotate en el Prode desde la solapa de partidos!</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── ZONA DE PELIGRO ── -->
-        <div class="perfil-seccion perfil-danger-zone">
-          <p class="section-label" style="color:var(--red)">Sesión</p>
-          <button class="perfil-logout-btn" onclick="cerrarSesion()">
-            Cerrar sesión
-          </button>
-        </div>
-
+    <!-- Estadísticas globales del torneo -->
+    <div class="hist-hero">
+      <div class="hist-stat">
+        <div class="hist-stat-num"><span>22</span></div>
+        <div class="hist-stat-lbl">Ediciones celebradas</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">8</div>
+        <div class="hist-stat-lbl">Campeones distintos</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">5</div>
+        <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
+      </div>
+      <div class="hist-stat">
+        <div class="hist-stat-num">8<span>5</span></div>
+        <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
       </div>
     </div>
 
+    <!-- Campeonatos por confederación -->
+    <p class="section-label">Títulos por confederación (1930–2022)</p>
+    <div style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
+      <div class="conf-bar-wrap">
+        <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span class="conf-count">9</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:100%"></div></div>
+      </div>
+      <div class="conf-bar-wrap" style="margin-top:14px">
+        <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div></div>
+      </div>
+      <div class="conf-bar-wrap" style="margin-top:14px">
+        <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span class="conf-count">0</span></div>
+        <div class="conf-track"><div class="conf-fill" style="width:3%;background:var(--border)"></div></div>
+      </div>
+    </div>
 
-    <!-- ══════════════════════════════════════════════════════════
+    <!-- Selector de edición -->
+    <p class="section-label">Explorar edición</p>
+    <div class="edition-selector" id="editionSelector"></div>
+    <div id="editionCards"></div>
+
+  </div>
+
+  <!-- ══ PANEL: NOTICIAS ══ -->
+  <div id="panel-noticias" class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
+      <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+        <option value="">🌎 Ver Todo el Mundial</option>
+      </select>
+    </div>
+    <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
+      Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
+    </p>
+    <div id="grid-noticias" class="cards-grid"></div>
+  </div>
+  <!-- ══ PANEL: TIENDA ══ -->
+  <div id="panel-tienda" class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
+      <select id="filtro-tienda" onchange="window.cargarProductos(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
+        <option value="">🌎 Todo el Mundial</option>
+      </select>
+    </div>
+    <div id="grid-productos" class="cards-grid"></div>
+  </div>
+
+  <div id="panel-chatbot" class="panel">
+
+  <!-- Encabezado del panel -->
+  <div class="chatbot-panel-header">
+    <div class="chatbot-panel-title">
+      <span class="chatbot-panel-icon">🤖</span>
+      <div>
+        <div class="chatbot-panel-name">Mundialito Bot</div>
+        <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
+      </div>
+    </div>
+    <div class="chatbot-status-badge">
+      <span class="chatbot-status-dot"></span>
+      En línea
+    </div>
+  </div>
+
+  <!-- Layout de dos columnas: chat + sidebar de productos -->
+  <div class="chatbot-layout">
+
+    <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
+    <div class="chatbot-main">
+
+      <!-- Mensajes del chat -->
+      <div class="chatbot-mensajes" id="chatbot-mensajes">
+        <!-- Mensaje inicial del bot -->
+        <div class="chatbot-msg chatbot-msg--bot">
+          <div class="chatbot-msg-avatar">⚽</div>
+          <div class="chatbot-msg-contenido">
+            <div class="chatbot-msg-texto">
+              ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
+              Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial. También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+            </div>
+            <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
+            <div class="chatbot-sugerencias">
+              <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el Mundial?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos participan?</button>
+              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para ganar?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input del usuario -->
+      <div class="chatbot-input-area">
+        <div class="chatbot-input-wrap">
+          <textarea
+            id="chatbot-input"
+            class="chatbot-textarea"
+            placeholder="Preguntame sobre el Mundial 2026..."
+            rows="1"
+            maxlength="500"
+            onkeydown="chatbotKeydown(event)"
+            oninput="autoResizeTextarea(this)"
+          ></textarea>
+          <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="chatbot-input-footer">
+          <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
+          <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
+    <div class="chatbot-sidebar">
+      <div class="chatbot-sidebar-titulo">
+        <span>🛒</span> Productos sugeridos
+      </div>
+      <div id="chatbot-productos" class="chatbot-productos-lista">
+        <!-- Estado vacío inicial -->
+        <div class="chatbot-sidebar-empty">
+          <span>⚽</span>
+          <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
+        </div>
+      </div>
+
+      <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
+      <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
+        <div class="chatbot-sidebar-titulo" style="margin-top:20px">
+          <span>📅</span> Agendar en Google Calendar
+        </div>
+        <div id="chatbot-calendario-info" class="chatbot-calendario-info">
+          <!-- Información del evento se inyecta dinámicamente -->
+        </div>
+        <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
+          📅 Agregar a mi Google Calendar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+  <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════
        PANEL: PRODE — Sistema de Predicciones Deportivas
   ══════════════════════════════════════════════════════════ -->
-    <div id="panel-prode" class="panel">
+  <div id="panel-prode" class="panel">
 
-      <!-- Breadcrumb de navegación interno -->
-      <nav class="prode-nav" id="prode-breadcrumb">
-        <span class="prode-nav-current">🏆 Prode</span>
-      </nav>
+    <!-- Breadcrumb de navegación interno -->
+    <nav class="prode-nav" id="prode-breadcrumb">
+      <span class="prode-nav-current">🏆 Prode</span>
+    </nav>
 
-      <!-- ══ SUB-VISTA 1: DASHBOARD (lista de grupos) ══ -->
-      <div id="prode-view-dashboard" class="prode-view active">
+    <!-- ══ SUB-VISTA 1: DASHBOARD (lista de grupos) ══ -->
+    <div id="prode-view-dashboard" class="prode-view active">
 
-        <!-- Hero Banner con puntos personales -->
-        <div class="prode-hero">
-          <div>
-            <div class="prode-hero-title">PRODE <span>2026</span></div>
-            <div class="prode-hero-sub">JUEGO DE PREDICCIONES DEPORTIVAS · MUNDIAL FIFA</div>
-          </div>
-          <div class="prode-hero-stats">
-            <div class="prode-hero-stat">
-              <div class="prode-hero-stat-num" id="prode-hero-pts">—</div>
-              <div class="prode-hero-stat-lbl">Mis Puntos</div>
-            </div>
-            <div class="prode-hero-stat">
-              <div class="prode-hero-stat-num" id="prode-hero-exactos">—</div>
-              <div class="prode-hero-stat-lbl">Exactos</div>
-            </div>
-            <div class="prode-hero-stat">
-              <div class="prode-hero-stat-num" id="prode-hero-signo">—</div>
-              <div class="prode-hero-stat-lbl">Tendencias</div>
-            </div>
-          </div>
+      <!-- Hero Banner con puntos personales -->
+      <div class="prode-hero">
+        <div>
+          <div class="prode-hero-title">PRODE <span>2026</span></div>
+          <div class="prode-hero-sub">JUEGO DE PREDICCIONES DEPORTIVAS · MUNDIAL FIFA</div>
         </div>
-
-        <!-- Acceso rápido a predicciones -->
-        <div style="margin-bottom:20px">
-          <button class="prode-btn" style="max-width:300px" onclick="window._prodeIrPredicciones()">
-            📋 Cargar mis predicciones
-          </button>
-        </div>
-
-        <!-- Layout: mis grupos + acciones -->
-        <div class="prode-dashboard-grid">
-
-          <!-- Columna izquierda: lista de grupos -->
-          <div>
-            <p class="section-label">Mis Grupos</p>
-            <div id="prode-groups-list">
-              <!-- Cargado dinámicamente por prode.js -->
-              <div class="prode-skeleton"></div>
-              <div class="prode-skeleton"></div>
-            </div>
+        <div class="prode-hero-stats">
+          <div class="prode-hero-stat">
+            <div class="prode-hero-stat-num" id="prode-hero-pts">—</div>
+            <div class="prode-hero-stat-lbl">Mis Puntos</div>
           </div>
-
-          <!-- Columna derecha: acciones -->
-          <div class="prode-actions-panel">
-
-            <!-- Crear grupo -->
-            <div class="prode-action-card">
-              <div class="prode-action-card-title">
-                <span>➕</span> Crear un grupo
-              </div>
-              <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">NOMBRE
-                DEL GRUPO</label>
-              <input id="prode-create-nombre" class="prode-input" type="text" placeholder="Ej: Los Cracks del Laburo"
-                maxlength="50" />
-
-              <label
-                style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">VISIBILIDAD</label>
-              <select id="prode-create-visibilidad" class="prode-input" style="margin-bottom:12px">
-                <option value="false">🔒 Privado (solo por código)</option>
-                <option value="true">🌐 Público (visible para todos)</option>
-              </select>
-
-              <button id="prode-create-btn" class="prode-btn" onclick="window._prodeCrearGrupo()">
-                ➕ Crear Grupo
-              </button>
-              <div id="prode-create-msg" class="prode-msg"></div>
-
-              <!-- Código generado tras crear -->
-              <div id="prode-new-code-display" style="display:none;margin-top:12px">
-                <div style="font-size:10px;color:var(--text4);letter-spacing:2px;margin-bottom:6px">CÓDIGO DE INVITACIÓN
-                </div>
-                <div class="prode-invite-code-display"
-                  onclick="window._prodeCopiarCodigo(document.getElementById('prode-new-code-val').textContent)">
-                  <div class="prode-invite-code-val" id="prode-new-code-val">——</div>
-                  <div class="prode-invite-code-hint">Click para copiar · Comparte este código con tus amigos</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Unirse con código -->
-            <div class="prode-action-card">
-              <div class="prode-action-card-title">
-                <span>🔗</span> Unirme a un grupo
-              </div>
-              <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">CÓDIGO
-                DE 6 CARACTERES</label>
-              <input id="prode-join-codigo" class="prode-input" type="text" placeholder="Ej: AB3X9K" maxlength="6"
-                style="text-transform:uppercase;letter-spacing:4px;font-family:var(--font-display);font-size:18px;text-align:center"
-                onkeydown="if(event.key==='Enter') window._prodeUnirseConCodigo()" />
-              <button id="prode-join-btn" class="prode-btn" onclick="window._prodeUnirseConCodigo()">
-                🔗 Unirme al Grupo
-              </button>
-              <div id="prode-join-msg" class="prode-msg"></div>
-            </div>
-
+          <div class="prode-hero-stat">
+            <div class="prode-hero-stat-num" id="prode-hero-exactos">—</div>
+            <div class="prode-hero-stat-lbl">Exactos</div>
+          </div>
+          <div class="prode-hero-stat">
+            <div class="prode-hero-stat-num" id="prode-hero-signo">—</div>
+            <div class="prode-hero-stat-lbl">Tendencias</div>
           </div>
         </div>
       </div>
-      <!-- / SUB-VISTA 1 -->
 
-
-      <!-- ══ SUB-VISTA 2: VISTA DE GRUPO ══ -->
-      <div id="prode-view-grupo" class="prode-view">
-        <div id="prode-grupo-content">
-          <!-- Cargado dinámicamente por prode.js al hacer click en un grupo -->
-          <div class="prode-skeleton" style="height:100px;border-radius:10px 10px 0 0"></div>
-          <div class="prode-skeleton" style="height:300px;margin-top:4px;border-radius:0 0 10px 10px"></div>
-        </div>
+      <!-- Acceso rápido a predicciones -->
+      <div style="margin-bottom:20px">
+        <button class="prode-btn" style="max-width:300px" onclick="window._prodeIrPredicciones()">
+          📋 Cargar mis predicciones
+        </button>
       </div>
-      <!-- / SUB-VISTA 2 -->
 
+      <!-- Layout: mis grupos + acciones -->
+      <div class="prode-dashboard-grid">
 
-      <!-- ══ SUB-VISTA 3: CARGA DE PREDICCIONES ══ -->
-      <div id="prode-view-predicciones" class="prode-view">
-
-        <!-- Filtros por fase -->
-        <div class="prode-predictions-header">
-          <p class="section-label" style="margin:0">Mis Predicciones</p>
-          <div class="prode-predictions-filters">
-            <button class="prode-filter-btn active" onclick="window._prodeFiltrarPartidos(this,'todos')">Todos</button>
-            <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'abiertos')">⏳ Abiertos</button>
-            <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'bloqueados')">🔒
-              Bloqueados</button>
-            <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'finalizados')">✅
-              Finalizados</button>
+        <!-- Columna izquierda: lista de grupos -->
+        <div>
+          <p class="section-label">Mis Grupos</p>
+          <div id="prode-groups-list">
+            <!-- Cargado dinámicamente por prode.js -->
+            <div class="prode-skeleton"></div>
+            <div class="prode-skeleton"></div>
           </div>
         </div>
 
-        <!-- Lista de partidos para predecir -->
-        <div id="prode-predictions-list">
-          <!-- Cargado dinámicamente por prode.js -->
+        <!-- Columna derecha: acciones -->
+        <div class="prode-actions-panel">
+
+          <!-- Crear grupo -->
+          <div class="prode-action-card">
+            <div class="prode-action-card-title">
+              <span>➕</span> Crear un grupo
+            </div>
+            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">NOMBRE DEL GRUPO</label>
+            <input
+              id="prode-create-nombre"
+              class="prode-input"
+              type="text"
+              placeholder="Ej: Los Cracks del Laburo"
+              maxlength="50"
+            />
+
+            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">VISIBILIDAD</label>
+            <select id="prode-create-visibilidad" class="prode-input" style="margin-bottom:12px">
+              <option value="false">🔒 Privado (solo por código)</option>
+              <option value="true">🌐 Público (visible para todos)</option>
+            </select>
+
+            <button id="prode-create-btn" class="prode-btn" onclick="window._prodeCrearGrupo()">
+              ➕ Crear Grupo
+            </button>
+            <div id="prode-create-msg" class="prode-msg"></div>
+
+            <!-- Código generado tras crear -->
+            <div id="prode-new-code-display" style="display:none;margin-top:12px">
+              <div style="font-size:10px;color:var(--text4);letter-spacing:2px;margin-bottom:6px">CÓDIGO DE INVITACIÓN</div>
+              <div class="prode-invite-code-display" onclick="window._prodeCopiarCodigo(document.getElementById('prode-new-code-val').textContent)">
+                <div class="prode-invite-code-val" id="prode-new-code-val">——</div>
+                <div class="prode-invite-code-hint">Click para copiar · Comparte este código con tus amigos</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unirse con código -->
+          <div class="prode-action-card">
+            <div class="prode-action-card-title">
+              <span>🔗</span> Unirme a un grupo
+            </div>
+            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">CÓDIGO DE 6 CARACTERES</label>
+            <input
+              id="prode-join-codigo"
+              class="prode-input"
+              type="text"
+              placeholder="Ej: AB3X9K"
+              maxlength="6"
+              style="text-transform:uppercase;letter-spacing:4px;font-family:var(--font-display);font-size:18px;text-align:center"
+              onkeydown="if(event.key==='Enter') window._prodeUnirseConCodigo()"
+            />
+            <button id="prode-join-btn" class="prode-btn" onclick="window._prodeUnirseConCodigo()">
+              🔗 Unirme al Grupo
+            </button>
+            <div id="prode-join-msg" class="prode-msg"></div>
+          </div>
+
         </div>
-
       </div>
-      <!-- / SUB-VISTA 3 -->
-
-    </div><!-- /panel-prode -->
-
-  </div><!-- /main -->
-
-  <!-- FOOTER -->
-  <footer
-    style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); background: var(--navy); margin-top: 40px;">
-    <span class="footer-brand"
-      style="color: var(--white); font-weight: bold; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;">Mundialito
-      2026 © Todos los derechos reservados.</span>
-    <div class="footer-info" style="display: flex; gap: 15px; align-items: center;">
-      <a href="#"
-        style="color: var(--gold); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); transition: color 0.2s;"
-        onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gold)'">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-          <path
-            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-        </svg>
-        @Mundialito2026
-      </a>
     </div>
-  </footer>
+    <!-- / SUB-VISTA 1 -->
 
 
-
-
-  <!-- ══ MODAL: DETALLE DE PARTIDO ══ -->
-  <div id="match-detail-modal" class="modal-overlay" onclick="if(event.target===this)cerrarDetallePartido()">
-    <div class="modal-card">
-      <button class="modal-close" onclick="cerrarDetallePartido()">✕</button>
-      <div id="match-detail-content"></div>
+    <!-- ══ SUB-VISTA 2: VISTA DE GRUPO ══ -->
+    <div id="prode-view-grupo" class="prode-view">
+      <div id="prode-grupo-content">
+        <!-- Cargado dinámicamente por prode.js al hacer click en un grupo -->
+        <div class="prode-skeleton" style="height:100px;border-radius:10px 10px 0 0"></div>
+        <div class="prode-skeleton" style="height:300px;margin-top:4px;border-radius:0 0 10px 10px"></div>
+      </div>
     </div>
+    <!-- / SUB-VISTA 2 -->
+
+
+    <!-- ══ SUB-VISTA 3: CARGA DE PREDICCIONES ══ -->
+    <div id="prode-view-predicciones" class="prode-view">
+
+      <!-- Filtros por fase -->
+      <div class="prode-predictions-header">
+        <p class="section-label" style="margin:0">Mis Predicciones</p>
+        <div class="prode-predictions-filters">
+          <button class="prode-filter-btn active" onclick="window._prodeFiltrarPartidos(this,'todos')">Todos</button>
+          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'abiertos')">⏳ Abiertos</button>
+          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'bloqueados')">🔒 Bloqueados</button>
+          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'finalizados')">✅ Finalizados</button>
+        </div>
+      </div>
+
+      <!-- Lista de partidos para predecir -->
+      <div id="prode-predictions-list">
+        <!-- Cargado dinámicamente por prode.js -->
+      </div>
+
+    </div>
+    <!-- / SUB-VISTA 3 -->
+
+  </div><!-- /panel-prode -->
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); background: var(--navy); margin-top: 40px;">
+  <span class="footer-brand" style="color: var(--white); font-weight: bold; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;">Mundialito 2026 © Todos los derechos reservados.</span>
+  <div class="footer-info" style="display: flex; gap: 15px; align-items: center;">
+    <a href="#" style="color: var(--gold); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); transition: color 0.2s;" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gold)'">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @Mundialito2026
+    </a>
   </div>
+</footer>
 
 
-  </div><!-- /app-wrapper -->
 
 
-  <script type="module">
-    // Importamos las funciones exactas de tu auth.js
-    import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena } from '../backend/auth.js';
-    import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
-    import { initProde, checkInviteCode } from './prode.js';
+<!-- ══ MODAL: DETALLE DE PARTIDO ══ -->
+<div id="match-detail-modal" class="modal-overlay" onclick="if(event.target===this)cerrarDetallePartido()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="cerrarDetallePartido()">✕</button>
+    <div id="match-detail-content"></div>
+  </div>
+</div>
 
-    // ─── 1. REFERENCIAS DE TU INTERFAZ ───
-    const overlay = document.getElementById('auth-overlay');
-    const appWrapper = document.getElementById('app-wrapper');
-    const msgEl = document.getElementById('auth-message');
-    const emailEl = document.getElementById('auth-email');
-    const passEl = document.getElementById('auth-password');
-    const usernameField = document.getElementById('auth-username-field');
-    const usernameEl = document.getElementById('auth-username');
-    const btnGoogle = document.getElementById('btn-google-login');
-    const btnToken = document.getElementById('btn-token-login');
-    const modeToggle = document.getElementById('auth-mode-toggle');
 
-    // Referencias para recuperación de contraseña
-    const forgotLink = document.getElementById('auth-forgot-password');
-    const formToken = document.getElementById('auth-form-token');
-    const formForgot = document.getElementById('auth-form-forgot');
-    const formReset = document.getElementById('auth-form-reset');
-    const btnForgotSend = document.getElementById('btn-forgot-send');
-    const btnForgotBack = document.getElementById('btn-forgot-back');
-    const forgotEmailEl = document.getElementById('auth-forgot-email');
-    const msgForgotEl = document.getElementById('auth-forgot-message');
+</div><!-- /app-wrapper -->
 
-    const btnResetSave = document.getElementById('btn-reset-save');
-    const resetPassEl = document.getElementById('auth-reset-password');
-    const msgResetEl = document.getElementById('auth-reset-message');
 
-    let authMode = 'login';
+<script type="module">
+  // Importamos las funciones exactas de tu auth.js
+  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena } from '../backend/auth.js'; 
+  import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
+  import { initProde, checkInviteCode } from './prode.js';
 
-    function setMsg(text, type, element = msgEl) {
-      element.className = 'auth-msg ' + type;
-      element.textContent = text;
-      element.style.display = text ? 'block' : 'none';
+  // ─── 1. REFERENCIAS DE TU INTERFAZ ───
+  const overlay       = document.getElementById('auth-overlay');
+  const appWrapper    = document.getElementById('app-wrapper');
+  const msgEl         = document.getElementById('auth-message');
+  const emailEl       = document.getElementById('auth-email');
+  const passEl        = document.getElementById('auth-password');
+  const usernameField = document.getElementById('auth-username-field');
+  const usernameEl    = document.getElementById('auth-username');
+  const btnGoogle     = document.getElementById('btn-google-login');
+  const btnToken      = document.getElementById('btn-token-login');
+  const modeToggle    = document.getElementById('auth-mode-toggle');
+  
+  // Referencias para recuperación de contraseña
+  const forgotLink    = document.getElementById('auth-forgot-password');
+  const formToken     = document.getElementById('auth-form-token');
+  const formForgot    = document.getElementById('auth-form-forgot');
+  const formReset     = document.getElementById('auth-form-reset');
+  const btnForgotSend = document.getElementById('btn-forgot-send');
+  const btnForgotBack = document.getElementById('btn-forgot-back');
+  const forgotEmailEl = document.getElementById('auth-forgot-email');
+  const msgForgotEl   = document.getElementById('auth-forgot-message');
+  
+  const btnResetSave  = document.getElementById('btn-reset-save');
+  const resetPassEl   = document.getElementById('auth-reset-password');
+  const msgResetEl    = document.getElementById('auth-reset-message');
+
+  let authMode = 'login';
+
+  function setMsg(text, type, element = msgEl) {
+    element.className = 'auth-msg ' + type;
+    element.textContent = text;
+    element.style.display = text ? 'block' : 'none';
+  }
+
+  // ─── 2. EVENTOS DE LOS BOTONES ───
+  
+  // Cambiar entre Login y Registro
+  modeToggle.addEventListener('click', () => {
+    authMode = authMode === 'login' ? 'register' : 'login';
+    btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
+    modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
+    usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
+    forgotLink.style.display = authMode === 'login' ? 'block' : 'none';
+    setMsg('', '');
+  });
+
+  // Mostrar form de olvidé contraseña
+  forgotLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    formToken.style.display = 'none';
+    formForgot.style.display = 'block';
+    modeToggle.parentElement.style.display = 'none';
+    btnGoogle.style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+  });
+
+  // Volver al login desde olvidé contraseña
+  btnForgotBack.addEventListener('click', () => {
+    formForgot.style.display = 'none';
+    formToken.style.display = 'block';
+    modeToggle.parentElement.style.display = 'block';
+    btnGoogle.style.display = 'flex';
+    document.querySelector('.auth-divider').style.display = 'flex';
+    setMsg('', '', msgForgotEl);
+  });
+
+  // Enviar email de recuperación
+  btnForgotSend.addEventListener('click', async () => {
+    const email = forgotEmailEl.value.trim();
+    if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
+    
+    btnForgotSend.textContent = 'Enviando...';
+    btnForgotSend.disabled = true;
+    
+    const { error } = await recuperarContrasena(email);
+    
+    btnForgotSend.textContent = 'Enviar link de recuperación';
+    btnForgotSend.disabled = false;
+    
+    if (error) {
+      setMsg(error.message, 'error', msgForgotEl);
+    } else {
+      setMsg('Revisá tu email para el enlace de recuperación.', 'success', msgForgotEl);
     }
+  });
 
-    // ─── 2. EVENTOS DE LOS BOTONES ───
+  // Escuchar evento de recuperación (de auth.js)
+  window.addEventListener('show-password-reset', () => {
+    overlay.classList.remove('hidden');
+    appWrapper.classList.remove('visible');
+    
+    formToken.style.display = 'none';
+    formForgot.style.display = 'none';
+    formReset.style.display = 'block';
+    modeToggle.parentElement.style.display = 'none';
+    btnGoogle.style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+    
+    document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Restablecer contraseña';
+  });
 
-    // Cambiar entre Login y Registro
-    modeToggle.addEventListener('click', () => {
-      authMode = authMode === 'login' ? 'register' : 'login';
-      btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
-      modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
-      usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
-      forgotLink.style.display = authMode === 'login' ? 'block' : 'none';
-      setMsg('', '');
-    });
-
-    // Mostrar form de olvidé contraseña
-    forgotLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      formToken.style.display = 'none';
-      formForgot.style.display = 'block';
-      modeToggle.parentElement.style.display = 'none';
-      btnGoogle.style.display = 'none';
-      document.querySelector('.auth-divider').style.display = 'none';
-    });
-
-    // Volver al login desde olvidé contraseña
-    btnForgotBack.addEventListener('click', () => {
-      formForgot.style.display = 'none';
-      formToken.style.display = 'block';
-      modeToggle.parentElement.style.display = 'block';
-      btnGoogle.style.display = 'flex';
-      document.querySelector('.auth-divider').style.display = 'flex';
-      setMsg('', '', msgForgotEl);
-    });
-
-    // Enviar email de recuperación
-    btnForgotSend.addEventListener('click', async () => {
-      const email = forgotEmailEl.value.trim();
-      if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
-
-      btnForgotSend.textContent = 'Enviando...';
-      btnForgotSend.disabled = true;
-
-      const { error } = await recuperarContrasena(email);
-
-      btnForgotSend.textContent = 'Enviar link de recuperación';
-      btnForgotSend.disabled = false;
-
+  // Guardar nueva contraseña
+  btnResetSave.addEventListener('click', async () => {
+    const newPass = resetPassEl.value;
+    if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
+    
+    btnResetSave.textContent = 'Actualizando...';
+    btnResetSave.disabled = true;
+    
+    try {
+      const { error } = await actualizarContrasena(newPass);
+      
       if (error) {
-        setMsg(error.message, 'error', msgForgotEl);
-      } else {
-        setMsg('Revisá tu email para el enlace de recuperación.', 'success', msgForgotEl);
-      }
-    });
-
-    // Escuchar evento de recuperación (de auth.js)
-    window.addEventListener('show-password-reset', () => {
-      overlay.classList.remove('hidden');
-      appWrapper.classList.remove('visible');
-
-      formToken.style.display = 'none';
-      formForgot.style.display = 'none';
-      formReset.style.display = 'block';
-      modeToggle.parentElement.style.display = 'none';
-      btnGoogle.style.display = 'none';
-      document.querySelector('.auth-divider').style.display = 'none';
-
-      document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Restablecer contraseña';
-    });
-
-    // Guardar nueva contraseña
-    btnResetSave.addEventListener('click', async () => {
-      const newPass = resetPassEl.value;
-      if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
-
-      btnResetSave.textContent = 'Actualizando...';
-      btnResetSave.disabled = true;
-
-      try {
-        const { error } = await actualizarContrasena(newPass);
-
-        if (error) {
-          btnResetSave.textContent = 'Actualizar contraseña';
-          btnResetSave.disabled = false;
-          setMsg(error.message, 'error', msgResetEl);
-        } else {
-          setMsg('Contraseña actualizada. Volviendo al login...', 'success', msgResetEl);
-
-          // Cerramos la sesión actual generada por el link de recuperación
-          await cerrarSesion();
-
-          setTimeout(() => {
-            // Limpiamos el hash de la URL
-            window.location.hash = '';
-
-            // Restauramos el estado inicial de los botones
-            btnResetSave.textContent = 'Actualizar contraseña';
-            btnResetSave.disabled = false;
-            resetPassEl.value = '';
-            msgResetEl.style.display = 'none';
-
-            // Volvemos al form de login
-            formReset.style.display = 'none';
-            formToken.style.display = 'block';
-            modeToggle.parentElement.style.display = 'block';
-            btnGoogle.style.display = 'flex';
-            document.querySelector('.auth-divider').style.display = 'flex';
-            document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Ingresá para continuar';
-
-            setMsg('Iniciá sesión con tu nueva contraseña.', 'success', msgEl);
-          }, 1500);
-        }
-      } catch (err) {
-        console.error(err);
         btnResetSave.textContent = 'Actualizar contraseña';
         btnResetSave.disabled = false;
-        setMsg('Hubo un error inesperado.', 'error', msgResetEl);
-      }
-    });
-
-    // Botón de Google
-    btnGoogle.addEventListener('click', () => {
-      btnGoogle.textContent = 'Cargando...';
-      iniciarSesionGoogle();
-    });
-
-    // Botón de Email / Contraseña
-    btnToken.addEventListener('click', async () => {
-      const email = emailEl.value.trim();
-      const password = passEl.value;
-      const username = usernameEl?.value?.trim();
-
-      if (!email || !password) return setMsg('Completá todos los campos.', 'error');
-      btnToken.textContent = 'Cargando...';
-
-      if (authMode === 'register') {
-        if (!username) { btnToken.textContent = 'Crear cuenta'; return setMsg('Elegí un usuario.', 'error'); }
-
-        const { error } = await registrarse(email, password, username);
-
-        if (error) setMsg(error.message, 'error');
-        else setMsg('Revisá tu email para confirmar.', 'success');
-        btnToken.textContent = 'Crear cuenta';
+        setMsg(error.message, 'error', msgResetEl);
       } else {
-        const { error } = await iniciarSesionEmail(email, password);
-
-        if (error) setMsg('Email o contraseña incorrectos.', 'error');
-        btnToken.textContent = 'Ingresar';
+        setMsg('Contraseña actualizada. Volviendo al login...', 'success', msgResetEl);
+        
+        // Cerramos la sesión actual generada por el link de recuperación
+        await cerrarSesion();
+        
+        setTimeout(() => {
+          // Limpiamos el hash de la URL
+          window.location.hash = '';
+          
+          // Restauramos el estado inicial de los botones
+          btnResetSave.textContent = 'Actualizar contraseña';
+          btnResetSave.disabled = false;
+          resetPassEl.value = '';
+          msgResetEl.style.display = 'none';
+          
+          // Volvemos al form de login
+          formReset.style.display = 'none';
+          formToken.style.display = 'block';
+          modeToggle.parentElement.style.display = 'block';
+          btnGoogle.style.display = 'flex';
+          document.querySelector('.auth-divider').style.display = 'flex';
+          document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Ingresá para continuar';
+          
+          setMsg('Iniciá sesión con tu nueva contraseña.', 'success', msgEl);
+        }, 1500);
       }
-    });
-
-    // Detectar cambios de sesión (Oculta el login y muestra la app)
-    supabase.auth.onAuthStateChange((event, session) => {
-      // Si estamos en medio de una recuperación de contraseña, no ocultamos el overlay
-      if (event === 'PASSWORD_RECOVERY' || formReset.style.display === 'block') {
-        return;
-      }
-
-      if (session) {
-        overlay.classList.add('hidden');
-        appWrapper.classList.add('visible');
-        // ── Inicializar el sistema de Prode al autenticarse ──
-        initProde(supabase, session.user);
-        checkInviteCode(); // Detectar si hay un código de invitación en la URL
-      } else {
-        overlay.classList.remove('hidden');
-        appWrapper.classList.remove('visible');
-      }
-    });
-
-    // ─── 3. CARGA DE DATOS ───
-    async function cargarFixtureBD() {
-      console.log("⏳ Cargando partidos desde la API de Mundialito...");
-      try {
-        const res = await fetch('http://localhost:3000/api/fixture');
-        if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
-        const data = await res.json();
-
-        if (data && data.length > 0) {
-          let gruposReales = {};
-
-          data.forEach(p => {
-            // Determinar la clave del grupo/fase
-            let clave = null;
-            if (p.fase && p.fase.includes('Grupo')) {
-              // "Grupo A", "Grupo B", etc.
-              clave = p.fase.replace('Grupo ', '').trim();
-            } else if (p.fase) {
-              // Fases eliminatorias: "Ronda 1", "Octavos de Final", "Final", etc.
-              clave = p.fase;
-            }
-
-            if (!clave) return;
-
-            if (!gruposReales[clave]) gruposReales[clave] = { teams: [], matches: [] };
-
-            if (p.equipo_local && !gruposReales[clave].teams.includes(p.equipo_local)) gruposReales[clave].teams.push(p.equipo_local);
-            if (p.equipo_visitante && !gruposReales[clave].teams.includes(p.equipo_visitante)) gruposReales[clave].teams.push(p.equipo_visitante);
-
-            const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-
-            gruposReales[clave].matches.push({
-              id: p.id, home: p.equipo_local, away: p.equipo_visitante,
-              hs: p.goles_local === null ? '-' : p.goles_local,
-              as: p.goles_visitante === null ? '-' : p.goles_visitante,
-              date: fechaFormateada, estado: p.estado,
-              escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
-              minuto: p.minuto
-            });
-          });
-
-          const letrasDeGrupos = Object.keys(gruposReales);
-          if (letrasDeGrupos.length > 0) {
-            window.GROUPS = gruposReales;
-            renderGroups(letrasDeGrupos[0]);
-            renderFixtures();
-          }
-        }
-      } catch (err) {
-        console.error('Error cargando partidos desde API:', err);
-      }
+    } catch (err) {
+      console.error(err);
+      btnResetSave.textContent = 'Actualizar contraseña';
+      btnResetSave.disabled = false;
+      setMsg('Hubo un error inesperado.', 'error', msgResetEl);
     }
+  });
 
-    async function cargarHistoriaBD() {
-      console.log("⏳ Cargando historia detallada desde Supabase...");
-      const cards = document.getElementById('editionCards');
-      if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
+  // Botón de Google
+  btnGoogle.addEventListener('click', () => {
+    btnGoogle.textContent = 'Cargando...';
+    iniciarSesionGoogle();
+  });
 
-      const res = await fetch('http://localhost:3000/api/historia');
+  // Botón de Email / Contraseña
+  btnToken.addEventListener('click', async () => {
+    const email = emailEl.value.trim();
+    const password = passEl.value;
+    const username = usernameEl?.value?.trim();
 
-      if (!res.ok) {
-        if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
-        return console.error('Error cargando historia desde API:', res.statusText);
-      }
+    if (!email || !password) return setMsg('Completá todos los campos.', 'error');
+    btnToken.textContent = 'Cargando...';
 
+    if (authMode === 'register') {
+      if (!username) { btnToken.textContent = 'Crear cuenta'; return setMsg('Elegí un usuario.', 'error'); }
+      
+      const { error } = await registrarse(email, password, username);
+      
+      if (error) setMsg(error.message, 'error');
+      else setMsg('Revisá tu email para confirmar.', 'success');
+      btnToken.textContent = 'Crear cuenta';
+    } else {
+      const { error } = await iniciarSesionEmail(email, password);
+      
+      if (error) setMsg('Email o contraseña incorrectos.', 'error');
+      btnToken.textContent = 'Ingresar';
+    }
+  });
+
+  // Detectar cambios de sesión (Oculta el login y muestra la app)
+  supabase.auth.onAuthStateChange((event, session) => {
+    // Si estamos en medio de una recuperación de contraseña, no ocultamos el overlay
+    if (event === 'PASSWORD_RECOVERY' || formReset.style.display === 'block') {
+      return;
+    }
+    
+    if (session) {
+      overlay.classList.add('hidden');
+      appWrapper.classList.add('visible');
+      // ── Inicializar el sistema de Prode al autenticarse ──
+      initProde(supabase, session.user);
+      checkInviteCode(); // Detectar si hay un código de invitación en la URL
+    } else {
+      overlay.classList.remove('hidden');
+      appWrapper.classList.remove('visible');
+    }
+  });
+
+  // ─── 3. CARGA DE DATOS ───
+  async function cargarFixtureBD() {
+    console.log("⏳ Cargando partidos desde la API de Mundialito...");
+    try {
+      const res = await fetch('http://localhost:3000/api/fixture');
+      if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
       const data = await res.json();
 
-      if (!data || data.length === 0) {
-        if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Supabase respondió bien, pero la tabla está vacía. Data length: ${data ? data.length : 'N/A'}</div>`;
-        return;
-      }
-
       if (data && data.length > 0) {
-        window.EDITIONS = data.map(h => ({
-          year: h.año,
-          host: h.sede,
-          dates: h.fechas,
-          champion: h.campeon,
-          champFlag: h.campeon_bandera || "🏆",
-          runnersUp: h.subcampeon,
-          runnersUpFlag: h.subcampeon_bandera || "🏳️",
-          scorers: h.goleadores || [],
-          records: h.records || [],
-          facts: h.datos_curiosos || [],
-          videos: h.videos || []
-        }));
-        renderHistory();
+        let gruposReales = {};
+        
+        data.forEach(p => {
+          // Determinar la clave del grupo/fase
+          let clave = null;
+          if (p.fase && p.fase.includes('Grupo')) {
+            // "Grupo A", "Grupo B", etc.
+            clave = p.fase.replace('Grupo ', '').trim();
+          } else if (p.fase) {
+            // Fases eliminatorias: "Ronda 1", "Octavos de Final", "Final", etc.
+            clave = p.fase;
+          }
+          
+          if (!clave) return;
+          
+          if(!gruposReales[clave]) gruposReales[clave] = { teams: [], matches: [] };
+          
+          if(p.equipo_local && !gruposReales[clave].teams.includes(p.equipo_local)) gruposReales[clave].teams.push(p.equipo_local);
+          if(p.equipo_visitante && !gruposReales[clave].teams.includes(p.equipo_visitante)) gruposReales[clave].teams.push(p.equipo_visitante);
+
+          const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', {day:'2-digit', month:'short'});
+          
+          gruposReales[clave].matches.push({
+            id: p.id, home: p.equipo_local, away: p.equipo_visitante,
+            hs: p.goles_local === null ? '-' : p.goles_local,
+            as: p.goles_visitante === null ? '-' : p.goles_visitante,
+            date: fechaFormateada, estado: p.estado,
+            escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
+            minuto: p.minuto
+          });
+        });
+
+        const letrasDeGrupos = Object.keys(gruposReales);
+        if (letrasDeGrupos.length > 0) {
+          window.GROUPS = gruposReales;
+          renderGroups(letrasDeGrupos[0]);
+          renderFixtures();
+        }
       }
+    } catch (err) {
+      console.error('Error cargando partidos desde API:', err);
+    }
+  }
+
+  async function cargarHistoriaBD() {
+    console.log("⏳ Cargando historia detallada desde Supabase...");
+    const cards = document.getElementById('editionCards');
+    if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
+
+    const res = await fetch('http://localhost:3000/api/historia');
+    
+    if (!res.ok) {
+      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
+      return console.error('Error cargando historia desde API:', res.statusText);
+    }
+    
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Supabase respondió bien, pero la tabla está vacía. Data length: ${data ? data.length : 'N/A'}</div>`;
+      return;
     }
 
-    // ─── 4. INICIALIZACIÓN FINAL ───
-    document.addEventListener('DOMContentLoaded', () => {
-      cargarFixtureBD().catch(e => console.error(e));
-      cargarHistoriaBD().catch(e => console.error(e));
-    });
-  </script>
+    if (data && data.length > 0) {
+      window.EDITIONS = data.map(h => ({
+        year: h.año,
+        host: h.sede,
+        dates: h.fechas,
+        champion: h.campeon,
+        champFlag: h.campeon_bandera || "🏆",
+        runnersUp: h.subcampeon,
+        runnersUpFlag: h.subcampeon_bandera || "🏳️",
+        scorers: h.goleadores || [],
+        records: h.records || [],
+        facts: h.datos_curiosos || [],
+        videos: h.videos || []
+      }));
+      renderHistory();
+    }
+  }
 
+  // ─── 4. INICIALIZACIÓN FINAL ───
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarFixtureBD().catch(e => console.error(e));
+    cargarHistoriaBD().catch(e => console.error(e));
+  });
+</script>
+ 
 
-  <div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
-    <span class="chatbot-fab-icon">⚽</span>
-    <span class="chatbot-fab-badge" id="chatbot-fab-badge" style="display:none">1</span>
+ <div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
+  <span class="chatbot-fab-icon">⚽</span>
+  <span class="chatbot-fab-badge" id="chatbot-fab-badge" style="display:none">1</span>
+</div>
+
+<!-- Widget flotante (mini-versión del chat para usar desde cualquier panel) -->
+<div id="chatbot-widget" class="chatbot-widget" style="display:none">
+  <div class="chatbot-widget-header">
+    <div class="chatbot-widget-title">
+      <span>⚽</span> Mundialito Bot
+    </div>
+    <button class="chatbot-widget-close" onclick="toggleChatbotWidget()">✕</button>
   </div>
-
-  <!-- Widget flotante (mini-versión del chat para usar desde cualquier panel) -->
-  <div id="chatbot-widget" class="chatbot-widget" style="display:none">
-    <div class="chatbot-widget-header">
-      <div class="chatbot-widget-title">
-        <span>⚽</span> Mundialito Bot
+  <div class="chatbot-widget-mensajes" id="chatbot-widget-mensajes">
+    <div class="chatbot-msg chatbot-msg--bot" style="padding:12px">
+      <div class="chatbot-msg-avatar" style="width:28px;height:28px;font-size:14px">⚽</div>
+      <div class="chatbot-msg-texto" style="font-size:13px">
+        ¡Hola! Preguntame sobre el Mundial 2026. 🏆
       </div>
-      <button class="chatbot-widget-close" onclick="toggleChatbotWidget()">✕</button>
-    </div>
-    <div class="chatbot-widget-mensajes" id="chatbot-widget-mensajes">
-      <div class="chatbot-msg chatbot-msg--bot" style="padding:12px">
-        <div class="chatbot-msg-avatar" style="width:28px;height:28px;font-size:14px">⚽</div>
-        <div class="chatbot-msg-texto" style="font-size:13px">
-          ¡Hola! Preguntame sobre el Mundial 2026. 🏆
-        </div>
-      </div>
-    </div>
-    <div class="chatbot-widget-input">
-      <input type="text" id="chatbot-widget-input" placeholder="Preguntá sobre el Mundial..." maxlength="300"
-        onkeydown="widgetKeydown(event)" />
-      <button onclick="widgetEnviar()">↑</button>
     </div>
   </div>
-  <script src="app.js"></script>
+  <div class="chatbot-widget-input">
+    <input
+      type="text"
+      id="chatbot-widget-input"
+      placeholder="Preguntá sobre el Mundial..."
+      maxlength="300"
+      onkeydown="widgetKeydown(event)"
+    />
+    <button onclick="widgetEnviar()">↑</button>
+  </div>
+</div>
+<script src="app.js"></script>
 </body>
-
 </html>
+  
