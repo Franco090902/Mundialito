@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Fútbol | Mundial 2026</title>
+    <style>
+        /* Estilos básicos para la maqueta */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #333; }
+        header { background-color: #0066cc; color: white; padding: 1.5rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 2rem; }
+        
+        /* Sistema de grilla para la disposición */
+        .container { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 0 15px; }
+        
+        /* Tarjetas para contener la información */
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; font-size: 1.2rem; }
+        
+        /* Estilos específicos del partido en vivo */
+        .live-match { border-top: 4px solid #e74c3c; }
+        .live-indicator { color: #e74c3c; font-weight: bold; font-size: 0.9em; animation: blinker 1.5s linear infinite; display: inline-block; margin-bottom: 10px; }
+        .scoreboard { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
+        .team { text-align: center; flex: 1; font-size: 1.5rem; font-weight: bold; }
+        .score { font-size: 3.5rem; font-weight: bold; background: #f8f9fa; padding: 10px 20px; border-radius: 8px; }
+        .match-events { font-size: 0.9rem; color: #666; display: flex; justify-content: space-between; padding: 0 20px; }
+        .event-list { list-style: none; padding: 0; margin: 0; }
+        .event-list li { margin-bottom: 5px; }
+
+        /* Estilos para tablas */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; }
+        th, td { text-align: center; padding: 10px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #555; }
+        td.team-name { text-align: left; font-weight: bold; }
+        tr:hover { background-color: #f5f5f5; }
+
+        /* Animación para el indicador de EN VIVO */
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* Responsividad para móviles */
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .score { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏆 Todo Fútbol</h1>
+        <p>Mundial 2026 - Resultados y Estadísticas al instante</p>
+    </header>
+
+    <div class="container">
+        <main>
+            <section class="card live-match">
+                <span class="live-indicator">🔴 EN VIVO - 67'</span>
+                <div class="scoreboard">
+                    <div class="team">ARGENTINA 🇦🇷</div>
+                    <div class="score">2 - 1</div>
+                    <div class="team">🇫🇷 FRANCIA</div>
+                </div>
+                <div class="match-events">
+                    <ul class="event-list">
+                        <li>⚽ 23' L. Messi</li>
+                        <li>⚽ 36' J. Álvarez</li>
+                        <li>🟨 45' E. Fernández</li>
+                    </ul>
+                    <ul class="event-list" style="text-align: right;">
+                        <li>⚽ 55' K. Mbappé</li>
+                        <li>🟨 60' A. Tchouaméni</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>📅 Partidos de Hoy</h2>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>16:00</td>
+                            <td class="team-name">Brasil 🇧🇷</td>
+                            <td>vs</td>
+                            <td class="team-name">🇩🇪 Alemania</td>
+                            <td><em>Por jugar</em></td>
+                        </tr>
+                        <tr>
+                            <td>19:00</td>
+                            <td class="team-name">España 🇪🇸</td>
+                            <td>vs</td>
+                            <td class="team-name">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</td>
+                            <td><em>Por jugar</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <aside>
+            <section class="card">
+                <h2>📊 Grupo C (En vivo)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Pts</th>
+                            <th>PJ</th>
+                            <th>DIF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="team-name">🇦🇷 Argentina</td>
+                            <td><strong>6</strong></td>
+                            <td>2</td>
+                            <td>+3</td>
+                        </tr>
+                        <tr>
+                            <td class="team-name">🇵🇱 Polonia</td>
+                            <td><strong>4</strong></td>
+                            <td>2</td>
+                            <td>+1</td>
+                        </tr>
+                        <tr>
+                            <td class="team-name">🇲🇽 México</td>
+                            <td><strong>1</strong></td>
+                            <td>2</td>
+                            <td>-1</td>
+                        </tr>
+                        <tr>
+                            <td class="team-name">🇸🇦 A. Saudita</td>
+                            <td><strong>0</strong></td>
+                            <td>2</td>
+                            <td>-3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card">
+                <h2>👟 Goleadores</h2>
+                <ul class="event-list">
+                    <li>1. K. Mbappé (FRA) - 4 goles</li>
+                    <li>2. L. Messi (ARG) - 3 goles</li>
+                    <li>3. V. Júnior (BRA) - 2 goles</li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+
+</body>
+</html>
