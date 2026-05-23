@@ -8,7 +8,6 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="prode.css">
  
 </head>
 <body>
@@ -136,7 +135,6 @@
     <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
     <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
     <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
-    <button class="tab-btn" data-prode-tab onclick="switchTab('prode', this); window.dispatchEvent(new Event('prode-tab-activated'))">🏆 Prode</button>
   </div>
 
   <!-- ══ PANEL: EN VIVO ══ -->
@@ -402,162 +400,6 @@
   <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
   </div>
 
-
-  <!-- ══════════════════════════════════════════════════════════
-       PANEL: PRODE — Sistema de Predicciones Deportivas
-  ══════════════════════════════════════════════════════════ -->
-  <div id="panel-prode" class="panel">
-
-    <!-- Breadcrumb de navegación interno -->
-    <nav class="prode-nav" id="prode-breadcrumb">
-      <span class="prode-nav-current">🏆 Prode</span>
-    </nav>
-
-    <!-- ══ SUB-VISTA 1: DASHBOARD (lista de grupos) ══ -->
-    <div id="prode-view-dashboard" class="prode-view active">
-
-      <!-- Hero Banner con puntos personales -->
-      <div class="prode-hero">
-        <div>
-          <div class="prode-hero-title">PRODE <span>2026</span></div>
-          <div class="prode-hero-sub">JUEGO DE PREDICCIONES DEPORTIVAS · MUNDIAL FIFA</div>
-        </div>
-        <div class="prode-hero-stats">
-          <div class="prode-hero-stat">
-            <div class="prode-hero-stat-num" id="prode-hero-pts">—</div>
-            <div class="prode-hero-stat-lbl">Mis Puntos</div>
-          </div>
-          <div class="prode-hero-stat">
-            <div class="prode-hero-stat-num" id="prode-hero-exactos">—</div>
-            <div class="prode-hero-stat-lbl">Exactos</div>
-          </div>
-          <div class="prode-hero-stat">
-            <div class="prode-hero-stat-num" id="prode-hero-signo">—</div>
-            <div class="prode-hero-stat-lbl">Tendencias</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Acceso rápido a predicciones -->
-      <div style="margin-bottom:20px">
-        <button class="prode-btn" style="max-width:300px" onclick="window._prodeIrPredicciones()">
-          📋 Cargar mis predicciones
-        </button>
-      </div>
-
-      <!-- Layout: mis grupos + acciones -->
-      <div class="prode-dashboard-grid">
-
-        <!-- Columna izquierda: lista de grupos -->
-        <div>
-          <p class="section-label">Mis Grupos</p>
-          <div id="prode-groups-list">
-            <!-- Cargado dinámicamente por prode.js -->
-            <div class="prode-skeleton"></div>
-            <div class="prode-skeleton"></div>
-          </div>
-        </div>
-
-        <!-- Columna derecha: acciones -->
-        <div class="prode-actions-panel">
-
-          <!-- Crear grupo -->
-          <div class="prode-action-card">
-            <div class="prode-action-card-title">
-              <span>➕</span> Crear un grupo
-            </div>
-            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">NOMBRE DEL GRUPO</label>
-            <input
-              id="prode-create-nombre"
-              class="prode-input"
-              type="text"
-              placeholder="Ej: Los Cracks del Laburo"
-              maxlength="50"
-            />
-
-            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">VISIBILIDAD</label>
-            <select id="prode-create-visibilidad" class="prode-input" style="margin-bottom:12px">
-              <option value="false">🔒 Privado (solo por código)</option>
-              <option value="true">🌐 Público (visible para todos)</option>
-            </select>
-
-            <button id="prode-create-btn" class="prode-btn" onclick="window._prodeCrearGrupo()">
-              ➕ Crear Grupo
-            </button>
-            <div id="prode-create-msg" class="prode-msg"></div>
-
-            <!-- Código generado tras crear -->
-            <div id="prode-new-code-display" style="display:none;margin-top:12px">
-              <div style="font-size:10px;color:var(--text4);letter-spacing:2px;margin-bottom:6px">CÓDIGO DE INVITACIÓN</div>
-              <div class="prode-invite-code-display" onclick="window._prodeCopiarCodigo(document.getElementById('prode-new-code-val').textContent)">
-                <div class="prode-invite-code-val" id="prode-new-code-val">——</div>
-                <div class="prode-invite-code-hint">Click para copiar · Comparte este código con tus amigos</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Unirse con código -->
-          <div class="prode-action-card">
-            <div class="prode-action-card-title">
-              <span>🔗</span> Unirme a un grupo
-            </div>
-            <label style="font-size:10px;color:var(--text4);letter-spacing:2px;display:block;margin-bottom:6px">CÓDIGO DE 6 CARACTERES</label>
-            <input
-              id="prode-join-codigo"
-              class="prode-input"
-              type="text"
-              placeholder="Ej: AB3X9K"
-              maxlength="6"
-              style="text-transform:uppercase;letter-spacing:4px;font-family:var(--font-display);font-size:18px;text-align:center"
-              onkeydown="if(event.key==='Enter') window._prodeUnirseConCodigo()"
-            />
-            <button id="prode-join-btn" class="prode-btn" onclick="window._prodeUnirseConCodigo()">
-              🔗 Unirme al Grupo
-            </button>
-            <div id="prode-join-msg" class="prode-msg"></div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    <!-- / SUB-VISTA 1 -->
-
-
-    <!-- ══ SUB-VISTA 2: VISTA DE GRUPO ══ -->
-    <div id="prode-view-grupo" class="prode-view">
-      <div id="prode-grupo-content">
-        <!-- Cargado dinámicamente por prode.js al hacer click en un grupo -->
-        <div class="prode-skeleton" style="height:100px;border-radius:10px 10px 0 0"></div>
-        <div class="prode-skeleton" style="height:300px;margin-top:4px;border-radius:0 0 10px 10px"></div>
-      </div>
-    </div>
-    <!-- / SUB-VISTA 2 -->
-
-
-    <!-- ══ SUB-VISTA 3: CARGA DE PREDICCIONES ══ -->
-    <div id="prode-view-predicciones" class="prode-view">
-
-      <!-- Filtros por fase -->
-      <div class="prode-predictions-header">
-        <p class="section-label" style="margin:0">Mis Predicciones</p>
-        <div class="prode-predictions-filters">
-          <button class="prode-filter-btn active" onclick="window._prodeFiltrarPartidos(this,'todos')">Todos</button>
-          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'abiertos')">⏳ Abiertos</button>
-          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'bloqueados')">🔒 Bloqueados</button>
-          <button class="prode-filter-btn" onclick="window._prodeFiltrarPartidos(this,'finalizados')">✅ Finalizados</button>
-        </div>
-      </div>
-
-      <!-- Lista de partidos para predecir -->
-      <div id="prode-predictions-list">
-        <!-- Cargado dinámicamente por prode.js -->
-      </div>
-
-    </div>
-    <!-- / SUB-VISTA 3 -->
-
-  </div><!-- /panel-prode -->
-
 </div><!-- /main -->
 
 <!-- FOOTER -->
@@ -590,7 +432,6 @@
   // Importamos las funciones exactas de tu auth.js
   import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena } from '../backend/auth.js'; 
   import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
-  import { initProde, checkInviteCode } from './prode.js';
 
   // ─── 1. REFERENCIAS DE TU INTERFAZ ───
   const overlay       = document.getElementById('auth-overlay');
@@ -784,9 +625,6 @@
     if (session) {
       overlay.classList.add('hidden');
       appWrapper.classList.add('visible');
-      // ── Inicializar el sistema de Prode al autenticarse ──
-      initProde(supabase, session.user);
-      checkInviteCode(); // Detectar si hay un código de invitación en la URL
     } else {
       overlay.classList.remove('hidden');
       appWrapper.classList.remove('visible');
