@@ -8,7 +8,13 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
- 
+  <script>
+    window.PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
+    window.imgFallback = function(img) {
+      img.onerror = null;
+      img.src = window.PLACEHOLDER_IMG;
+    };
+  </script>
 </head>
 <body>
 
@@ -97,16 +103,36 @@
      HEADER
 ══════════════════════════════════════ -->
 <header>
-  <div class="header-inner">
+  <div class="header-inner" style="position: relative;">
+    <!-- Izquierda: Logo -->
     <div class="logo">
       <span class="logo-icon">⚽</span>
       <span class="logo-text"><span>MUNDIALITO</span></span>
       <span class="logo-badge">MUNDIAL 2026</span>
     </div>
+
+    <!-- Centro: Cartel EN VIVO centrado absolutamente -->
+    <div class="live-pill" style="position: absolute; left: 50%; transform: translateX(-50%);">
+      <span class="live-dot"></span>
+      <span class="live-label">EN VIVO</span>
+    </div>
+
+    <!-- Derecha: Menú del Perfil de Usuario -->
     <div class="header-right">
-      <div class="live-pill">
-        <span class="live-dot"></span>
-        <span class="live-label">EN VIVO</span>
+      <!-- Menú de Usuario premium -->
+      <div class="user-menu" id="header-user-menu" data-auth="user" style="display: flex; align-items: center; cursor: pointer; position: relative;">
+        <img id="user-avatar" class="user-avatar" src="" alt="Avatar" onerror="window.imgFallback(this)" style="display: none;" />
+        <div id="header-user-avatar-fallback" class="user-avatar-fallback" style="display: none;"></div>
+        <span id="user-username" style="font-size: 14px; font-weight: bold; margin-left: 8px; color: var(--offwhite);"></span>
+        
+        <div class="user-dropdown" id="header-user-dropdown">
+          <div class="user-dropdown-name">
+            <span id="dropdown-username-display" style="font-weight: 700;">Usuario</span>
+            <div id="dropdown-email-display" style="font-size: 11px; color: var(--text3); font-weight: normal; margin-top: 2px;">usuario@email.com</div>
+          </div>
+          <div class="user-dropdown-item" id="btn-perfil-dropdown">👤 Mi Perfil</div>
+          <div class="user-dropdown-item danger" id="btn-logout">🚪 Cerrar Sesión</div>
+        </div>
       </div>
     </div>
   </div>
@@ -397,6 +423,129 @@
 
   </div>
 </div>
+  <!-- ══ PANEL: PERFIL ══ -->
+  <div id="panel-perfil" class="panel">
+    <div class="perfil-layout">
+      
+      <!-- Columna Izquierda: Información Básica + Estadísticas del Prode -->
+      <div>
+        <div class="perfil-card main-info-card">
+          <div class="perfil-card-bg"></div>
+          
+          <div class="perfil-avatar-wrapper">
+            <img id="perfil-large-avatar" class="perfil-large-avatar" src="" alt="Foto de perfil" onerror="window.imgFallback(this)" style="display: none;" />
+            <div id="perfil-large-avatar-fallback" class="perfil-large-avatar-fallback" style="display: none;"></div>
+            
+            <label for="perfil-file-input" class="avatar-edit-overlay" title="Cambiar foto de perfil">
+              <span>📷</span>
+            </label>
+            <input type="file" id="perfil-file-input" accept="image/*" style="display: none;" />
+          </div>
+          
+          <div class="perfil-username-title" id="perfil-username-display">Usuario</div>
+          <div class="perfil-email-sub" id="perfil-email-display">usuario@email.com</div>
+          
+          <div class="perfil-avatar-actions">
+            <button class="btn-perfil-secondary" onclick="document.getElementById('perfil-file-input').click()">Cambiar Foto</button>
+            <button id="btn-borrar-avatar" class="btn-perfil-danger" style="display: none;">Borrar Foto</button>
+          </div>
+          <div id="perfil-avatar-msg" class="auth-msg" style="display: none;"></div>
+        </div>
+
+        <p class="section-label">🏆 Mi Desempeño en el Prode</p>
+        <div class="perfil-card" style="padding: 20px;">
+          <div class="prode-stats-grid">
+            
+            <!-- Puntos Totales -->
+            <div class="prode-stat-widget widget-gold">
+              <span class="widget-icon">🏅</span>
+              <div class="widget-data">
+                <span class="widget-value" id="prode-puntos">0</span>
+                <span class="widget-label">Puntos</span>
+              </div>
+            </div>
+
+            <!-- Aciertos Exactos -->
+            <div class="prode-stat-widget widget-green">
+              <span class="widget-icon">🎯</span>
+              <div class="widget-data">
+                <span class="widget-value" id="prode-aciertos-exactos">0</span>
+                <span class="widget-label">Aciertos Exactos</span>
+              </div>
+            </div>
+
+            <!-- Aciertos Signo -->
+            <div class="prode-stat-widget widget-blue">
+              <span class="widget-icon">⚖️</span>
+              <div class="widget-data">
+                <span class="widget-value" id="prode-aciertos-signo">0</span>
+                <span class="widget-label">Aciertos Signo</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Precisión general -->
+          <div class="accuracy-section">
+            <div class="accuracy-header">
+              <span>Precisión de Pronósticos</span>
+              <span id="prode-precision-label">0%</span>
+            </div>
+            <div class="accuracy-track">
+              <div id="prode-precision-bar" class="accuracy-fill" style="width: 0%;"></div>
+            </div>
+            <div class="accuracy-legend">
+              Basado en partidos finalizados y pronosticados.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Configuración de Cuenta & Cambio de Contraseña -->
+      <div>
+        <!-- Ajustes de Perfil -->
+        <div class="perfil-card">
+          <div class="perfil-card-title">⚙️ Ajustes de Cuenta</div>
+          <div class="profile-settings-form">
+            <div class="auth-field">
+              <label class="auth-label">Nombre de Usuario</label>
+              <input class="auth-input" type="text" id="perfil-username-input" placeholder="Nombre de usuario" />
+            </div>
+            <button class="btn-token" id="btn-perfil-save-username">Actualizar Nombre</button>
+            <div id="perfil-settings-msg" class="auth-msg" style="display: none;"></div>
+          </div>
+        </div>
+
+        <!-- Seguridad / Contraseña -->
+        <div class="perfil-card">
+          <div class="perfil-card-title">🔒 Seguridad</div>
+          <div class="profile-settings-form">
+            <div class="auth-field">
+              <label class="auth-label">Contraseña Actual</label>
+              <input class="auth-input" type="password" id="perfil-current-password-input" placeholder="Tu contraseña actual" />
+            </div>
+            <div class="auth-field">
+              <label class="auth-label">Nueva Contraseña</label>
+              <input class="auth-input" type="password" id="perfil-password-input" placeholder="Min. 6 caracteres" />
+            </div>
+            <div class="auth-field">
+              <label class="auth-label">Confirmar Nueva Contraseña</label>
+              <input class="auth-input" type="password" id="perfil-confirm-password-input" placeholder="••••••••" />
+            </div>
+            <button class="btn-token" id="btn-perfil-save-password">Cambiar Contraseña</button>
+            <div class="secure-badge">
+              <span class="badge-dot-green"></span>
+              Conexión Encriptada
+            </div>
+            <div id="perfil-security-msg" class="auth-msg" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
   </div>
 
@@ -430,8 +579,10 @@
 
 <script type="module">
   // Importamos las funciones exactas de tu auth.js
-  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena } from '../backend/auth.js'; 
+  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from '../backend/auth.js'; 
   import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
+
+  console.log('🚀 Inline module script loaded successfully!');
 
   // ─── 1. REFERENCIAS DE TU INTERFAZ ───
   const overlay       = document.getElementById('auth-overlay');
@@ -597,39 +748,355 @@
     const username = usernameEl?.value?.trim();
 
     if (!email || !password) return setMsg('Completá todos los campos.', 'error');
-    btnToken.textContent = 'Cargando...';
 
-    if (authMode === 'register') {
-      if (!username) { btnToken.textContent = 'Crear cuenta'; return setMsg('Elegí un usuario.', 'error'); }
-      
-      const { error } = await registrarse(email, password, username);
-      
-      if (error) setMsg(error.message, 'error');
-      else setMsg('Revisá tu email para confirmar.', 'success');
-      btnToken.textContent = 'Crear cuenta';
-    } else {
-      const { error } = await iniciarSesionEmail(email, password);
-      
-      if (error) setMsg('Email o contraseña incorrectos.', 'error');
-      btnToken.textContent = 'Ingresar';
+    btnToken.disabled = true;
+    const originalText = btnToken.textContent;
+    btnToken.textContent = 'Cargando...';
+    setMsg('', '');
+
+    try {
+      if (authMode === 'register') {
+        if (!username) { 
+          setMsg('Elegí un usuario.', 'error'); 
+          return; 
+        }
+        
+        const { error } = await registrarse(email, password, username);
+        
+        if (error) {
+          setMsg(error.message, 'error');
+        } else {
+          setMsg('Revisá tu email para confirmar.', 'success');
+        }
+      } else {
+        const { error } = await iniciarSesionEmail(email, password);
+        if (error) {
+          setMsg('Email o contraseña incorrectos.', 'error');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg('Hubo un error inesperado al conectar.', 'error');
+    } finally {
+      btnToken.disabled = false;
+      btnToken.textContent = originalText;
     }
   });
 
-  // Detectar cambios de sesión (Oculta el login y muestra la app)
-  supabase.auth.onAuthStateChange((event, session) => {
-    // Si estamos en medio de una recuperación de contraseña, no ocultamos el overlay
-    if (event === 'PASSWORD_RECOVERY' || formReset.style.display === 'block') {
+  // --- Lógica del Perfil de Usuario ---
+  let userSession = null;
+  let userProfile = null;
+
+  // --- Callback de Autenticación de Mundialito ---
+  // Se ejecuta de manera sincronizada desde auth.js al inicializar o cambiar la sesión
+  window.onMundialitoAuth = function(user, profile) {
+    console.log('🔑 window.onMundialitoAuth callback triggered!', { user, profile });
+    
+    if (user) {
+      userSession = user;
+      
+      // Sincronizar visibilidad de overlays
+      const overlayEl = document.getElementById('auth-overlay');
+      const appWrapperEl = document.getElementById('app-wrapper');
+      if (overlayEl) overlayEl.classList.add('hidden');
+      if (appWrapperEl) appWrapperEl.classList.add('visible');
+
+      if (profile) {
+        userProfile = profile;
+        updateUIWithProfile(user, profile);
+      } else {
+        console.log('Generating fallback profile...');
+        // Generar un fallback robusto en caso de que no tenga registro de perfil en la BD
+        const fallbackProfile = {
+          id: user.id,
+          username: user.user_metadata?.username || user.email.split('@')[0],
+          avatar_url: user.user_metadata?.avatar_url || null,
+          puntos_prode: 0,
+          aciertos_exactos: 0,
+          aciertos_signo: 0
+        };
+        userProfile = fallbackProfile;
+        updateUIWithProfile(user, fallbackProfile);
+      }
+    } else {
+      userSession = null;
+      userProfile = null;
+      
+      const overlayEl = document.getElementById('auth-overlay');
+      const appWrapperEl = document.getElementById('app-wrapper');
+      if (overlayEl) overlayEl.classList.remove('hidden');
+      if (appWrapperEl) appWrapperEl.classList.remove('visible');
+      
+      const headerUserMenu = document.getElementById('header-user-menu');
+      if (headerUserMenu) headerUserMenu.style.display = 'none';
+    }
+  };
+
+  // Función global para cambiar al panel de Perfil manualmente (sin tocar app.js)
+  window.switchTabToPerfil = function() {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    const panel = document.getElementById('panel-perfil');
+    if (panel) panel.classList.add('active');
+  };
+
+  // Asignar evento al clic del botón en el dropdown
+  document.getElementById('btn-perfil-dropdown')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    window.switchTabToPerfil();
+    document.getElementById('header-user-dropdown')?.classList.remove('open');
+  });
+
+  // Asignar evento al botón de Cerrar Sesión en el dropdown
+  document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    document.getElementById('header-user-dropdown')?.classList.remove('open');
+    await cerrarSesion();
+  });
+
+  // Toggle del Dropdown de Cabecera
+  const headerUserMenu = document.getElementById('header-user-menu');
+  const headerUserDropdown = document.getElementById('header-user-dropdown');
+  if (headerUserMenu && headerUserDropdown) {
+    headerUserMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      headerUserDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      headerUserDropdown.classList.remove('open');
+    });
+  }
+
+  // Helper para actualizar todas las referencias del perfil en la UI
+  function updateUIWithProfile(user, profile) {
+    if (!user || !profile) return;
+
+    // A) Header / Cabecera
+    const headerUserMenu = document.getElementById('header-user-menu');
+    const headerAvatarImg = document.getElementById('user-avatar');
+    const headerAvatarFallback = document.getElementById('header-user-avatar-fallback');
+    const headerUsername = document.getElementById('user-username');
+    const dropdownUsername = document.getElementById('dropdown-username-display');
+    const dropdownEmail = document.getElementById('dropdown-email-display');
+
+    console.log('👤 updateUIWithProfile called. User:', user.email, 'Profile:', profile);
+    console.log('Elements found inside updateUIWithProfile:', { headerUserMenu, headerAvatarImg, headerAvatarFallback, headerUsername });
+
+    if (headerUserMenu) headerUserMenu.style.display = 'flex';
+
+    if (profile.avatar_url) {
+      if (headerAvatarImg) {
+        headerAvatarImg.src = profile.avatar_url;
+        headerAvatarImg.style.display = 'block';
+      }
+      if (headerAvatarFallback) headerAvatarFallback.style.display = 'none';
+    } else {
+      if (headerAvatarImg) headerAvatarImg.style.display = 'none';
+      if (headerAvatarFallback) {
+        headerAvatarFallback.textContent = '👤';
+        headerAvatarFallback.style.display = 'flex';
+      }
+    }
+
+    if (headerUsername) headerUsername.textContent = profile.username || 'Usuario';
+    if (dropdownUsername) dropdownUsername.textContent = profile.username || 'Usuario';
+    if (dropdownEmail) dropdownEmail.textContent = user.email || 'sin@email.com';
+
+    // B) Panel de Perfil
+    const perfLargeAvatar = document.getElementById('perfil-large-avatar');
+    const perfLargeAvatarFallback = document.getElementById('perfil-large-avatar-fallback');
+    const perfUsernameDisplay = document.getElementById('perfil-username-display');
+    const perfEmailDisplay = document.getElementById('perfil-email-display');
+    const perfUsernameInput = document.getElementById('perfil-username-input');
+    const btnBorrarAvatar = document.getElementById('btn-borrar-avatar');
+
+    if (profile.avatar_url) {
+      if (perfLargeAvatar) {
+        perfLargeAvatar.src = profile.avatar_url;
+        perfLargeAvatar.style.display = 'block';
+      }
+      if (perfLargeAvatarFallback) perfLargeAvatarFallback.style.display = 'none';
+      if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'inline-block';
+    } else {
+      if (perfLargeAvatar) perfLargeAvatar.style.display = 'none';
+      if (perfLargeAvatarFallback) {
+        perfLargeAvatarFallback.textContent = '👤';
+        perfLargeAvatarFallback.style.display = 'flex';
+      }
+      if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'none';
+    }
+
+    if (perfUsernameDisplay) perfUsernameDisplay.textContent = profile.username || 'Usuario';
+    if (perfEmailDisplay) perfEmailDisplay.textContent = user.email || 'sin@email.com';
+    if (perfUsernameInput) perfUsernameInput.value = profile.username || '';
+
+    // C) Widgets de Estadísticas del Prode
+    const prodePuntos = document.getElementById('prode-puntos');
+    const prodeExactos = document.getElementById('prode-aciertos-exactos');
+    const prodeSigno = document.getElementById('prode-aciertos-signo');
+    const precisionLabel = document.getElementById('prode-precision-label');
+    const precisionBar = document.getElementById('prode-precision-bar');
+
+    const pts = profile.puntos_prode || 0;
+    const exacts = profile.aciertos_exactos || 0;
+    const signo = profile.aciertos_signo || 0;
+
+    if (prodePuntos) prodePuntos.textContent = pts;
+    if (prodeExactos) prodeExactos.textContent = exacts;
+    if (prodeSigno) prodeSigno.textContent = signo;
+
+    const totalAciertos = exacts + signo;
+    if (totalAciertos > 0) {
+      const precision = Math.round((exacts / totalAciertos) * 100);
+      if (precisionLabel) precisionLabel.textContent = `${precision}% exactos`;
+      if (precisionBar) precisionBar.style.width = `${precision}%`;
+    } else {
+      if (precisionLabel) precisionLabel.textContent = '0%';
+      if (precisionBar) precisionBar.style.width = '0%';
+    }
+  }
+
+  // Evento: Subida de Foto de Perfil
+  document.getElementById('perfil-file-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const msgEl = document.getElementById('perfil-avatar-msg');
+    setMsg('Subiendo foto de perfil...', 'info', msgEl);
+
+    try {
+      const publicUrl = await subirAvatar(file);
+      if (!publicUrl) {
+        setMsg('Error al subir la imagen. Comprobá el almacenamiento.', 'error', msgEl);
+        return;
+      }
+
+      const { data, error } = await actualizarPerfil({
+        username: userProfile.username,
+        avatar_url: publicUrl
+      });
+
+      if (error) {
+        setMsg(error.message, 'error', msgEl);
+      } else {
+        setMsg('¡Foto actualizada con éxito!', 'success', msgEl);
+        userProfile = data;
+        updateUIWithProfile(userSession, data);
+        setTimeout(() => setMsg('', '', msgEl), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg('Hubo un error inesperado.', 'error', msgEl);
+    }
+  });
+
+  // Evento: Borrar Foto de Perfil
+  document.getElementById('btn-borrar-avatar')?.addEventListener('click', async () => {
+    const msgEl = document.getElementById('perfil-avatar-msg');
+    setMsg('Eliminando foto...', 'info', msgEl);
+
+    try {
+      const { data, error } = await actualizarPerfil({
+        username: userProfile.username,
+        avatar_url: null
+      });
+
+      if (error) {
+        setMsg(error.message, 'error', msgEl);
+      } else {
+        setMsg('¡Foto eliminada!', 'success', msgEl);
+        userProfile = data;
+        updateUIWithProfile(userSession, data);
+        setTimeout(() => setMsg('', '', msgEl), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg('Error al eliminar foto.', 'error', msgEl);
+    }
+  });
+
+  // Evento: Guardar Nombre de Usuario
+  document.getElementById('btn-perfil-save-username')?.addEventListener('click', async () => {
+    const newUsername = document.getElementById('perfil-username-input').value.trim();
+    const msgEl = document.getElementById('perfil-settings-msg');
+
+    if (!newUsername) {
+      setMsg('El nombre de usuario no puede estar vacío.', 'error', msgEl);
       return;
     }
-    
-    if (session) {
-      overlay.classList.add('hidden');
-      appWrapper.classList.add('visible');
-    } else {
-      overlay.classList.remove('hidden');
-      appWrapper.classList.remove('visible');
+
+    setMsg('Guardando cambios...', 'info', msgEl);
+
+    try {
+      const { data, error } = await actualizarPerfil({
+        username: newUsername,
+        avatar_url: userProfile.avatar_url
+      });
+
+      if (error) {
+        setMsg(error.message, 'error', msgEl);
+      } else {
+        setMsg('Nombre de usuario actualizado con éxito.', 'success', msgEl);
+        userProfile = data;
+        updateUIWithProfile(userSession, data);
+        setTimeout(() => setMsg('', '', msgEl), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg('Hubo un error al guardar.', 'error', msgEl);
     }
   });
+
+  // Evento: Cambiar Contraseña
+  document.getElementById('btn-perfil-save-password')?.addEventListener('click', async () => {
+    const btnEl = document.getElementById('btn-perfil-save-password');
+    const currentPassword = document.getElementById('perfil-current-password-input').value;
+    const newPassword = document.getElementById('perfil-password-input').value;
+    const confirmPassword = document.getElementById('perfil-confirm-password-input').value;
+    const msgEl = document.getElementById('perfil-security-msg');
+
+    if (!currentPassword) {
+      setMsg('Ingresá tu contraseña actual.', 'error', msgEl);
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setMsg('La nueva contraseña debe tener al menos 6 caracteres.', 'error', msgEl);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMsg('Las contraseñas no coinciden.', 'error', msgEl);
+      return;
+    }
+
+    btnEl.disabled = true;
+    const originalText = btnEl.textContent;
+    btnEl.textContent = 'Actualizando...';
+    setMsg('Actualizando contraseña...', 'info', msgEl);
+
+    try {
+      const { error } = await actualizarContrasena(newPassword, currentPassword);
+      if (error) {
+        setMsg(error.message === 'Current password required when setting new password.' ? 'La contraseña actual es incorrecta.' : error.message, 'error', msgEl);
+      } else {
+        setMsg('Contraseña actualizada con éxito.', 'success', msgEl);
+        document.getElementById('perfil-current-password-input').value = '';
+        document.getElementById('perfil-password-input').value = '';
+        document.getElementById('perfil-confirm-password-input').value = '';
+        setTimeout(() => setMsg('', '', msgEl), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg('Error inesperado al cambiar contraseña.', 'error', msgEl);
+    } finally {
+      btnEl.disabled = false;
+      btnEl.textContent = originalText;
+    }
+  });
+
+
 
   // ─── 3. CARGA DE DATOS ───
   async function cargarFixtureBD() {
@@ -722,10 +1189,16 @@
   }
 
   // ─── 4. INICIALIZACIÓN FINAL ───
-  document.addEventListener('DOMContentLoaded', () => {
+  function inicializarApp() {
     cargarFixtureBD().catch(e => console.error(e));
     cargarHistoriaBD().catch(e => console.error(e));
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarApp);
+  } else {
+    inicializarApp();
+  }
 </script>
  
 

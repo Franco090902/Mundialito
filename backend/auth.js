@@ -148,10 +148,12 @@ export async function recuperarContrasena(email) {
 // ══════════════════════════════════════════════════════════════════
 // FUNCIÓN 4.2: Actualizar contraseña (después de recuperar)
 // ══════════════════════════════════════════════════════════════════
-export async function actualizarContrasena(newPassword) {
-  const { data, error } = await supabase.auth.updateUser({
-    password: newPassword
-  });
+export async function actualizarContrasena(newPassword, currentPassword = null) {
+  const updateData = { password: newPassword };
+  if (currentPassword) {
+    updateData.current_password = currentPassword;
+  }
+  const { data, error } = await supabase.auth.updateUser(updateData);
   if (error) {
     console.error('Error al actualizar contraseña:', error.message);
     return { error };
@@ -217,7 +219,8 @@ export async function subirAvatar(file) {
   if (!currentUser) return null;
 
   const extension = file.name.split('.').pop();
-  const fileName  = `${currentUser.id}.${extension}`;
+  // Usamos una estructura de carpeta por UID del usuario para cumplir con las políticas RLS estándar de Supabase
+  const fileName  = `${currentUser.id}/avatar.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
@@ -229,7 +232,8 @@ export async function subirAvatar(file) {
   }
 
   const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
-  return data.publicUrl;
+  // Añadimos un timestamp para romper la caché del navegador al cambiar de foto
+  return `${data.publicUrl}?t=${Date.now()}`;
 }
 
 
@@ -319,6 +323,11 @@ function actualizarUILogueado(profile) {
   // ── Cerrar el modal de login si estaba abierto ───────────────────
   const modalAuth = document.getElementById('modal-auth');
   if (modalAuth) modalAuth.classList.remove('active');
+
+  // Callback global para sincronizar con HTML principal de forma síncrona
+  if (window.onMundialitoAuth) {
+    window.onMundialitoAuth(currentUser, profile);
+  }
 }
 
 /**
@@ -340,6 +349,11 @@ function actualizarUIDeslogueado() {
     el.disabled    = true;
     el.placeholder = 'Iniciá sesión para participar';
   });
+
+  // Callback global para sincronizar con HTML principal de forma síncrona
+  if (window.onMundialitoAuth) {
+    window.onMundialitoAuth(null, null);
+  }
 }
 
 
@@ -505,8 +519,8 @@ function mostrarMensaje(mensaje, tipo = 'info') {
 // INICIALIZACIÓN
 // Se ejecuta cuando el DOM está listo.
 // ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAuthEvents);
+} else {
   initAuthEvents();
-  // onAuthStateChange ya se disparará automáticamente si hay sesión en localStorage.
-  // No necesitás llamar a nada más.
-});
+}

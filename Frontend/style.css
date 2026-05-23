@@ -797,6 +797,306 @@
     #app-wrapper { display: none; }
     #app-wrapper.visible { display: block; }
 
+    /* ════════════════════════════════════════════════
+       19. USER PROFILE PANEL (PERFIL) & DROPDOWN MENU
+       — Premium FIFA 2026 Theme
+     ════════════════════════════════════════════════ */
+    .perfil-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+      animation: fadeUp .35s ease;
+    }
+    
+    .perfil-card {
+      background: var(--navy2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.3s;
+    }
+    .perfil-card:hover {
+      border-color: var(--navy4);
+    }
+    
+    .main-info-card {
+      text-align: center;
+      padding-top: 50px;
+    }
+    
+    .perfil-card-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 70px;
+      background: linear-gradient(90deg, var(--red) 0%, var(--navy4) 100%);
+      opacity: 0.75;
+      z-index: 1;
+    }
+    
+    .perfil-avatar-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 16px;
+      z-index: 2;
+    }
+    
+    .perfil-large-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 3px solid var(--navy2);
+      box-shadow: 0 0 16px rgba(0, 170, 85, 0.4);
+      object-fit: cover;
+      background: var(--navy3);
+      display: block;
+    }
+    
+    .perfil-large-avatar-fallback {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 3px solid var(--navy2);
+      background: var(--navy3);
+      box-shadow: 0 0 16px rgba(0, 170, 85, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--white);
+      font-family: var(--font-display);
+    }
+    
+    .avatar-edit-overlay {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .avatar-edit-overlay:hover {
+      background: var(--red2);
+      transform: scale(1.1);
+    }
+    .avatar-edit-overlay span {
+      font-size: 14px;
+      color: white;
+    }
+    
+    .perfil-username-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--white);
+      margin-bottom: 2px;
+      letter-spacing: 1px;
+    }
+    
+    .perfil-email-sub {
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 20px;
+    }
+    
+    .perfil-avatar-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .btn-perfil-secondary {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--offwhite);
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-perfil-secondary:hover {
+      background: var(--border);
+      color: var(--white);
+    }
+    
+    .btn-perfil-danger {
+      background: rgba(213, 0, 28, 0.15);
+      border: 1px solid rgba(213, 0, 28, 0.4);
+      color: #ff6680;
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-perfil-danger:hover {
+      background: rgba(213, 0, 28, 0.3);
+      border-color: #ff6680;
+    }
+    
+    .perfil-card-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--white);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border2);
+      padding-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    
+    .profile-settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .secure-badge {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #00DD77;
+      background: rgba(0, 170, 85, 0.1);
+      border: 1px solid rgba(0, 170, 85, 0.25);
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-top: 4px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .badge-dot-green {
+      width: 6px;
+      height: 6px;
+      background: #00DD77;
+      border-radius: 50%;
+    }
+    
+    .prode-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .prode-stat-widget {
+      background: var(--navy3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    
+    .prode-stat-widget.widget-gold { border-left: 3px solid var(--gold); }
+    .prode-stat-widget.widget-green { border-left: 3px solid var(--red); }
+    .prode-stat-widget.widget-blue { border-left: 3px solid #00AAFF; }
+    
+    .widget-icon {
+      font-size: 24px;
+      opacity: 0.85;
+    }
+    .widget-data {
+      display: flex;
+      flex-direction: column;
+    }
+    .widget-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      line-height: 1;
+      color: var(--white);
+    }
+    .prode-stat-widget.widget-gold .widget-value { color: var(--gold); }
+    .prode-stat-widget.widget-green .widget-value { color: var(--red); }
+    .prode-stat-widget.widget-blue .widget-value { color: #00AAFF; }
+    
+    .widget-label {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    
+    .accuracy-section {
+      background: var(--navy3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 16px;
+    }
+    
+    .accuracy-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .accuracy-track {
+      height: 8px;
+      background: var(--navy);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .accuracy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red) 0%, var(--gold) 100%);
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .accuracy-legend {
+      font-size: 11px;
+      color: var(--text3);
+      text-align: right;
+    }
+
+    /* Estilos extras de responsive para el perfil */
+    @media (max-width: 900px) {
+      .perfil-layout {
+        grid-template-columns: 1fr;
+      }
+      .prode-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+
+
 
     /* SISTEMA DE GRILLAS PARA LAS TARJETAS */
 .cards-grid {
