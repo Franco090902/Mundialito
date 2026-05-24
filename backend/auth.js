@@ -440,7 +440,7 @@ function initAuthEvents() {
   });
 
   // ── Cerrar sesión ────────────────────────────────────────────────
-  document.getElementById('btn-logout')?.addEventListener('click', cerrarSesion);
+  // document.getElementById('btn-logout')?.addEventListener('click', cerrarSesion); // Evitado doble binding con HTML local
 
   // ── Abrir modal de auth desde otros elementos ────────────────────
   // Cualquier elemento con data-open-auth="true" abre el modal de login

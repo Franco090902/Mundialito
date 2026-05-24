@@ -712,7 +712,12 @@ async function cargarScorersDesdeAPI() {
   try {
     const res = await fetch(`${API_URL}/scorers`);
     const data = await res.json();
-    if (!data.length) return;
+    if (!data.length) {
+      window.SCORERS = [];
+      renderScorers();
+      renderLiveScorers();
+      return;
+    }
     window.SCORERS = data.map(s => ({
       name: s.nombre, team: s.equipo_short || s.equipo,
       goals: s.goles, assists: s.asistencias, flag: '',
@@ -728,7 +733,11 @@ async function cargarCardsDesdeAPI() {
   try {
     const res = await fetch(`${API_URL}/tarjetas`);
     const data = await res.json();
-    if (!data.length) return;
+    if (!data.length) {
+      window.CARDS = [];
+      renderCards();
+      return;
+    }
     window.CARDS = data.map(c => ({
       name: c.nombre, team: c.equipo_short || c.equipo,
       yellow: c.amarillas, red: c.rojas, flag: '',
