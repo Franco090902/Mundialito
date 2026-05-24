@@ -8,6 +8,7 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="Prode/prode.css">
   <script>
     window.PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
     window.imgFallback = function(img) {
@@ -161,6 +162,7 @@
     <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
     <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
     <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
+    <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
   </div>
 
   <!-- ══ PANEL: EN VIVO ══ -->
@@ -423,6 +425,60 @@
 
   </div>
 </div>
+  <!-- ══ PANEL: PRODE ══ -->
+  <div id="panel-prode" class="panel">
+
+    <!-- Sub-tabs -->
+    <div class="prode-sub-tabs">
+      <button class="prode-sub-tab active" data-tab="predictions" onclick="switchProdeSubTab('predictions')">🔮 Mis Predicciones</button>
+      <button class="prode-sub-tab" data-tab="communities" onclick="switchProdeSubTab('communities')">👥 Comunidades</button>
+    </div>
+
+    <!-- Sub-panel: Predicciones -->
+    <div class="prode-subpanel active" id="prode-predictions-panel">
+
+      <!-- Barra de búsqueda -->
+      <div class="prode-search-wrap">
+        <span class="prode-search-icon">🔍</span>
+        <input
+          type="text"
+          id="prode-search"
+          class="prode-search-input"
+          placeholder="Buscá por país (ej: Argentina, Brasil...)"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Mensaje sin resultados (hidden by default) -->
+      <div id="prode-no-results" style="display:none;" class="prode-empty" style="padding:30px 0">
+        <span class="prode-empty-icon">🔍</span>
+        <div class="prode-empty-title">Sin partidos para esa búsqueda</div>
+        <div class="prode-empty-sub">Probá con otro nombre de selección.</div>
+      </div>
+
+      <!-- Contenido dinámico de predicciones -->
+      <div id="prode-predictions-content">
+        <!-- Se llena dinámicamente por prode.js -->
+        <div class="prode-empty">
+          <span class="prode-empty-icon">⚽</span>
+          <div class="prode-empty-title">Iniciando Prode...</div>
+          <div class="prode-empty-sub">Por favor iniciá sesión para cargar tus predicciones.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub-panel: Comunidades -->
+    <div class="prode-subpanel" id="prode-communities-panel">
+      <!-- Se llena dinámicamente por prode.js -->
+      <div class="prode-empty">
+        <span class="prode-empty-icon">👥</span>
+        <div class="prode-empty-title">Cargando comunidades...</div>
+        <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ══ PANEL: PERFIL ══ -->
   <div id="panel-perfil" class="panel">
     <div class="perfil-layout">
@@ -581,6 +637,7 @@
   // Importamos las funciones exactas de tu auth.js
   import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from '../backend/auth.js'; 
   import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
+  import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
 
   console.log('🚀 Inline module script loaded successfully!');
 
@@ -795,6 +852,9 @@
     if (user) {
       userSession = user;
       
+      // Inicializar el Prode para este usuario
+      initProde(user.id);
+      
       // Sincronizar visibilidad de overlays
       const overlayEl = document.getElementById('auth-overlay');
       const appWrapperEl = document.getElementById('app-wrapper');
@@ -839,6 +899,11 @@
     
     const panel = document.getElementById('panel-perfil');
     if (panel) panel.classList.add('active');
+  };
+
+  // Función global para cambiar sub-tabs del Prode
+  window.switchProdeSubTab = function(tab) {
+    prodeSubTab(tab);
   };
 
   // Asignar evento al clic del botón en el dropdown
@@ -1201,6 +1266,13 @@
   }
 </script>
  
+
+ <!-- Botón flotante de guardar predicciones (Prode FAB) -->
+ <button class="prode-save-fab" id="prode-save-fab" style="display:none" aria-label="Guardar predicciones">
+   <span class="fab-icon">💾</span>
+   Guardar Predicciones
+   <span class="prode-fab-count" id="prode-fab-count">0</span>
+ </button>
 
  <div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
   <span class="chatbot-fab-icon">⚽</span>

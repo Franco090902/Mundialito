@@ -89,6 +89,11 @@ function switchTab(id, btn) {
   if (id === 'tienda') {
     window.cargarProductos(document.getElementById('filtro-tienda')?.value || '');
   }
+  // Ocultar el FAB de guardar prode cuando se cambia de panel
+  if (id !== 'prode') {
+    const fab = document.getElementById('prode-save-fab');
+    if (fab) fab.style.display = 'none';
+  }
 }
 
 /* ─────────────────────────────────────
