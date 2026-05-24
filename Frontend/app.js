@@ -2225,20 +2225,27 @@ function widgetKeydown(e) {
     if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
 
     try {
-      // Data a insertar
-      const insertData = { nombre, admin_id: window.__mundialitoUserId, es_publico: esPublic };
+      // Data a insertar - Generamos IDs en frontend para saltar el bug de .select()
+      const generatedId = crypto.randomUUID();
+      const generatedInvite = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      const insertData = { 
+        id: generatedId,
+        invite_code: generatedInvite,
+        nombre, 
+        admin_id: window.__mundialitoUserId, 
+        es_publico: esPublic 
+      };
       console.log('[Prode] Intentando crear comunidad. Data:', insertData);
 
-      // 1. Insertar el grupo
-      const { data: grupo, error: errGrupo } = await sb()
+      // 1. Insertar el grupo SIN .select() para evitar disparar la política recursiva de SELECT
+      const { error: errGrupo } = await sb()
         .from('prode_groups')
-        .insert(insertData)
-        .select()
-        .single();
+        .insert(insertData);
         
       if (errGrupo) throw errGrupo;
 
-      const memberData = { group_id: grupo.id, user_id: window.__mundialitoUserId };
+      const memberData = { group_id: generatedId, user_id: window.__mundialitoUserId };
       console.log('[Prode] Comunidad creada. Intentando auto-unirse como admin. Data:', memberData);
 
       // 2. Auto-unirse como admin/miembro
@@ -2246,11 +2253,13 @@ function widgetKeydown(e) {
         .from('prode_group_members')
         .insert(memberData);
         
-      if (errMiembro) throw errMiembro;
+      // Ignoramos el error 23505 (Duplicate Key) porque si salta en una PK nueva, 
+      // significa que tienes un Trigger en tu base de datos que ya insertó al admin automáticamente.
+      if (errMiembro && errMiembro.code !== '23505') throw errMiembro;
 
       // 3. Mostrar código de invitación
       prodeSetMsg(msgId,
-        `✅ Grupo "${grupo.nombre}" creado. Código de invitación: ${grupo.invite_code}`,
+        `✅ Grupo "${insertData.nombre}" creado. Código de invitación: ${insertData.invite_code}`,
         'success');
       document.getElementById('prode-nuevo-grupo').value = '';
 
