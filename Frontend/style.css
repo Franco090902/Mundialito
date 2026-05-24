@@ -4,29 +4,37 @@
     ════════════════════════════════════════════════ */
     :root {
       /* Colores primarios FIFA 2026 - Ajustados para mayor legibilidad */
-      --navy: #05101E;     /* Fondo principal - azul marino muy oscuro casi negro */
-      --navy2: #0A1C30;    /* Fondo de tarjetas - un poco más claro */
-      --navy3: #0E2945;    /* Elementos secundarios - hover o modales */
-      --navy4: #153B60;    /* Headers o bordes suaves */
-      
+      --navy: #05101E;
+      /* Fondo principal - azul marino muy oscuro casi negro */
+      --navy2: #0A1C30;
+      /* Fondo de tarjetas - un poco más claro */
+      --navy3: #0E2945;
+      /* Elementos secundarios - hover o modales */
+      --navy4: #153B60;
+      /* Headers o bordes suaves */
+
       /* Acentos */
       --red: #00AA55;
       --red2: #00CC66;
       --red-dim: #006633;
       --gold: #FFD700;
       --gold2: #E6B800;
-      
+
       /* Texto - Aclarado para mayor contraste */
       --white: #FFFFFF;
-      --offwhite: #F4F9FF; /* Blanco con apenas un tinte azul */
-      --text2: #D1E4F9;    /* Texto secundario - muy claro y legible */
-      --text3: #9CBDE6;    /* Texto terciario (muted) - claro pero diferenciable */
-      --text4: #648DB8;    /* Texto muy apagado pero sigue siendo legible sobre oscuro */
-      
+      --offwhite: #F4F9FF;
+      /* Blanco con apenas un tinte azul */
+      --text2: #D1E4F9;
+      /* Texto secundario - muy claro y legible */
+      --text3: #9CBDE6;
+      /* Texto terciario (muted) - claro pero diferenciable */
+      --text4: #648DB8;
+      /* Texto muy apagado pero sigue siendo legible sobre oscuro */
+
       /* Bordes */
       --border: #1C3D60;
       --border2: #122B48;
-      
+
       --live-red: #FFD700;
       /* Amarillo para indicadores en vivo */
       /* Rojo para indicadores en vivo */
@@ -212,7 +220,7 @@
       object-fit: contain;
       animation: flagWave 3s ease-in-out infinite;
       display: inline-block;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 
     .logo-text {
@@ -387,7 +395,8 @@
       background: var(--navy2);
       border-bottom: 2px solid var(--border);
       position: sticky;
-      top: 60px; /* Debajo del header principal */
+      top: 60px;
+      /* Debajo del header principal */
       z-index: 150;
       display: flex;
       justify-content: center;
@@ -1876,7 +1885,7 @@
       display: block;
       margin: 0 auto 10px auto;
       animation: flagWave 3s ease-in-out infinite;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
     }
 
     .auth-logo-title {
@@ -4086,104 +4095,597 @@
       }
     }
 
-/* =========================================
+    /* =========================================
    NAVEGACIÓN SPA PRINCIPAL
 ========================================= */
-.main-spa-nav {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  background: rgba(10, 42, 74, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: center;
-  padding: 0 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
+    .main-spa-nav {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(10, 42, 74, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      padding: 0 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
 
-.spa-nav-list {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 10px;
-  width: 100%;
-  max-width: 800px;
-  justify-content: space-around;
-}
+    .spa-nav-list {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 10px;
+      width: 100%;
+      max-width: 800px;
+      justify-content: space-around;
+    }
 
-.spa-nav-btn {
-  background: none;
-  border: none;
-  color: var(--text3);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 16px 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
+    .spa-nav-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
 
-.spa-nav-btn:hover {
-  color: var(--offwhite);
-  background: rgba(255, 255, 255, 0.05);
-}
+    .spa-nav-btn:hover {
+      color: var(--offwhite);
+      background: rgba(255, 255, 255, 0.05);
+    }
 
-.spa-nav-btn.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
-}
+    .spa-nav-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
 
-.spa-nav-btn .nav-icon {
-  font-size: 20px;
-  transition: transform 0.3s ease;
-}
+    .spa-nav-btn .nav-icon {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
 
-.spa-nav-btn:hover .nav-icon {
-  transform: translateY(-2px);
-}
+    .spa-nav-btn:hover .nav-icon {
+      transform: translateY(-2px);
+    }
 
-/* =========================================
+    /* =========================================
    MANEJO DE SECCIONES SPA
 ========================================= */
-.spa-section {
-  display: block;
-  animation: fadeSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+    .spa-section {
+      display: block;
+      animation: fadeSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-.spa-section.hidden {
-  display: none;
-}
+    .spa-section.hidden {
+      display: none;
+    }
 
-@keyframes fadeSectionIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    @keyframes fadeSectionIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .main-spa-nav {
-    padding: 0 10px;
-  }
-  .spa-nav-btn {
-    font-size: 16px;
-    padding: 14px 10px;
-    gap: 5px;
-  }
-  .spa-nav-btn .nav-icon {
-    font-size: 18px;
-  }
-}
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-spa-nav {
+        padding: 0 10px;
+      }
+
+      .spa-nav-btn {
+        font-size: 16px;
+        padding: 14px 10px;
+        gap: 5px;
+      }
+
+      .spa-nav-btn .nav-icon {
+        font-size: 18px;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+   IDEALXI_03_css.css
+   DÓNDE: al final de Frontend/style.css
+   ══════════════════════════════════════════════════════════════════ */
+
+    /* ── Layout principal ── */
+    .xi-wrapper {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 28px;
+      align-items: start;
+      padding-bottom: 40px;
+    }
+
+    /* ══════════════════════════════════════
+   PANEL IZQUIERDO — CONTROLES
+══════════════════════════════════════ */
+    .xi-controls {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      position: sticky;
+      top: 80px;
+    }
+
+    .xi-controls-header {
+      background: linear-gradient(135deg, var(--navy3) 0%, #0a2050 100%);
+      padding: 28px 24px 24px;
+      border-bottom: 2px solid var(--red);
+      text-align: center;
+    }
+
+    .xi-controls-badge {
+      display: inline-block;
+      background: var(--red);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      padding: 3px 12px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+
+    .xi-controls-title {
+      font-family: var(--font-display);
+      font-size: 42px;
+      color: var(--white);
+      letter-spacing: 2px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .xi-title-accent {
+      color: var(--red);
+      margin-left: 6px;
+    }
+
+    .xi-controls-sub {
+      font-size: 12px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── Grupos de campos ── */
+    .xi-field-group {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .xi-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text4);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .xi-label-icon {
+      font-size: 13px;
+    }
+
+    /* Select */
+    .xi-select-wrap {
+      position: relative;
+    }
+
+    .xi-select {
+      width: 100%;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 36px 10px 14px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--offwhite);
+      cursor: pointer;
+      appearance: none;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .xi-select:focus {
+      border-color: var(--red);
+    }
+
+    .xi-select-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      pointer-events: none;
+      font-size: 14px;
+    }
+
+    /* Colores */
+    .xi-colors-row {
+      display: flex;
+      gap: 14px;
+    }
+
+    .xi-color-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .xi-color-label {
+      font-size: 10px;
+      color: var(--text4);
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .xi-color-wrap {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+    }
+
+    .xi-color-wrap:hover {
+      border-color: var(--red);
+      transform: scale(1.05);
+    }
+
+    .xi-color-input {
+      position: absolute;
+      inset: -4px;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      z-index: 2;
+    }
+
+    .xi-color-preview {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* Input texto equipo */
+    .xi-text-input {
+      width: 100%;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--offwhite);
+      letter-spacing: 1px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .xi-text-input::placeholder {
+      color: var(--text4);
+      font-weight: 400;
+    }
+
+    .xi-text-input:focus {
+      border-color: var(--red);
+    }
+
+    /* Botones */
+    .xi-actions {
+      padding: 18px 20px;
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .xi-btn-primary {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+
+    .xi-btn-primary:hover {
+      background: var(--red2);
+      transform: translateY(-1px);
+    }
+
+    .xi-btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: none;
+      color: var(--text3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .xi-btn-secondary:hover {
+      border-color: var(--text2);
+      color: var(--offwhite);
+    }
+
+    /* Instrucciones */
+    .xi-instructions {
+      padding: 14px 20px 18px;
+    }
+
+    .xi-instr-title {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text4);
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .xi-instr-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .xi-instr-list li {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text3);
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.4;
+    }
+
+    .xi-instr-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--red);
+    }
+
+    /* ══════════════════════════════════════
+   PANEL DERECHO — CANCHA
+══════════════════════════════════════ */
+    .xi-pitch-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .xi-pitch-team-name {
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--text2);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      outline: none;
+      background: transparent;
+      border-bottom: 1px dashed var(--border);
+      cursor: text;
+      min-height: 42px;
+      transition: border-color .2s, color .2s;
+    }
+
+    .xi-pitch-team-name:focus {
+      color: var(--white);
+      border-color: var(--red);
+    }
+
+    .xi-pitch-team-name:empty::before {
+      content: attr(data-placeholder);
+      color: var(--text4);
+      pointer-events: none;
+    }
+
+    .xi-pitch-container {
+      width: 100%;
+      max-width: 460px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      transition: border-color .3s;
+    }
+
+    .xi-pitch-container:hover {
+      border-color: var(--red);
+    }
+
+    .xi-pitch-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ── Camisetas SVG (via JS) ── */
+    .xi-player-circle {
+      cursor: pointer;
+      transition: transform .2s;
+      transform-origin: center;
+    }
+
+    .xi-player-circle:hover {
+      transform: scale(1.1);
+    }
+
+    /* ── Label editable bajo camiseta ── */
+    .xi-player-label {
+      cursor: text;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      fill: white;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      paint-order: stroke;
+      stroke: rgba(0, 0, 0, 0.8);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+      pointer-events: all;
+    }
+
+    /* Input flotante para editar nombre (aparece sobre el SVG) */
+    .xi-edit-input {
+      position: absolute;
+      background: var(--navy3);
+      border: 2px solid var(--red);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.5px;
+      outline: none;
+      text-align: center;
+      min-width: 80px;
+      max-width: 120px;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .xi-pitch-container {
+      position: relative;
+    }
+
+    /* ══════════════════════════════════════
+   VARIANTES DE CANCHA
+══════════════════════════════════════ */
+    .xi-pitch--cesped #xi-pitch-base {
+      fill: #2d8a4e;
+    }
+
+    .xi-pitch--sintetico #xi-pitch-base {
+      fill: #1a6b3d;
+    }
+
+    .xi-pitch--noche #xi-pitch-base {
+      fill: #1a3a2a;
+    }
+
+    .xi-pitch--argentina #xi-pitch-base {
+      fill: #75AADB;
+    }
+
+    .xi-pitch--noche #xi-pitch-lines g,
+    .xi-pitch--noche #xi-pitch-lines {
+      stroke: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .xi-pitch--argentina #xi-pitch-lines {
+      stroke: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .xi-pitch--argentina #xi-pitch-lines g {
+      stroke: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* Clase para aplicar al svg */
+    #xi-pitch-svg.xi-pitch--cesped #xi-pitch-base {
+      fill: #2d8a4e;
+    }
+
+    #xi-pitch-svg.xi-pitch--sintetico #xi-pitch-base {
+      fill: #1a6b3d;
+    }
+
+    #xi-pitch-svg.xi-pitch--noche #xi-pitch-base {
+      fill: #112d1c;
+    }
+
+    #xi-pitch-svg.xi-pitch--argentina #xi-pitch-base {
+      fill: #75AADB;
+    }
+
+    #xi-pitch-svg.xi-pitch--argentina .xi-pitch-line {
+      stroke: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    #xi-pitch-svg.xi-pitch--argentina #xi-pitch-lines * {
+      stroke: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+    @media (max-width: 960px) {
+      .xi-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .xi-controls {
+        position: static;
+      }
+
+      .xi-pitch-container {
+        max-width: 360px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .xi-controls-title {
+        font-size: 32px;
+      }
+
+      .xi-pitch-container {
+        max-width: 280px;
+      }
+    }

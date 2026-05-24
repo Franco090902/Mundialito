@@ -487,6 +487,7 @@
         <div class="tabs" style="justify-content: center; margin-bottom: 20px;">
           <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
           <button class="tab-btn" onclick="switchTab('higherlower', this)">🆚 Higher/Lower</button>
+          <button class="tab-btn" onclick="switchTab('idealxi', this)">⚽ 11 Ideal</button>
         </div>
 
       <!-- ══ PANEL: PRODE ══ -->
@@ -591,6 +592,199 @@
         </div>
 
 
+      </div>
+
+      <!-- ══ PANEL: IDEAL XI ══ -->
+      <div id="panel-idealxi" class="panel">
+       
+        <div class="xi-wrapper">
+       
+          <!-- ── PANEL IZQUIERDO: Controles ── -->
+          <div class="xi-controls">
+       
+            <div class="xi-controls-header">
+              <div class="xi-controls-badge">MUNDIAL 2026</div>
+              <h2 class="xi-controls-title">Tu 11<span class="xi-title-accent">Ideal</span></h2>
+              <p class="xi-controls-sub">Armá tu equipo soñado</p>
+            </div>
+       
+            <!-- Formación -->
+            <div class="xi-field-group">
+              <label class="xi-label">
+                <span class="xi-label-icon">📐</span>
+                FORMACIÓN
+              </label>
+              <div class="xi-select-wrap">
+                <select id="xi-select-formation" class="xi-select" onchange="xiChangeFormation(this.value)">
+                  <option value="4-4-2">4-4-2 — Clásico</option>
+                  <option value="4-3-3">4-3-3 — Ofensivo</option>
+                  <option value="3-5-2">3-5-2 — Equilibrado</option>
+                  <option value="3-4-3">3-4-3 — Ultra Ofensivo</option>
+                  <option value="5-3-2">5-3-2 — Defensivo</option>
+                  <option value="4-2-3-1">4-2-3-1 — Moderno</option>
+                  <option value="4-1-4-1">4-1-4-1 — Control</option>
+                  <option value="5-4-1">5-4-1 — Ultra Defensivo</option>
+                </select>
+                <span class="xi-select-arrow">▾</span>
+              </div>
+            </div>
+       
+            <!-- Cancha -->
+            <div class="xi-field-group">
+              <label class="xi-label">
+                <span class="xi-label-icon">🏟️</span>
+                CANCHA
+              </label>
+              <div class="xi-select-wrap">
+                <select id="xi-select-pitch" class="xi-select" onchange="xiChangePitch(this.value)">
+                  <option value="cesped">🌿 Césped Natural</option>
+                  <option value="sintetico">⚡ Sintético</option>
+                  <option value="noche">🌙 Nocturno</option>
+                  <option value="argentina">🇦🇷 Argentina — Celeste</option>
+                </select>
+                <span class="xi-select-arrow">▾</span>
+              </div>
+            </div>
+       
+            <!-- Color camiseta -->
+            <div class="xi-field-group">
+              <label class="xi-label">
+                <span class="xi-label-icon">👕</span>
+                CAMISETA
+              </label>
+              <div class="xi-colors-row">
+                <div class="xi-color-item">
+                  <span class="xi-color-label">Principal</span>
+                  <div class="xi-color-wrap">
+                    <input type="color" id="xi-color-primary" class="xi-color-input" value="#D5001C" onchange="xiUpdateColors()">
+                    <div class="xi-color-preview" id="xi-preview-primary" style="background:#D5001C"></div>
+                  </div>
+                </div>
+                <div class="xi-color-item">
+                  <span class="xi-color-label">Secundario</span>
+                  <div class="xi-color-wrap">
+                    <input type="color" id="xi-color-secondary" class="xi-color-input" value="#FFFFFF" onchange="xiUpdateColors()">
+                    <div class="xi-color-preview" id="xi-preview-secondary" style="background:#FFFFFF"></div>
+                  </div>
+                </div>
+                <div class="xi-color-item">
+                  <span class="xi-color-label">Short</span>
+                  <div class="xi-color-wrap">
+                    <input type="color" id="xi-color-shorts" class="xi-color-input" value="#111111" onchange="xiUpdateColors()">
+                    <div class="xi-color-preview" id="xi-preview-shorts" style="background:#111111"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+       
+            <!-- Nombre del equipo -->
+            <div class="xi-field-group">
+              <label class="xi-label">
+                <span class="xi-label-icon">🏆</span>
+                NOMBRE DEL EQUIPO
+              </label>
+              <input
+                type="text"
+                id="xi-team-name-input"
+                class="xi-text-input"
+                placeholder="Mi 11 Ideal"
+                maxlength="24"
+                oninput="xiUpdateTeamName(this.value)"
+              />
+            </div>
+       
+            <!-- Acciones -->
+            <div class="xi-actions">
+              <button class="xi-btn-primary" onclick="xiDownload()">
+                <span>⬇</span> DESCARGAR
+              </button>
+              <button class="xi-btn-secondary" onclick="xiReset()">
+                <span>↺</span> RESETEAR
+              </button>
+            </div>
+       
+            <!-- Instrucciones -->
+            <div class="xi-instructions">
+              <p class="xi-instr-title">CÓMO USAR</p>
+              <ul class="xi-instr-list">
+                <li>Hacé clic en el nombre bajo cada camiseta para editarlo</li>
+                <li>Cambiá los colores con los selectores de arriba</li>
+                <li>Elegí "🇦🇷 Argentina" para cancha especial</li>
+              </ul>
+            </div>
+       
+          </div>
+       
+          <!-- ── PANEL DERECHO: Cancha ── -->
+          <div class="xi-pitch-wrapper">
+       
+            <!-- Nombre del equipo encima de la cancha -->
+            <div class="xi-pitch-team-name" id="xi-pitch-team-name"
+                 contenteditable="true"
+                 data-placeholder="NOMBRE EQUIPO"
+                 onblur="xiSyncTeamName(this.textContent)"
+                 onkeydown="if(event.key==='Enter')this.blur()">
+            </div>
+       
+            <!-- SVG del campo -->
+            <div class="xi-pitch-container" id="xi-pitch-container">
+              <svg class="xi-pitch-svg" id="xi-pitch-svg" viewBox="0 0 440 620" xmlns="http://www.w3.org/2000/svg">
+       
+                <!-- Fondo del campo -->
+                <defs>
+                  <pattern id="xi-stripe-pattern" patternUnits="userSpaceOnUse" width="55" height="620" patternTransform="rotate(0)">
+                    <rect width="55" height="620" fill="transparent"/>
+                    <rect x="0" width="27.5" height="620" fill="rgba(0,0,0,0.06)"/>
+                  </pattern>
+                </defs>
+       
+                <!-- Campo base -->
+                <rect id="xi-pitch-base" x="0" y="0" width="440" height="620" rx="4" fill="#2d8a4e"/>
+                <!-- Franjas -->
+                <rect x="0" y="0" width="440" height="620" rx="4" fill="url(#xi-stripe-pattern)"/>
+       
+                <!-- Líneas del campo -->
+                <g id="xi-pitch-lines" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2">
+                  <!-- Borde -->
+                  <rect x="22" y="18" width="396" height="584" rx="2"/>
+                  <!-- Línea del medio -->
+                  <line x1="22" y1="310" x2="418" y2="310"/>
+                  <!-- Círculo central -->
+                  <circle cx="220" cy="310" r="60"/>
+                  <!-- Punto central -->
+                  <circle cx="220" cy="310" r="3" fill="rgba(255,255,255,0.7)"/>
+                  <!-- Área grande local (abajo) -->
+                  <rect x="96" y="482" width="248" height="120"/>
+                  <!-- Área chica local (abajo) -->
+                  <rect x="155" y="548" width="130" height="54"/>
+                  <!-- Área grande visitante (arriba) -->
+                  <rect x="96" y="18" width="248" height="120"/>
+                  <!-- Área chica visitante (arriba) -->
+                  <rect x="155" y="18" width="130" height="54"/>
+                  <!-- Semicírculo arco local -->
+                  <path d="M 162 482 A 60 60 0 0 0 278 482" stroke-dasharray="4,3"/>
+                  <!-- Semicírculo arco visitante -->
+                  <path d="M 162 138 A 60 60 0 0 1 278 138" stroke-dasharray="4,3"/>
+                  <!-- Punto penal local -->
+                  <circle cx="220" cy="524" r="3" fill="rgba(255,255,255,0.7)"/>
+                  <!-- Punto penal visitante -->
+                  <circle cx="220" cy="96" r="3" fill="rgba(255,255,255,0.7)"/>
+                  <!-- Portería local (abajo) -->
+                  <rect x="186" y="602" width="68" height="18" stroke-width="3"/>
+                  <!-- Portería visitante (arriba) -->
+                  <rect x="186" y="0" width="68" height="18" stroke-width="3"/>
+                </g>
+       
+                <!-- Jugadores (se renderizan via JS) -->
+                <g id="xi-players-group"></g>
+       
+              </svg>
+            </div>
+       
+          </div>
+       
+        </div>
+       
       </div>
       </section>
 

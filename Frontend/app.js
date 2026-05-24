@@ -94,6 +94,7 @@ function switchTab(id, btn) {
     const fab = document.getElementById('prode-save-fab');
     if (fab) fab.style.display = 'none';
   }
+  if (id === 'idealxi') xiInit();
 }
 
 /* ─────────────────────────────────────
@@ -3136,3 +3137,552 @@ function hlInit() {
   hlUpdateHomeScreen();
   hlShowScreen('start');
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   DEFINICIÓN DE FORMACIONES
+   Cada posición: [x, y] en el viewBox 440×620 (0,0 = arriba-izq)
+   El arquero está abajo (y alto), los delanteros arriba (y bajo).
+   Coordenada Y: 570=arquero, 480=defensas, 380=medio, 200=delanteros
+──────────────────────────────────────────────────────────────────── */
+const XI_FORMATIONS = {
+  '4-4-2': {
+    label: '4-4-2 — Clásico',
+    positions: [
+      // GK
+      { x: 220, y: 565, label: 'POR' },
+      // DEF
+      { x: 70, y: 470, label: 'LD' },
+      { x: 157, y: 460, label: 'DFC' },
+      { x: 283, y: 460, label: 'DFC' },
+      { x: 370, y: 470, label: 'LI' },
+      // MID
+      { x: 70, y: 345, label: 'MCD' },
+      { x: 163, y: 335, label: 'MC' },
+      { x: 277, y: 335, label: 'MC' },
+      { x: 370, y: 345, label: 'MCO' },
+      // FWD
+      { x: 157, y: 195, label: 'DC' },
+      { x: 283, y: 195, label: 'DC' },
+    ]
+  },
+  '4-3-3': {
+    label: '4-3-3 — Ofensivo',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 70, y: 470, label: 'LD' },
+      { x: 157, y: 460, label: 'DFC' },
+      { x: 283, y: 460, label: 'DFC' },
+      { x: 370, y: 470, label: 'LI' },
+      { x: 110, y: 340, label: 'MC' },
+      { x: 220, y: 320, label: 'MCD' },
+      { x: 330, y: 340, label: 'MC' },
+      { x: 88, y: 175, label: 'ED' },
+      { x: 220, y: 150, label: 'DC' },
+      { x: 352, y: 175, label: 'EI' },
+    ]
+  },
+  '3-5-2': {
+    label: '3-5-2 — Equilibrado',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 120, y: 455, label: 'DFC' },
+      { x: 220, y: 445, label: 'DFC' },
+      { x: 320, y: 455, label: 'DFC' },
+      { x: 55, y: 340, label: 'LD' },
+      { x: 145, y: 325, label: 'MC' },
+      { x: 220, y: 310, label: 'MCD' },
+      { x: 295, y: 325, label: 'MC' },
+      { x: 385, y: 340, label: 'LI' },
+      { x: 157, y: 185, label: 'DC' },
+      { x: 283, y: 185, label: 'DC' },
+    ]
+  },
+  '3-4-3': {
+    label: '3-4-3 — Ultra Ofensivo',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 120, y: 460, label: 'DFC' },
+      { x: 220, y: 448, label: 'DFC' },
+      { x: 320, y: 460, label: 'DFC' },
+      { x: 80, y: 345, label: 'LD' },
+      { x: 175, y: 330, label: 'MC' },
+      { x: 265, y: 330, label: 'MC' },
+      { x: 360, y: 345, label: 'LI' },
+      { x: 88, y: 175, label: 'ED' },
+      { x: 220, y: 150, label: 'DC' },
+      { x: 352, y: 175, label: 'EI' },
+    ]
+  },
+  '5-3-2': {
+    label: '5-3-2 — Defensivo',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 55, y: 480, label: 'LDD' },
+      { x: 135, y: 455, label: 'DFC' },
+      { x: 220, y: 445, label: 'DFC' },
+      { x: 305, y: 455, label: 'DFC' },
+      { x: 385, y: 480, label: 'LID' },
+      { x: 120, y: 330, label: 'MC' },
+      { x: 220, y: 315, label: 'MCD' },
+      { x: 320, y: 330, label: 'MC' },
+      { x: 157, y: 185, label: 'DC' },
+      { x: 283, y: 185, label: 'DC' },
+    ]
+  },
+  '4-2-3-1': {
+    label: '4-2-3-1 — Moderno',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 70, y: 470, label: 'LD' },
+      { x: 157, y: 460, label: 'DFC' },
+      { x: 283, y: 460, label: 'DFC' },
+      { x: 370, y: 470, label: 'LI' },
+      { x: 157, y: 375, label: 'MCD' },
+      { x: 283, y: 375, label: 'MCD' },
+      { x: 88, y: 275, label: 'ED' },
+      { x: 220, y: 265, label: 'MCO' },
+      { x: 352, y: 275, label: 'EI' },
+      { x: 220, y: 155, label: 'DC' },
+    ]
+  },
+  '4-1-4-1': {
+    label: '4-1-4-1 — Control',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 70, y: 470, label: 'LD' },
+      { x: 157, y: 460, label: 'DFC' },
+      { x: 283, y: 460, label: 'DFC' },
+      { x: 370, y: 470, label: 'LI' },
+      { x: 220, y: 390, label: 'MCD' },
+      { x: 62, y: 300, label: 'MC' },
+      { x: 160, y: 285, label: 'MC' },
+      { x: 280, y: 285, label: 'MCO' },
+      { x: 378, y: 300, label: 'MC' },
+      { x: 220, y: 155, label: 'DC' },
+    ]
+  },
+  '5-4-1': {
+    label: '5-4-1 — Ultra Defensivo',
+    positions: [
+      { x: 220, y: 565, label: 'POR' },
+      { x: 48, y: 475, label: 'LDD' },
+      { x: 130, y: 452, label: 'DFC' },
+      { x: 220, y: 442, label: 'DFC' },
+      { x: 310, y: 452, label: 'DFC' },
+      { x: 392, y: 475, label: 'LID' },
+      { x: 70, y: 345, label: 'MCD' },
+      { x: 168, y: 335, label: 'MC' },
+      { x: 272, y: 335, label: 'MC' },
+      { x: 370, y: 345, label: 'MCO' },
+      { x: 220, y: 170, label: 'DC' },
+    ]
+  },
+};
+
+/* ──────────────────────────────────────────────────────────────────
+   ESTADO GLOBAL
+──────────────────────────────────────────────────────────────────── */
+let xiState = {
+  formation: '4-4-2',
+  pitch: 'cesped',
+  primaryColor: '#D5001C',
+  secondaryColor: '#FFFFFF',
+  shortsColor: '#111111',
+  teamName: '',
+  playerNames: {},
+};
+
+/* ──────────────────────────────────────────────────────────────────
+   INICIALIZACIÓN
+──────────────────────────────────────────────────────────────────── */
+function xiInit() {
+  xiRenderPlayers();
+  xiApplyPitch(xiState.pitch);
+  document.getElementById('xi-team-name-input').value = xiState.teamName;
+  document.getElementById('xi-pitch-team-name').textContent = xiState.teamName || '';
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CAMBIAR FORMACIÓN
+──────────────────────────────────────────────────────────────────── */
+function xiChangeFormation(val) {
+  xiState.formation = val;
+  xiRenderPlayers();
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CAMBIAR TIPO DE CANCHA
+──────────────────────────────────────────────────────────────────── */
+function xiChangePitch(val) {
+  xiState.pitch = val;
+  xiApplyPitch(val);
+}
+
+function xiApplyPitch(val) {
+  const svg = document.getElementById('xi-pitch-svg');
+  if (!svg) return;
+
+  svg.className.baseVal = '';
+
+  const pitchColors = {
+    cesped: { base: '#2d8a4e', stripe: 'rgba(0,0,0,0.06)', line: 'rgba(255,255,255,0.7)' },
+    sintetico: { base: '#1a6b3d', stripe: 'rgba(0,0,0,0.08)', line: 'rgba(255,255,255,0.75)' },
+    noche: { base: '#112d1c', stripe: 'rgba(0,0,0,0.15)', line: 'rgba(255,255,255,0.45)' },
+    argentina: { base: '#75AADB', stripe: 'rgba(0,0,0,0.04)', line: 'rgba(255,255,255,0.92)' },
+  };
+
+  const theme = pitchColors[val] || pitchColors.cesped;
+
+  const base = document.getElementById('xi-pitch-base');
+  if (base) base.setAttribute('fill', theme.base);
+
+  const lines = document.getElementById('xi-pitch-lines');
+  if (lines) lines.setAttribute('stroke', theme.line);
+
+  /* Actualizar todas las líneas hijas también */
+  if (lines) {
+    lines.querySelectorAll('rect, line, circle, path').forEach(el => {
+      el.setAttribute('stroke', theme.line);
+    });
+    /* Puntos (filled) */
+    lines.querySelectorAll('circle[fill]').forEach(el => {
+      el.setAttribute('fill', theme.line);
+    });
+  }
+
+  /* Franjas */
+  const stripeRect = svg.querySelector('#xi-stripe-pattern rect:last-child');
+  if (stripeRect) stripeRect.setAttribute('fill', theme.stripe);
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   ACTUALIZAR COLORES DESDE LOS INPUTS
+──────────────────────────────────────────────────────────────────── */
+function xiUpdateColors() {
+  xiState.primaryColor = document.getElementById('xi-color-primary').value;
+  xiState.secondaryColor = document.getElementById('xi-color-secondary').value;
+  xiState.shortsColor = document.getElementById('xi-color-shorts').value;
+
+  document.getElementById('xi-preview-primary').style.background = xiState.primaryColor;
+  document.getElementById('xi-preview-secondary').style.background = xiState.secondaryColor;
+  document.getElementById('xi-preview-shorts').style.background = xiState.shortsColor;
+
+  xiRenderPlayers();
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   NOMBRE DEL EQUIPO
+──────────────────────────────────────────────────────────────────── */
+function xiUpdateTeamName(val) {
+  xiState.teamName = val;
+  const el = document.getElementById('xi-pitch-team-name');
+  if (el) el.textContent = val;
+}
+
+function xiSyncTeamName(val) {
+  xiState.teamName = val.trim();
+  const input = document.getElementById('xi-team-name-input');
+  if (input) input.value = xiState.teamName;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   RENDERIZAR JUGADORES EN EL SVG
+──────────────────────────────────────────────────────────────────── */
+function xiRenderPlayers() {
+  const formation = XI_FORMATIONS[xiState.formation];
+  if (!formation) return;
+
+  const group = document.getElementById('xi-players-group');
+  if (!group) return;
+  group.innerHTML = '';
+
+  const R = 22;
+  const primary = xiState.primaryColor;
+  const secondary = xiState.secondaryColor;
+  const shorts = xiState.shortsColor;
+
+  formation.positions.forEach((pos, i) => {
+    const key = `${xiState.formation}_${i}`;
+    const name = xiState.playerNames[key] || `Jugador ${i + 1}`;
+    const posLabel = pos.label;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'xi-player-group');
+    g.setAttribute('data-index', i);
+    g.setAttribute('data-key', key);
+
+    /* ── Camiseta SVG path-based ── */
+    const shirtGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    shirtGroup.setAttribute('transform', `translate(${pos.x - R}, ${pos.y - R - 8})`);
+
+    /* Cuerpo camiseta */
+    const shirt = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const sw = R * 2;
+    const sh = R * 1.7;
+    shirt.setAttribute('d',
+      `M ${sw * 0.25} 4 ` +
+      `L ${sw * 0.05} ${sh * 0.2} ` +
+      `L ${sw * 0.22} ${sh * 0.3} ` +
+      `L ${sw * 0.22} ${sh} ` +
+      `L ${sw * 0.78} ${sh} ` +
+      `L ${sw * 0.78} ${sh * 0.3} ` +
+      `L ${sw * 0.95} ${sh * 0.2} ` +
+      `L ${sw * 0.75} 4 ` +
+      `C ${sw * 0.65} 0 ${sw * 0.35} 0 ${sw * 0.25} 4 Z`
+    );
+    shirt.setAttribute('fill', primary);
+    shirt.setAttribute('stroke', secondary);
+    shirt.setAttribute('stroke-width', '1.5');
+    shirtGroup.appendChild(shirt);
+
+    /* Franja horizontal (secundario) */
+    const stripe = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    stripe.setAttribute('x', sw * 0.22);
+    stripe.setAttribute('y', sh * 0.38);
+    stripe.setAttribute('width', sw * 0.56);
+    stripe.setAttribute('height', sh * 0.18);
+    stripe.setAttribute('fill', secondary);
+    stripe.setAttribute('opacity', '0.5');
+    shirtGroup.appendChild(stripe);
+
+    /* Short */
+    const shortEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    shortEl.setAttribute('x', sw * 0.24);
+    shortEl.setAttribute('y', sh);
+    shortEl.setAttribute('width', sw * 0.52);
+    shortEl.setAttribute('height', sh * 0.28);
+    shortEl.setAttribute('rx', '2');
+    shortEl.setAttribute('fill', shorts);
+    shirtGroup.appendChild(shortEl);
+
+    /* Cabeza */
+    const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    head.setAttribute('cx', sw * 0.5);
+    head.setAttribute('cy', -5);
+    head.setAttribute('r', R * 0.55);
+    head.setAttribute('fill', '#f0c8a0');
+    head.setAttribute('stroke', secondary);
+    head.setAttribute('stroke-width', '1.5');
+    shirtGroup.appendChild(head);
+
+    /* Número en la camiseta */
+    const numText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    numText.setAttribute('x', sw * 0.5);
+    numText.setAttribute('y', sh * 0.55);
+    numText.setAttribute('text-anchor', 'middle');
+    numText.setAttribute('dominant-baseline', 'middle');
+    numText.setAttribute('font-size', '11');
+    numText.setAttribute('font-weight', '900');
+    numText.setAttribute('font-family', 'Bebas Neue, sans-serif');
+    numText.setAttribute('fill', secondary);
+    numText.setAttribute('opacity', '0.85');
+    numText.textContent = i + 1;
+    shirtGroup.appendChild(numText);
+
+    g.appendChild(shirtGroup);
+
+    /* ── Etiqueta de nombre ── */
+    const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const labelY = pos.y + R * 0.9 + 4;
+    labelBg.setAttribute('x', pos.x - 36);
+    labelBg.setAttribute('y', labelY - 9);
+    labelBg.setAttribute('width', 72);
+    labelBg.setAttribute('height', 17);
+    labelBg.setAttribute('rx', '3');
+    labelBg.setAttribute('fill', 'rgba(0,0,0,0.72)');
+    g.appendChild(labelBg);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', pos.x);
+    label.setAttribute('y', labelY);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('dominant-baseline', 'middle');
+    label.setAttribute('font-size', '10.5');
+    label.setAttribute('font-weight', '700');
+    label.setAttribute('font-family', 'Barlow Condensed, sans-serif');
+    label.setAttribute('fill', 'white');
+    label.setAttribute('class', 'xi-player-label');
+    label.setAttribute('data-key', key);
+    label.setAttribute('data-index', i);
+    label.textContent = name;
+
+    /* Click en label → editar nombre */
+    label.addEventListener('click', (e) => {
+      e.stopPropagation();
+      xiStartEditPlayer(i, key, pos, labelY, name);
+    });
+    labelBg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      xiStartEditPlayer(i, key, pos, labelY, name);
+    });
+
+    g.appendChild(label);
+
+    /* ── Etiqueta de posición (pequeña, arriba del jugador) ── */
+    const posLabelEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    posLabelEl.setAttribute('x', pos.x);
+    posLabelEl.setAttribute('y', pos.y - R * 1.6 - 14);
+    posLabelEl.setAttribute('text-anchor', 'middle');
+    posLabelEl.setAttribute('dominant-baseline', 'middle');
+    posLabelEl.setAttribute('font-size', '9');
+    posLabelEl.setAttribute('font-weight', '700');
+    posLabelEl.setAttribute('font-family', 'Barlow Condensed, sans-serif');
+    posLabelEl.setAttribute('fill', 'rgba(255,255,255,0.65)');
+    posLabelEl.textContent = posLabel;
+    g.appendChild(posLabelEl);
+
+    group.appendChild(g);
+  });
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   EDICIÓN DE NOMBRE DE JUGADOR
+──────────────────────────────────────────────────────────────────── */
+let xiEditInput = null;
+
+function xiGetOrCreateEditInput() {
+  const container = document.querySelector('.xi-pitch-container');
+  if (!container) return null;
+  let inp = document.getElementById('xi-floating-input');
+  if (!inp) {
+    inp = document.createElement('input');
+    inp.id = 'xi-floating-input';
+    inp.className = 'xi-edit-input';
+    inp.maxLength = 20;
+    container.appendChild(inp);
+  }
+  return inp;
+}
+
+function xiStartEditPlayer(index, key, pos, labelY, currentName) {
+  const container = document.querySelector('.xi-pitch-container');
+  const svg = document.getElementById('xi-pitch-svg');
+  if (!container || !svg) return;
+
+  const svgRect = svg.getBoundingClientRect();
+  const contRect = container.getBoundingClientRect();
+  const viewW = 440;
+  const viewH = 620;
+  const scaleX = svgRect.width / viewW;
+  const scaleY = svgRect.height / viewH;
+
+  const inp = xiGetOrCreateEditInput();
+  if (!inp) return;
+
+  const inputW = 90;
+  const inputH = 24;
+  const svgX = pos.x * scaleX + (svgRect.left - contRect.left);
+  const svgY = labelY * scaleY + (svgRect.top - contRect.top);
+
+  inp.style.left = `${svgX - inputW / 2}px`;
+  inp.style.top = `${svgY - inputH / 2 - 2}px`;
+  inp.style.width = `${inputW}px`;
+  inp.style.display = 'block';
+  inp.value = currentName.startsWith('Jugador') ? '' : currentName;
+  inp.placeholder = currentName;
+  inp.setAttribute('data-key', key);
+
+  inp.focus();
+  inp.select();
+
+  const commit = () => {
+    const val = inp.value.trim() || currentName;
+    xiState.playerNames[key] = val;
+    inp.style.display = 'none';
+    xiRenderPlayers();
+  };
+
+  inp.onkeydown = (e) => {
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { inp.style.display = 'none'; }
+  };
+  inp.onblur = commit;
+}
+
+/* Cerrar editor si se hace clic fuera */
+document.addEventListener('click', () => {
+  const inp = document.getElementById('xi-floating-input');
+  if (inp && inp.style.display !== 'none') {
+    inp.blur();
+  }
+});
+
+/* ──────────────────────────────────────────────────────────────────
+   RESETEAR
+──────────────────────────────────────────────────────────────────── */
+function xiReset() {
+  xiState.playerNames = {};
+  xiState.teamName = '';
+  xiState.primaryColor = '#D5001C';
+  xiState.secondaryColor = '#FFFFFF';
+  xiState.shortsColor = '#111111';
+
+  document.getElementById('xi-color-primary').value = '#D5001C';
+  document.getElementById('xi-color-secondary').value = '#FFFFFF';
+  document.getElementById('xi-color-shorts').value = '#111111';
+  document.getElementById('xi-preview-primary').style.background = '#D5001C';
+  document.getElementById('xi-preview-secondary').style.background = '#FFFFFF';
+  document.getElementById('xi-preview-shorts').style.background = '#111111';
+  document.getElementById('xi-team-name-input').value = '';
+  document.getElementById('xi-pitch-team-name').textContent = '';
+
+  xiRenderPlayers();
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   DESCARGAR COMO IMAGEN PNG
+   Usa html2canvas para capturar el panel de la cancha.
+──────────────────────────────────────────────────────────────────── */
+function xiDownload() {
+  const svg = document.getElementById('xi-pitch-svg');
+  if (!svg) return;
+
+  /* Serializar el SVG con estado actual */
+  const serializer = new XMLSerializer();
+  const teamName = xiState.teamName || '11 Ideal';
+
+  /* Canvas manual */
+  const vw = 460;
+  const vh = 680;
+  const canvas = document.createElement('canvas');
+  canvas.width = vw * 2;
+  canvas.height = (vh + 60) * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  /* Fondo */
+  ctx.fillStyle = '#0A2A4A';
+  ctx.fillRect(0, 0, vw, vh + 60);
+
+  /* Título */
+  ctx.fillStyle = '#E8F4FF';
+  ctx.font = 'bold 16px "Bebas Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '4px';
+  ctx.fillText((teamName || 'MI 11 IDEAL').toUpperCase(), vw / 2, 36);
+
+  /* SVG a imagen */
+  const svgData = serializer.serializeToString(svg);
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+
+  img.onload = () => {
+    ctx.drawImage(img, 0, 50, vw, vh);
+    URL.revokeObjectURL(url);
+
+    const a = document.createElement('a');
+    a.download = `11-ideal-${teamName.replace(/\s+/g, '-').toLowerCase() || 'mundial-2026'}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    alert('No se pudo exportar la imagen. Intentá con otro navegador.');
+  };
+  img.src = url;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   HOOK en switchTab — xiInit se llama desde switchTab('idealxi')
+──────────────────────────────────────────────────────────────────── */
