@@ -4,18 +4,18 @@
    Se sobreescriben con datos de la API al cargar
 ───────────────────────────────────── */
 window.GROUPS = {
-  A:{teams:["México","Sudáfrica","Corea del Sur","Chequia"],matches:[{home:"México",away:"Sudáfrica",hs:"-",as:"-",date:"11 Jun"},{home:"Corea del Sur",away:"Chequia",hs:"-",as:"-",date:"12 Jun"},{home:"México",away:"Corea del Sur",hs:"-",as:"-",date:"16 Jun"},{home:"Sudáfrica",away:"Chequia",hs:"-",as:"-",date:"16 Jun"},{home:"Chequia",away:"México",hs:"-",as:"-",date:"20 Jun"},{home:"Sudáfrica",away:"Corea del Sur",hs:"-",as:"-",date:"20 Jun"}]},
-  B:{teams:["Canadá","Suiza","Qatar","Bosnia-Herzegovina"],matches:[{home:"Canadá",away:"Suiza",hs:"-",as:"-",date:"12 Jun"},{home:"Qatar",away:"Bosnia-Herzegovina",hs:"-",as:"-",date:"12 Jun"},{home:"Canadá",away:"Qatar",hs:"-",as:"-",date:"17 Jun"},{home:"Suiza",away:"Bosnia-Herzegovina",hs:"-",as:"-",date:"17 Jun"},{home:"Bosnia-Herzegovina",away:"Canadá",hs:"-",as:"-",date:"21 Jun"},{home:"Suiza",away:"Qatar",hs:"-",as:"-",date:"21 Jun"}]},
-  C:{teams:["Brasil","Marruecos","Escocia","Haití"],matches:[{home:"Brasil",away:"Marruecos",hs:"-",as:"-",date:"13 Jun"},{home:"Escocia",away:"Haití",hs:"-",as:"-",date:"13 Jun"},{home:"Brasil",away:"Escocia",hs:"-",as:"-",date:"17 Jun"},{home:"Marruecos",away:"Haití",hs:"-",as:"-",date:"17 Jun"},{home:"Haití",away:"Brasil",hs:"-",as:"-",date:"21 Jun"},{home:"Marruecos",away:"Escocia",hs:"-",as:"-",date:"21 Jun"}]},
-  D:{teams:["EEUU","Paraguay","Australia","Turquía"],matches:[{home:"EEUU",away:"Paraguay",hs:"-",as:"-",date:"13 Jun"},{home:"Australia",away:"Turquía",hs:"-",as:"-",date:"13 Jun"},{home:"EEUU",away:"Australia",hs:"-",as:"-",date:"18 Jun"},{home:"Paraguay",away:"Turquía",hs:"-",as:"-",date:"18 Jun"},{home:"Turquía",away:"EEUU",hs:"-",as:"-",date:"22 Jun"},{home:"Paraguay",away:"Australia",hs:"-",as:"-",date:"22 Jun"}]},
-  E:{teams:["Alemania","Ecuador","Costa de Marfil","Curazao"],matches:[{home:"Alemania",away:"Ecuador",hs:"-",as:"-",date:"14 Jun"},{home:"Costa de Marfil",away:"Curazao",hs:"-",as:"-",date:"14 Jun"},{home:"Alemania",away:"Costa de Marfil",hs:"-",as:"-",date:"18 Jun"},{home:"Ecuador",away:"Curazao",hs:"-",as:"-",date:"18 Jun"},{home:"Curazao",away:"Alemania",hs:"-",as:"-",date:"22 Jun"},{home:"Ecuador",away:"Costa de Marfil",hs:"-",as:"-",date:"22 Jun"}]},
-  F:{teams:["Países Bajos","Japón","Túnez","Suecia"],matches:[{home:"Países Bajos",away:"Japón",hs:"-",as:"-",date:"14 Jun"},{home:"Túnez",away:"Suecia",hs:"-",as:"-",date:"14 Jun"},{home:"Países Bajos",away:"Túnez",hs:"-",as:"-",date:"19 Jun"},{home:"Japón",away:"Suecia",hs:"-",as:"-",date:"19 Jun"},{home:"Suecia",away:"Países Bajos",hs:"-",as:"-",date:"23 Jun"},{home:"Japón",away:"Túnez",hs:"-",as:"-",date:"23 Jun"}]},
-  G:{teams:["Bélgica","Irán","Egipto","Nueva Zelanda"],matches:[{home:"Bélgica",away:"Irán",hs:"-",as:"-",date:"15 Jun"},{home:"Egipto",away:"Nueva Zelanda",hs:"-",as:"-",date:"15 Jun"},{home:"Bélgica",away:"Egipto",hs:"-",as:"-",date:"19 Jun"},{home:"Irán",away:"Nueva Zelanda",hs:"-",as:"-",date:"19 Jun"},{home:"Nueva Zelanda",away:"Bélgica",hs:"-",as:"-",date:"23 Jun"},{home:"Irán",away:"Egipto",hs:"-",as:"-",date:"23 Jun"}]},
-  H:{teams:["España","Uruguay","Arabia Saudita","Cabo Verde"],matches:[{home:"España",away:"Uruguay",hs:"-",as:"-",date:"15 Jun"},{home:"Arabia Saudita",away:"Cabo Verde",hs:"-",as:"-",date:"15 Jun"},{home:"España",away:"Arabia Saudita",hs:"-",as:"-",date:"20 Jun"},{home:"Uruguay",away:"Cabo Verde",hs:"-",as:"-",date:"20 Jun"},{home:"Cabo Verde",away:"España",hs:"-",as:"-",date:"24 Jun"},{home:"Uruguay",away:"Arabia Saudita",hs:"-",as:"-",date:"24 Jun"}]},
-  I:{teams:["Francia","Senegal","Noruega","Irak"],matches:[{home:"Francia",away:"Senegal",hs:"-",as:"-",date:"16 Jun"},{home:"Noruega",away:"Irak",hs:"-",as:"-",date:"16 Jun"},{home:"Francia",away:"Noruega",hs:"-",as:"-",date:"20 Jun"},{home:"Senegal",away:"Irak",hs:"-",as:"-",date:"20 Jun"},{home:"Irak",away:"Francia",hs:"-",as:"-",date:"24 Jun"},{home:"Senegal",away:"Noruega",hs:"-",as:"-",date:"24 Jun"}]},
-  J:{teams:["Argentina","Argelia","Austria","Jordania"],matches:[{home:"Argentina",away:"Argelia",hs:"-",as:"-",date:"16 Jun"},{home:"Austria",away:"Jordania",hs:"-",as:"-",date:"16 Jun"},{home:"Argentina",away:"Austria",hs:"-",as:"-",date:"21 Jun"},{home:"Argelia",away:"Jordania",hs:"-",as:"-",date:"21 Jun"},{home:"Jordania",away:"Argentina",hs:"-",as:"-",date:"25 Jun"},{home:"Argelia",away:"Austria",hs:"-",as:"-",date:"25 Jun"}]},
-  K:{teams:["Portugal","Colombia","Uzbekistán","R.D. Congo"],matches:[{home:"Portugal",away:"Colombia",hs:"-",as:"-",date:"17 Jun"},{home:"Uzbekistán",away:"R.D. Congo",hs:"-",as:"-",date:"17 Jun"},{home:"Portugal",away:"Uzbekistán",hs:"-",as:"-",date:"21 Jun"},{home:"Colombia",away:"R.D. Congo",hs:"-",as:"-",date:"21 Jun"},{home:"R.D. Congo",away:"Portugal",hs:"-",as:"-",date:"25 Jun"},{home:"Colombia",away:"Uzbekistán",hs:"-",as:"-",date:"25 Jun"}]},
-  L:{teams:["Inglaterra","Croacia","Ghana","Panamá"],matches:[{home:"Inglaterra",away:"Croacia",hs:"-",as:"-",date:"17 Jun"},{home:"Ghana",away:"Panamá",hs:"-",as:"-",date:"17 Jun"},{home:"Inglaterra",away:"Ghana",hs:"-",as:"-",date:"22 Jun"},{home:"Croacia",away:"Panamá",hs:"-",as:"-",date:"22 Jun"},{home:"Panamá",away:"Inglaterra",hs:"-",as:"-",date:"26 Jun"},{home:"Croacia",away:"Ghana",hs:"-",as:"-",date:"26 Jun"}]},
+  A: { teams: ["México", "Sudáfrica", "Corea del Sur", "Chequia"], matches: [{ home: "México", away: "Sudáfrica", hs: "-", as: "-", date: "11 Jun" }, { home: "Corea del Sur", away: "Chequia", hs: "-", as: "-", date: "12 Jun" }, { home: "México", away: "Corea del Sur", hs: "-", as: "-", date: "16 Jun" }, { home: "Sudáfrica", away: "Chequia", hs: "-", as: "-", date: "16 Jun" }, { home: "Chequia", away: "México", hs: "-", as: "-", date: "20 Jun" }, { home: "Sudáfrica", away: "Corea del Sur", hs: "-", as: "-", date: "20 Jun" }] },
+  B: { teams: ["Canadá", "Suiza", "Qatar", "Bosnia-Herzegovina"], matches: [{ home: "Canadá", away: "Suiza", hs: "-", as: "-", date: "12 Jun" }, { home: "Qatar", away: "Bosnia-Herzegovina", hs: "-", as: "-", date: "12 Jun" }, { home: "Canadá", away: "Qatar", hs: "-", as: "-", date: "17 Jun" }, { home: "Suiza", away: "Bosnia-Herzegovina", hs: "-", as: "-", date: "17 Jun" }, { home: "Bosnia-Herzegovina", away: "Canadá", hs: "-", as: "-", date: "21 Jun" }, { home: "Suiza", away: "Qatar", hs: "-", as: "-", date: "21 Jun" }] },
+  C: { teams: ["Brasil", "Marruecos", "Escocia", "Haití"], matches: [{ home: "Brasil", away: "Marruecos", hs: "-", as: "-", date: "13 Jun" }, { home: "Escocia", away: "Haití", hs: "-", as: "-", date: "13 Jun" }, { home: "Brasil", away: "Escocia", hs: "-", as: "-", date: "17 Jun" }, { home: "Marruecos", away: "Haití", hs: "-", as: "-", date: "17 Jun" }, { home: "Haití", away: "Brasil", hs: "-", as: "-", date: "21 Jun" }, { home: "Marruecos", away: "Escocia", hs: "-", as: "-", date: "21 Jun" }] },
+  D: { teams: ["EEUU", "Paraguay", "Australia", "Turquía"], matches: [{ home: "EEUU", away: "Paraguay", hs: "-", as: "-", date: "13 Jun" }, { home: "Australia", away: "Turquía", hs: "-", as: "-", date: "13 Jun" }, { home: "EEUU", away: "Australia", hs: "-", as: "-", date: "18 Jun" }, { home: "Paraguay", away: "Turquía", hs: "-", as: "-", date: "18 Jun" }, { home: "Turquía", away: "EEUU", hs: "-", as: "-", date: "22 Jun" }, { home: "Paraguay", away: "Australia", hs: "-", as: "-", date: "22 Jun" }] },
+  E: { teams: ["Alemania", "Ecuador", "Costa de Marfil", "Curazao"], matches: [{ home: "Alemania", away: "Ecuador", hs: "-", as: "-", date: "14 Jun" }, { home: "Costa de Marfil", away: "Curazao", hs: "-", as: "-", date: "14 Jun" }, { home: "Alemania", away: "Costa de Marfil", hs: "-", as: "-", date: "18 Jun" }, { home: "Ecuador", away: "Curazao", hs: "-", as: "-", date: "18 Jun" }, { home: "Curazao", away: "Alemania", hs: "-", as: "-", date: "22 Jun" }, { home: "Ecuador", away: "Costa de Marfil", hs: "-", as: "-", date: "22 Jun" }] },
+  F: { teams: ["Países Bajos", "Japón", "Túnez", "Suecia"], matches: [{ home: "Países Bajos", away: "Japón", hs: "-", as: "-", date: "14 Jun" }, { home: "Túnez", away: "Suecia", hs: "-", as: "-", date: "14 Jun" }, { home: "Países Bajos", away: "Túnez", hs: "-", as: "-", date: "19 Jun" }, { home: "Japón", away: "Suecia", hs: "-", as: "-", date: "19 Jun" }, { home: "Suecia", away: "Países Bajos", hs: "-", as: "-", date: "23 Jun" }, { home: "Japón", away: "Túnez", hs: "-", as: "-", date: "23 Jun" }] },
+  G: { teams: ["Bélgica", "Irán", "Egipto", "Nueva Zelanda"], matches: [{ home: "Bélgica", away: "Irán", hs: "-", as: "-", date: "15 Jun" }, { home: "Egipto", away: "Nueva Zelanda", hs: "-", as: "-", date: "15 Jun" }, { home: "Bélgica", away: "Egipto", hs: "-", as: "-", date: "19 Jun" }, { home: "Irán", away: "Nueva Zelanda", hs: "-", as: "-", date: "19 Jun" }, { home: "Nueva Zelanda", away: "Bélgica", hs: "-", as: "-", date: "23 Jun" }, { home: "Irán", away: "Egipto", hs: "-", as: "-", date: "23 Jun" }] },
+  H: { teams: ["España", "Uruguay", "Arabia Saudita", "Cabo Verde"], matches: [{ home: "España", away: "Uruguay", hs: "-", as: "-", date: "15 Jun" }, { home: "Arabia Saudita", away: "Cabo Verde", hs: "-", as: "-", date: "15 Jun" }, { home: "España", away: "Arabia Saudita", hs: "-", as: "-", date: "20 Jun" }, { home: "Uruguay", away: "Cabo Verde", hs: "-", as: "-", date: "20 Jun" }, { home: "Cabo Verde", away: "España", hs: "-", as: "-", date: "24 Jun" }, { home: "Uruguay", away: "Arabia Saudita", hs: "-", as: "-", date: "24 Jun" }] },
+  I: { teams: ["Francia", "Senegal", "Noruega", "Irak"], matches: [{ home: "Francia", away: "Senegal", hs: "-", as: "-", date: "16 Jun" }, { home: "Noruega", away: "Irak", hs: "-", as: "-", date: "16 Jun" }, { home: "Francia", away: "Noruega", hs: "-", as: "-", date: "20 Jun" }, { home: "Senegal", away: "Irak", hs: "-", as: "-", date: "20 Jun" }, { home: "Irak", away: "Francia", hs: "-", as: "-", date: "24 Jun" }, { home: "Senegal", away: "Noruega", hs: "-", as: "-", date: "24 Jun" }] },
+  J: { teams: ["Argentina", "Argelia", "Austria", "Jordania"], matches: [{ home: "Argentina", away: "Argelia", hs: "-", as: "-", date: "16 Jun" }, { home: "Austria", away: "Jordania", hs: "-", as: "-", date: "16 Jun" }, { home: "Argentina", away: "Austria", hs: "-", as: "-", date: "21 Jun" }, { home: "Argelia", away: "Jordania", hs: "-", as: "-", date: "21 Jun" }, { home: "Jordania", away: "Argentina", hs: "-", as: "-", date: "25 Jun" }, { home: "Argelia", away: "Austria", hs: "-", as: "-", date: "25 Jun" }] },
+  K: { teams: ["Portugal", "Colombia", "Uzbekistán", "R.D. Congo"], matches: [{ home: "Portugal", away: "Colombia", hs: "-", as: "-", date: "17 Jun" }, { home: "Uzbekistán", away: "R.D. Congo", hs: "-", as: "-", date: "17 Jun" }, { home: "Portugal", away: "Uzbekistán", hs: "-", as: "-", date: "21 Jun" }, { home: "Colombia", away: "R.D. Congo", hs: "-", as: "-", date: "21 Jun" }, { home: "R.D. Congo", away: "Portugal", hs: "-", as: "-", date: "25 Jun" }, { home: "Colombia", away: "Uzbekistán", hs: "-", as: "-", date: "25 Jun" }] },
+  L: { teams: ["Inglaterra", "Croacia", "Ghana", "Panamá"], matches: [{ home: "Inglaterra", away: "Croacia", hs: "-", as: "-", date: "17 Jun" }, { home: "Ghana", away: "Panamá", hs: "-", as: "-", date: "17 Jun" }, { home: "Inglaterra", away: "Ghana", hs: "-", as: "-", date: "22 Jun" }, { home: "Croacia", away: "Panamá", hs: "-", as: "-", date: "22 Jun" }, { home: "Panamá", away: "Inglaterra", hs: "-", as: "-", date: "26 Jun" }, { home: "Croacia", away: "Ghana", hs: "-", as: "-", date: "26 Jun" }] },
 };
 
 /* ─────────────────────────────────────
@@ -40,9 +40,9 @@ window.EDITIONS = [];
 ───────────────────────────────────── */
 function buildTicker(matches = []) {
   const track = document.getElementById('tickerTrack');
-  
+
   let items = [];
-  
+
   if (matches.length > 0) {
     items = matches.map(m => {
       const isLive = m.estado === 'en_curso';
@@ -50,7 +50,7 @@ function buildTicker(matches = []) {
       const hg = m.goles_local !== null && m.goles_local !== undefined ? m.goles_local : '-';
       const ag = m.goles_visitante !== null && m.goles_visitante !== undefined ? m.goles_visitante : '-';
       const grpText = m.grupo ? m.grupo.replace('GROUP_', 'GRP ') : '';
-      
+
       return `<div class="ticker-item">${isLive ? '<span class="t-dot"></span>' : ''}<span class="t-min">${minText}</span><span class="t-team">${m.equipo_local || m.home}</span><span class="t-score">${hg} — ${ag}</span><span class="t-team">${m.equipo_visitante || m.away}</span><span class="t-grp">${grpText}</span></div>`;
     });
   } else {
@@ -59,7 +59,7 @@ function buildTicker(matches = []) {
       `<div class="ticker-item"><span class="t-info">ESPERANDO PARTIDOS...</span></div>`
     ];
   }
-  
+
   const html = items.join('');
   track.innerHTML = html + html;
 }
@@ -73,7 +73,7 @@ function switchTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
-  
+
   if (id === 'groups') {
     // 🛑 EL ARREGLO: Buscamos el primer grupo que exista en la base de datos en vez de forzar la 'A'
     const primerGrupo = Object.keys(window.GROUPS).sort(sortFases)[0];
@@ -81,7 +81,7 @@ function switchTab(id, btn) {
   }
   if (id === 'fixtures') renderFixtures();
   if (id === 'scorers') renderScorers();
-  if (id === 'cards')   renderCards();
+  if (id === 'cards') renderCards();
   if (id === 'history') renderHistory();
   if (id === 'noticias') {
     window.cargarNoticias(document.getElementById('filtro-noticias')?.value || '');
@@ -107,11 +107,11 @@ function sortFases(a, b) {
   }
   if (isGroupA) return -1;
   if (isGroupB) return 1;
-  
+
   const seq = ['Ronda 1', 'Ronda 2', 'Ronda 3', 'Fase de Grupos', 'Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'Semifinales', 'Tercer Puesto', 'Final'];
   const idxA = seq.indexOf(a);
   const idxB = seq.indexOf(b);
-  
+
   if (idxA !== -1 && idxB !== -1) {
     return idxA - idxB;
   }
@@ -123,31 +123,31 @@ function sortFases(a, b) {
 function computeStandings(key) {
   const g = window.GROUPS[key];
   const s = {};
-  g.teams.forEach(t => s[t] = {p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
-  
+  g.teams.forEach(t => s[t] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 });
+
   g.matches.forEach(m => {
     // 🛑 EL ARREGLO: Solo calculamos puntos si hay números (si no hay guiones)
     if (m.hs !== '-' && m.as !== '-') {
       s[m.home].p++; s[m.away].p++;
       s[m.home].gf += m.hs; s[m.home].ga += m.as;
       s[m.away].gf += m.as; s[m.away].ga += m.hs;
-      if (m.hs > m.as) { s[m.home].w++; s[m.away].l++; s[m.home].pts+=3; }
-      else if (m.hs < m.as) { s[m.away].w++; s[m.home].l++; s[m.away].pts+=3; }
+      if (m.hs > m.as) { s[m.home].w++; s[m.away].l++; s[m.home].pts += 3; }
+      else if (m.hs < m.as) { s[m.away].w++; s[m.home].l++; s[m.away].pts += 3; }
       else { s[m.home].d++; s[m.away].d++; s[m.home].pts++; s[m.away].pts++; }
     }
   });
-  return Object.entries(s).sort((a,b) => b[1].pts-a[1].pts || (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga) || b[1].gf-a[1].gf);
+  return Object.entries(s).sort((a, b) => b[1].pts - a[1].pts || (b[1].gf - b[1].ga) - (a[1].gf - a[1].ga) || b[1].gf - a[1].gf);
 }
 
 function renderGroups(key) {
   const sel = document.getElementById('grpSelector');
   const sortedKeys = Object.keys(GROUPS).sort(sortFases);
-  
+
   // Generar botones: primero grupos, luego eliminatorias en orden lógico
   const getLabel = (g) => g.length <= 2 ? `Grupo ${g}` : g;
-  
+
   sel.innerHTML = sortedKeys.map(g =>
-    `<button class="grp-btn ${g===key?'active':''}" onclick="renderGroups('${g}')">${getLabel(g)}</button>`
+    `<button class="grp-btn ${g === key ? 'active' : ''}" onclick="renderGroups('${g}')">${getLabel(g)}</button>`
   ).join('');
 
   const standings = computeStandings(key);
@@ -165,19 +165,19 @@ function renderGroups(key) {
           <span class="cc">E</span><span class="cc">P</span>
           <span class="cc">DG</span><span class="cc">PTS</span>
         </div>
-        ${standings.map(([team,s],i) => {
-          const dg = s.gf - s.ga;
-          return `<div class="tbl-row ${i<2?'qualify':''}">
-            <span style="font-weight:900;color:${i<2?'var(--red)':'var(--text4)'}">${i+1}</span>
+        ${standings.map(([team, s], i) => {
+    const dg = s.gf - s.ga;
+    return `<div class="tbl-row ${i < 2 ? 'qualify' : ''}">
+            <span style="font-weight:900;color:${i < 2 ? 'var(--red)' : 'var(--text4)'}">${i + 1}</span>
             <span style="font-weight:700;color:var(--text2);cursor:pointer;" onclick="abrirPerfilEquipo('${team}')" title="Ver perfil de ${team}">${team}</span>
             <span class="cc" style="color:var(--text3)">${s.p}</span>
             <span class="cc" style="color:var(--text3)">${s.w}</span>
             <span class="cc" style="color:var(--text3)">${s.d}</span>
             <span class="cc" style="color:var(--text3)">${s.l}</span>
-            <span class="cc ${dg>0?'dg-pos':dg<0?'dg-neg':'dg-zer'}">${dg>0?'+':''}${dg}</span>
+            <span class="cc ${dg > 0 ? 'dg-pos' : dg < 0 ? 'dg-neg' : 'dg-zer'}">${dg > 0 ? '+' : ''}${dg}</span>
             <span class="pts-big">${s.pts}</span>
           </div>`;
-        }).join('')}
+  }).join('')}
       </div>
     </div>`;
 
@@ -203,8 +203,8 @@ function renderGroups(key) {
    FIXTURE
 ───────────────────────────────────── */
 function renderFixtures() {
-  const sortedEntries = Object.entries(GROUPS).sort((a,b) => sortFases(a[0], b[0]));
-  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key,g]) => {
+  const sortedEntries = Object.entries(GROUPS).sort((a, b) => sortFases(a[0], b[0]));
+  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key, g]) => {
     // Si es una sola letra, es un grupo. Si no, es una fase eliminatoria.
     const isGroup = key.length <= 2;
     const headerName = isGroup ? `GRUPO ${key}` : key.toUpperCase();
@@ -239,16 +239,16 @@ function renderScorers() {
     return;
   }
   const max = SCORERS[0].goals || 1;
-  const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)','var(--text4)','var(--text4)','var(--text4)'];
-  container.innerHTML = SCORERS.map((s,i) => `
+  const colors = ['var(--gold)', 'var(--silver)', 'var(--bronze)', 'var(--text4)', 'var(--text4)', 'var(--text4)', 'var(--text4)', 'var(--text4)'];
+  container.innerHTML = SCORERS.map((s, i) => `
     <div class="sc-row">
-      <span class="sc-rank" style="color:${colors[i] || 'var(--text4)'}">${i+1}</span>
+      <span class="sc-rank" style="color:${colors[i] || 'var(--text4)'}">${i + 1}</span>
       <span class="sc-flag">${s.flag || (s.escudo ? `<img src="${s.escudo}" style="width:24px;height:24px;object-fit:contain">` : '🏳️')}</span>
       <div><div class="sc-name">${s.name}</div><div class="sc-team">${s.team}</div></div>
       <span class="sc-team" style="font-size:13px">${s.team}</span>
       <div class="sc-goals-cell">
         <div class="sc-goals-num">${s.goals}</div>
-        <div class="sc-bar-wrap"><div class="sc-bar" style="width:${Math.round(s.goals/max*100)}%"></div></div>
+        <div class="sc-bar-wrap"><div class="sc-bar" style="width:${Math.round(s.goals / max * 100)}%"></div></div>
       </div>
       <span class="sc-ast">${s.assists}</span>
     </div>`).join('');
@@ -261,7 +261,7 @@ function renderCards() {
   const containerYellow = document.getElementById('cardsBodyYellow');
   const containerRed = document.getElementById('cardsBodyRed');
   if (!containerYellow || !containerRed) return;
-  
+
   if (!window.CARDS || window.CARDS.length === 0) {
     containerYellow.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos aún.</div>';
     containerRed.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text4)">Sin datos aún.</div>';
@@ -269,15 +269,15 @@ function renderCards() {
   }
 
   // Filtrar y ordenar
-  const yellowCards = [...window.CARDS].filter(c => c.yellow > 0).sort((a,b) => b.yellow - a.yellow);
-  const redCards = [...window.CARDS].filter(c => c.red > 0).sort((a,b) => b.red - a.red);
+  const yellowCards = [...window.CARDS].filter(c => c.yellow > 0).sort((a, b) => b.yellow - a.yellow);
+  const redCards = [...window.CARDS].filter(c => c.red > 0).sort((a, b) => b.red - a.red);
 
   // Renderizador genérico
   const renderRows = (cardsList, type) => {
     if (cardsList.length === 0) return '<div style="text-align:center;padding:20px;color:var(--text4)">No hay tarjetas registradas</div>';
-    return cardsList.map((c,i) => `
+    return cardsList.map((c, i) => `
       <div class="cd-row" style="grid-template-columns: 36px 36px 1fr 110px;">
-        <span class="cd-rank">${i+1}</span>
+        <span class="cd-rank">${i + 1}</span>
         <span class="cd-flag">${c.flag || (c.escudo ? `<img src="${c.escudo}" style="width:18px;height:18px;object-fit:contain">` : '🏳️')}</span>
         <div><div class="cd-name">${c.name}</div><div class="cd-team" style="font-size:11px;color:var(--text4)">${c.team}</div></div>
         <div class="cd-cards" style="justify-content:center">${Array(c[type] || 0).fill(`<span class="c${type === 'yellow' ? 'y' : 'r'}"></span>`).join('')}</div>
@@ -303,11 +303,11 @@ function renderHistory() {
 
   try {
     // Ordenamos de más reciente a más antiguo
-    window.EDITIONS.sort((a,b) => b.year - a.year);
+    window.EDITIONS.sort((a, b) => b.year - a.year);
     const selectedYear = window.EDITIONS[0].year;
 
     sel.innerHTML = window.EDITIONS.map(e =>
-      `<button class="ed-btn ${e.year===selectedYear?'active':''}" onclick="showEdition(${e.year})">${e.year}</button>`
+      `<button class="ed-btn ${e.year === selectedYear ? 'active' : ''}" onclick="showEdition(${e.year})">${e.year}</button>`
     ).join('');
 
     cards.innerHTML = window.EDITIONS.map(e => {
@@ -325,8 +325,8 @@ function renderHistory() {
       </div>
     ` : '';
 
-    return `
-    <div class="ed-card ${e.year===selectedYear?'active':''}" id="ed-${e.year}">
+      return `
+    <div class="ed-card ${e.year === selectedYear ? 'active' : ''}" id="ed-${e.year}">
       <div class="ed-header">
         <div class="ed-year">${e.year}</div>
         <div class="ed-info-main">
@@ -369,9 +369,9 @@ function renderHistory() {
         <!-- Columna 1: Goleadores -->
         <div>
           <div class="ed-section-title">Goleadores del torneo</div>
-          ${e.scorers.map((s,i) => `
+          ${e.scorers.map((s, i) => `
             <div class="hist-scorer-row">
-              <span class="hsr-pos">${i+1}</span>
+              <span class="hsr-pos">${i + 1}</span>
               <span class="hsr-flag">${s.flag}</span>
               <span class="hsr-name">${s.name}</span>
               <span class="hsr-goals">${s.goals}</span>
@@ -395,16 +395,16 @@ function renderHistory() {
         <div>
           <div class="ed-section-title">Curiosidades</div>
           ${e.facts.map(f => {
-             // El viejo arreglo tenía emojis en los primeros 2 caracteres, ahora no hace falta si no hay emoji
-             const hasEmoji = /^[^\w\s]/.test(f.slice(0,2));
-             const emoji = hasEmoji ? f.slice(0,2) : '⚽';
-             const text = hasEmoji ? f.slice(2) : f;
-             return `
+        // El viejo arreglo tenía emojis en los primeros 2 caracteres, ahora no hace falta si no hay emoji
+        const hasEmoji = /^[^\w\s]/.test(f.slice(0, 2));
+        const emoji = hasEmoji ? f.slice(0, 2) : '⚽';
+        const text = hasEmoji ? f.slice(2) : f;
+        return `
             <div class="fact-item">
               <span class="fact-emoji">${emoji}</span>
               <div class="fact-text">${text}</div>
             </div>`;
-          }).join('')}
+      }).join('')}
         </div>
 
       </div>
@@ -430,7 +430,7 @@ function showEdition(year) {
   // Desactivar todas las tarjetas
   document.querySelectorAll('.ed-card').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.ed-btn').forEach(b => b.classList.remove('active'));
-  
+
   // Activar la seleccionada
   const targetCard = document.getElementById('ed-' + year);
   if (targetCard) {
@@ -441,7 +441,7 @@ function showEdition(year) {
       ifr.removeAttribute('data-src');
     });
   }
-  
+
   if (event && event.target) {
     event.target.classList.add('active');
   }
@@ -470,10 +470,10 @@ function renderLiveScorers() {
     container.innerHTML = '<div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>';
     return;
   }
-  const colors = ['var(--gold)','var(--silver)','var(--bronze)','var(--text4)','var(--text4)'];
-  container.innerHTML = SCORERS.slice(0,5).map((s,i) => `
+  const colors = ['var(--gold)', 'var(--silver)', 'var(--bronze)', 'var(--text4)', 'var(--text4)'];
+  container.innerHTML = SCORERS.slice(0, 5).map((s, i) => `
     <div class="srow">
-      <span class="srow-rank" style="color:${colors[i] || 'var(--text4)'}">${i+1}</span>
+      <span class="srow-rank" style="color:${colors[i] || 'var(--text4)'}">${i + 1}</span>
       <span class="srow-flag">${s.flag || (s.escudo ? `<img src="${s.escudo}" style="width:18px;height:18px;object-fit:contain">` : '🏳️')}</span>
       <div style="flex:1"><div class="srow-name">${s.name}</div><div class="srow-sub">${s.team}</div></div>
       <div style="text-align:right"><div class="srow-num">${s.goals}</div><div class="srow-unit">GOLES</div></div>
@@ -483,7 +483,7 @@ function renderLiveScorers() {
 /* ─────────────────────────────────────
    TIEMPO REAL: minutos del partido
 ───────────────────────────────────── */
-const liveMinutes = [{id:'live1-min', min:67, max:90}, {id:'live2-min', min:23, max:90}];
+const liveMinutes = [{ id: 'live1-min', min: 67, max: 90 }, { id: 'live2-min', min: 23, max: 90 }];
 setInterval(() => {
   liveMinutes.forEach(d => {
     if (d.min < d.max) d.min++;
@@ -500,14 +500,14 @@ const API_URL = 'http://localhost:3000/api';
 /* ── Utilidad: debounce ── */
 function debounce(fn, delay) {
   let timer;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), delay);
   };
 }
 
 // 1. Carga los países en los selectores correspondientes
-window.cargarFiltrosDinamicos = async function() {
+window.cargarFiltrosDinamicos = async function () {
   try {
     // A) Países para el filtro de Noticias (Todos los posibles del Mundial 2026)
     const selectNoticias = document.getElementById('filtro-noticias');
@@ -527,7 +527,7 @@ window.cargarFiltrosDinamicos = async function() {
     const res = await fetch(`${API_URL}/categorias`);
     const paisesTienda = await res.json();
     const selectTienda = document.getElementById('filtro-tienda');
-    
+
     if (selectTienda && paisesTienda.length > 0) {
       paisesTienda.forEach(pais => {
         const opt = document.createElement('option');
@@ -547,7 +547,7 @@ const productosCache = {};
 const PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
 
 // Función global para fallback de imágenes con 403 o error de carga
-window.imgFallback = function(img) {
+window.imgFallback = function (img) {
   img.onerror = null; // evitar loop infinito
   img.src = PLACEHOLDER_IMG;
 };
@@ -555,7 +555,7 @@ window.imgFallback = function(img) {
 // ══════════════════════════════════════
 // 2. NOTICIAS — función independiente
 // ══════════════════════════════════════
-window.cargarNoticias = debounce(async function(pais = "") {
+window.cargarNoticias = debounce(async function (pais = "") {
   const label = document.getElementById('label-pais-noticias');
   if (label) label.innerText = pais || "Todo el Mundial";
 
@@ -612,7 +612,7 @@ window.cargarNoticias = debounce(async function(pais = "") {
 // ══════════════════════════════════════
 // 3. PRODUCTOS — función independiente
 // ══════════════════════════════════════
-window.cargarProductos = debounce(async function(pais = "") {
+window.cargarProductos = debounce(async function (pais = "") {
   const tiendaLabel = document.getElementById('tienda-pais-nombre');
   if (tiendaLabel) tiendaLabel.innerText = pais || "Mundial 2026";
 
@@ -661,7 +661,7 @@ async function cargarFixtureDesdeAPI() {
     const gruposAPI = {};
     partidos.forEach(p => {
       if (!p.grupo) return;
-      
+
       // Extraer la clave: "Grupo A" → "A", "Grupo B" → "B"
       // Fases eliminatorias como "Ronda 1", "Final", etc. → se usan como clave directa
       let clave;
@@ -670,16 +670,16 @@ async function cargarFixtureDesdeAPI() {
       } else {
         clave = p.grupo; // "Ronda 1", "Octavos de Final", etc.
       }
-      
+
       if (!gruposAPI[clave]) gruposAPI[clave] = { teams: [], matches: [] };
       const g = gruposAPI[clave];
-      
+
       const localName = p.equipo_local || 'Por definirse';
       const awayName = p.equipo_visitante || 'Por definirse';
-      
+
       if (localName && !g.teams.includes(localName)) g.teams.push(localName);
       if (awayName && !g.teams.includes(awayName)) g.teams.push(awayName);
-      
+
       const fecha = new Date(p.fecha_utc);
       g.matches.push({
         id: p.id,
@@ -744,10 +744,10 @@ async function cargarPartidosEnVivo() {
     const res = await fetch(`${API_URL}/live`);
     const partidos = await res.json();
     renderLivePanel(partidos);
-    
+
     if (partidos && partidos.length > 0) {
       buildTicker(partidos);
-      
+
       // Sincronizar goles en vivo con el objeto GROUPS para que la tabla de posiciones se actualice
       if (window.GROUPS) {
         let updated = false;
@@ -762,7 +762,7 @@ async function cargarPartidosEnVivo() {
             }
           });
         });
-        
+
         // Re-renderizar si hubo cambios y estamos en la pestaña correcta
         if (updated) {
           const activeGrpBtn = document.querySelector('.grp-btn.active');
@@ -782,15 +782,15 @@ async function cargarPartidosEnVivo() {
 }
 window.cargarPartidosEnVivo = cargarPartidosEnVivo;
 
-window.updateTickerWithUpcoming = function() {
+window.updateTickerWithUpcoming = function () {
   if (!window.GROUPS) return;
   const allMatches = [];
   Object.entries(window.GROUPS).forEach(([letra, g]) => {
-    g.matches.forEach(m => allMatches.push({...m, grupo: `Grupo ${letra}`}));
+    g.matches.forEach(m => allMatches.push({ ...m, grupo: `Grupo ${letra}` }));
   });
-  
+
   const upcoming = allMatches.filter(m => m.estado === 'programado' || m.hs === '-').slice(0, 5);
-  
+
   if (upcoming.length > 0) {
     const formatted = upcoming.map(m => ({
       ...m,
@@ -841,7 +841,7 @@ function renderLivePanel(partidos) {
 // ══════════════════════════════════════
 // 6. MODAL DETALLE DE PARTIDO
 // ══════════════════════════════════════
-window.abrirDetallePartido = async function(matchId) {
+window.abrirDetallePartido = async function (matchId) {
   const modal = document.getElementById('match-detail-modal');
   const content = document.getElementById('match-detail-content');
   if (!modal || !content) return;
@@ -853,13 +853,13 @@ window.abrirDetallePartido = async function(matchId) {
     const res = await fetch(`${API_URL}/fixture/${matchId}`);
     const p = await res.json();
     const fecha = new Date(p.fecha_utc);
-    const fechaLocal = fecha.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    const horaLocal = fecha.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
-    const estadoTexto = { programado:'Programado', en_curso:'En Vivo', finalizado:'Finalizado', suspendido:'Suspendido' };
+    const fechaLocal = fecha.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const horaLocal = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    const estadoTexto = { programado: 'Programado', en_curso: 'En Vivo', finalizado: 'Finalizado', suspendido: 'Suspendido' };
 
     content.innerHTML = `
       <div class="md-header">
-        <div class="md-comp">${p.competicion || 'Mundial 2026'} ${p.grupo ? '· ' + p.grupo.replace('GROUP_','Grupo ') : ''}</div>
+        <div class="md-comp">${p.competicion || 'Mundial 2026'} ${p.grupo ? '· ' + p.grupo.replace('GROUP_', 'Grupo ') : ''}</div>
         <div class="md-status md-status--${p.estado}">${estadoTexto[p.estado] || p.estado}</div>
       </div>
       <div class="md-teams">
@@ -880,7 +880,7 @@ window.abrirDetallePartido = async function(matchId) {
         <div class="md-info-item"><span class="md-info-icon">🕐</span><span>${horaLocal} (hora local)</span></div>
         ${p.estadio ? `<div class="md-info-item"><span class="md-info-icon">🏟️</span><span>${p.estadio}</span></div>` : ''}
         ${p.arbitro ? `<div class="md-info-item"><span class="md-info-icon">🟨</span><span>Árbitro: ${p.arbitro}</span></div>` : ''}
-        ${p.fase ? `<div class="md-info-item"><span class="md-info-icon">📋</span><span>Fase: ${p.fase.replace(/_/g,' ')}</span></div>` : ''}
+        ${p.fase ? `<div class="md-info-item"><span class="md-info-icon">📋</span><span>Fase: ${p.fase.replace(/_/g, ' ')}</span></div>` : ''}
       </div>`;
 
     let golesHtml = `
@@ -962,12 +962,12 @@ window.abrirDetallePartido = async function(matchId) {
       const resVisitante = await fetch(`${API_URL}/productos?pais=${encodeURIComponent(p.equipo_visitante)}`);
       const prodLocal = await resLocal.json();
       const prodVisitante = await resVisitante.json();
-      
+
       const todosProductos = [...prodLocal, ...prodVisitante];
       const prodContainer = document.getElementById('md-productos-grid');
-      
+
       if (todosProductos.length > 0) {
-        prodContainer.innerHTML = todosProductos.slice(0,4).map(prod => `
+        prodContainer.innerHTML = todosProductos.slice(0, 4).map(prod => `
           <div class="card-item" style="min-height: auto;">
             <img src="${prod.imagen_url || PLACEHOLDER_IMG}" class="card-img" style="height:120px;" onerror="window.imgFallback(this)">
             <div class="card-body" style="padding: 10px;">
@@ -989,24 +989,24 @@ window.abrirDetallePartido = async function(matchId) {
   }
 };
 
-window.cerrarDetallePartido = function() {
+window.cerrarDetallePartido = function () {
   document.getElementById('match-detail-modal')?.classList.remove('active');
 };
 
 // ══════════════════════════════════════
 // MODAL PERFIL DE EQUIPO
 // ══════════════════════════════════════
-window.abrirPerfilEquipo = async function(teamName) {
+window.abrirPerfilEquipo = async function (teamName) {
   let modal = document.getElementById('team-profile-modal');
   let content = document.getElementById('team-profile-content');
-  
+
   if (!modal) {
     // Crear el modal si no existe en el DOM
     modal = document.createElement('div');
     modal.id = 'team-profile-modal';
     modal.className = 'modal-overlay';
-    modal.onclick = function(e) { if(e.target===this) window.cerrarPerfilEquipo(); };
-    
+    modal.onclick = function (e) { if (e.target === this) window.cerrarPerfilEquipo(); };
+
     modal.innerHTML = `
       <div class="modal-card" style="max-width: 800px;">
         <button class="modal-close" onclick="window.cerrarPerfilEquipo()">✕</button>
@@ -1017,14 +1017,14 @@ window.abrirPerfilEquipo = async function(teamName) {
     content = document.getElementById('team-profile-content');
   }
 
-  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando perfil de '+teamName+'...</div>';
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando perfil de ' + teamName + '...</div>';
   modal.classList.add('active');
 
   try {
     const res = await fetch(`${API_URL}/equipo/${encodeURIComponent(teamName)}`);
     if (!res.ok) throw new Error('No se encontró el equipo');
     const data = await res.json();
-    
+
     const team = data.info;
     const next = data.next_matches || [];
     const last = data.last_matches || [];
@@ -1059,13 +1059,13 @@ window.abrirPerfilEquipo = async function(teamName) {
     // Funciones auxiliares para renderizar partidos pasados (de la API externa)
     const renderMatch = (m) => {
       const isHome = m.teams.home.id === team.id;
-      const resultColor = m.fixture.status.short === 'FT' ? 
-        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '#00AA5522' : 
-        (m.teams.home.winner === false && m.teams.away.winner === false) ? '#FFD70022' : '#D5001C22' 
+      const resultColor = m.fixture.status.short === 'FT' ?
+        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '#00AA5522' :
+          (m.teams.home.winner === false && m.teams.away.winner === false) ? '#FFD70022' : '#D5001C22'
         : 'var(--navy3)';
-      const resultText = m.fixture.status.short === 'FT' ? 
-        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '<span style="color:#00DD77">G</span>' : 
-        (m.teams.home.winner === false && m.teams.away.winner === false) ? '<span style="color:var(--gold)">E</span>' : '<span style="color:#ff6680">P</span>' 
+      const resultText = m.fixture.status.short === 'FT' ?
+        (m.teams.home.winner && isHome) || (m.teams.away.winner && !isHome) ? '<span style="color:#00DD77">G</span>' :
+          (m.teams.home.winner === false && m.teams.away.winner === false) ? '<span style="color:var(--gold)">E</span>' : '<span style="color:#ff6680">P</span>'
         : '-';
 
       const date = new Date(m.fixture.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
@@ -1137,14 +1137,14 @@ window.abrirPerfilEquipo = async function(teamName) {
         </div>
       </div>
     `;
-    
+
   } catch (error) {
     console.error(error);
     content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">Error al cargar los datos del equipo. Por favor, intenta de nuevo más tarde.</div>';
   }
 };
 
-window.cerrarPerfilEquipo = function() {
+window.cerrarPerfilEquipo = function () {
   document.getElementById('team-profile-modal')?.classList.remove('active');
 };
 
@@ -1170,14 +1170,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Refrescar partidos en vivo cada 60 segundos como fallback
   setInterval(cargarPartidosEnVivo, 60000);
-});   
+});
 
 /* ══════════════════════════════════════════════════════════════════
    CHATBOT_04_js.js
    DÓNDE PEGARLO: al final de tu app.js (antes del último cierre)
 
    TAMBIÉN: en tu función switchTab() existente, agregale este caso:
-     if (id === 'chatbot') { /* no hace falta nada, el chat ya se inició */ 
+     if (id === 'chatbot') { /* no hace falta nada, el chat ya se inició */
 /*
    CONCEPTOS CLAVE para entender este archivo:
    ─────────────────────────────────────────────────────────────────
@@ -1240,23 +1240,23 @@ async function chatbotEnviar() {
   if (texto.length > 500) return;
 
   // Limpiar input y bloquear envíos mientras espera respuesta
-  input.value         = '';
-  chatbotEsperando    = true;
+  input.value = '';
+  chatbotEsperando = true;
   autoResizeTextarea(input);
 
   // Actualizar contador de caracteres
   document.getElementById('chatbot-char-count').textContent = '0/500';
 
   // Deshabilitar botón de envío visualmente
-  const sendBtn       = document.getElementById('chatbot-send-btn');
-  sendBtn.disabled    = true;
+  const sendBtn = document.getElementById('chatbot-send-btn');
+  sendBtn.disabled = true;
 
   // 1. Mostrar el mensaje del usuario en el chat
   agregarMensajeChatbot('user', texto);
 
   // 2. Agregar al historial (formato que espera Gemini)
   chatbotHistorial.push({
-    role:  'user',
+    role: 'user',
     parts: [{ text: texto }]
   });
 
@@ -1267,10 +1267,10 @@ async function chatbotEnviar() {
     // 4. Llamar al backend
     //    El backend llama a Gemini con el historial completo
     const respuesta = await fetch(`${CHATBOT_BACKEND_URL}/api/chat`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mensaje:   texto,
+        mensaje: texto,
         historial: chatbotHistorial.slice(0, -1) // sin el último (ya enviado en `mensaje`)
       })
     });
@@ -1292,7 +1292,7 @@ async function chatbotEnviar() {
 
     // Guardar respuesta del bot en el historial
     chatbotHistorial.push({
-      role:  'model',
+      role: 'model',
       parts: [{ text: textoRespuesta }]
     });
 
@@ -1338,31 +1338,31 @@ function agregarMensajeChatbot(rol, texto) {
   const contenedor = document.getElementById('chatbot-mensajes');
   if (!contenedor) return;
 
-  const esUsuario  = rol === 'user';
-  const hora       = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  const esUsuario = rol === 'user';
+  const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
   // Obtener inicial del username para el avatar del usuario
-  const perfil     = window.currentProfile; // Viene de auth.js
-  const inicial    = perfil?.username?.[0]?.toUpperCase() || 'U';
+  const perfil = window.currentProfile; // Viene de auth.js
+  const inicial = perfil?.username?.[0]?.toUpperCase() || 'U';
 
-  const div        = document.createElement('div');
-  div.className    = `chatbot-msg ${esUsuario ? 'chatbot-msg--user' : 'chatbot-msg--bot'}`;
+  const div = document.createElement('div');
+  div.className = `chatbot-msg ${esUsuario ? 'chatbot-msg--user' : 'chatbot-msg--bot'}`;
 
   // Procesar el texto para evitar problemas con etiquetas HTML (ej: <think>)
   let textoProcesado = texto || '';
-  
+
   // Remover bloque <think> completo si existe
   textoProcesado = textoProcesado.replace(/<think>[\s\S]*?<\/think>/gi, '');
   // Por si el modelo fue interrumpido por tokens y quedó abierto
   textoProcesado = textoProcesado.replace(/<think>[\s\S]*/gi, '');
-  
+
   textoProcesado = textoProcesado.trim();
   if (!textoProcesado) {
-    textoProcesado = "..."; 
+    textoProcesado = "...";
   }
 
   // Convertir saltos de línea y texto bold básico en HTML
-  const textoHtml  = textoProcesado
+  const textoHtml = textoProcesado
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>')
@@ -1392,10 +1392,10 @@ function mostrarTyping() {
   const contenedor = document.getElementById('chatbot-mensajes');
   if (!contenedor) return null;
 
-  const id  = 'typing-' + Date.now();
+  const id = 'typing-' + Date.now();
   const div = document.createElement('div');
   div.className = 'chatbot-msg chatbot-msg--bot';
-  div.id        = id;
+  div.id = id;
   div.innerHTML = `
     <div class="chatbot-msg-avatar">⚽</div>
     <div class="chatbot-typing">
@@ -1439,15 +1439,15 @@ function renderizarProductosChatbot(productos) {
   contenedor.innerHTML = productos.map(p => `
     <div class="chatbot-producto-card">
       ${p.imagen_url
-        ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="chatbot-producto-img" onerror="this.style.display='none'">`
-        : ''
-      }
+      ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="chatbot-producto-img" onerror="this.style.display='none'">`
+      : ''
+    }
       <div class="chatbot-producto-body">
         <div class="chatbot-producto-nombre">${p.nombre}</div>
         ${p.precio
-          ? `<div class="chatbot-producto-precio">$${p.precio}</div>`
-          : ''
-        }
+      ? `<div class="chatbot-producto-precio">$${p.precio}</div>`
+      : ''
+    }
         <a href="${p.link_afiliado || '#'}" target="_blank" rel="noopener" class="chatbot-producto-btn">
           🛒 Ver en tienda
         </a>
@@ -1466,7 +1466,7 @@ function renderizarProductosChatbot(productos) {
 // ══════════════════════════════════════════════════════════════════
 function mostrarSeccionCalendario(evento) {
   const section = document.getElementById('chatbot-calendario-section');
-  const info    = document.getElementById('chatbot-calendario-info');
+  const info = document.getElementById('chatbot-calendario-info');
   if (!section || !info) return;
 
   info.innerHTML = `
@@ -1500,20 +1500,20 @@ function mostrarSeccionCalendario(evento) {
 function agendarEnCalendario() {
   if (!ultimoEventoCalendario) return;
 
-  const evento    = ultimoEventoCalendario;
+  const evento = ultimoEventoCalendario;
 
   // Para el Mundial 2026 sabemos que es en junio/julio 2026
   // Usamos fechas genéricas de junio 2026 porque no tenemos el fixture exacto
   // En una versión futura, esto podría conectarse con la tabla `partidos`
   const fechaInicio = '20260611';  // 11 junio 2026 (inicio del Mundial)
-  const fechaFin    = '20260719';  // fecha de fin: próximo día
+  const fechaFin = '20260719';  // fecha de fin: próximo día
 
   // Parámetros de la URL de Google Calendar
   const params = new URLSearchParams({
-    action:   'TEMPLATE',
-    text:     `⚽ ${evento.equipo} — Mundial FIFA 2026`,
-    details:  `${evento.descripcion}\n\nAgendado desde Mundialito.app`,
-    dates:    `${fechaInicio}/${fechaFin}`,
+    action: 'TEMPLATE',
+    text: `⚽ ${evento.equipo} — Mundial FIFA 2026`,
+    details: `${evento.descripcion}\n\nAgendado desde Mundialito.app`,
+    dates: `${fechaInicio}/${fechaFin}`,
     location: 'Estados Unidos / México / Canadá — Mundial 2026',
   });
 
@@ -1541,8 +1541,8 @@ function agendarEnCalendario() {
 // de sugerencias rápidas.
 // ══════════════════════════════════════════════════════════════════
 function usarSugerencia(btn) {
-  const texto  = btn.textContent.trim();
-  const input  = document.getElementById('chatbot-input');
+  const texto = btn.textContent.trim();
+  const input = document.getElementById('chatbot-input');
   if (!input) return;
 
   input.value = texto;
@@ -1588,7 +1588,7 @@ function autoResizeTextarea(el) {
 // ══════════════════════════════════════════════════════════════════
 function toggleChatbotWidget() {
   const widget = document.getElementById('chatbot-widget');
-  const badge  = document.getElementById('chatbot-fab-badge');
+  const badge = document.getElementById('chatbot-fab-badge');
   if (!widget) return;
 
   const estaAbierto = widget.style.display !== 'none';
@@ -1627,10 +1627,10 @@ async function widgetEnviar() {
 
   try {
     const respuesta = await fetch(`${CHATBOT_BACKEND_URL}/api/chat`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mensaje:   texto,
+        mensaje: texto,
         historial: widgetHistorial.slice(0, -1)
       })
     });
@@ -1658,8 +1658,8 @@ function agregarMensajeWidget(rol, texto) {
   if (!contenedor) return;
 
   const esUsuario = rol === 'user';
-  const div       = document.createElement('div');
-  div.className   = `chatbot-msg ${esUsuario ? 'chatbot-msg--user' : 'chatbot-msg--bot'}`;
+  const div = document.createElement('div');
+  div.className = `chatbot-msg ${esUsuario ? 'chatbot-msg--user' : 'chatbot-msg--bot'}`;
   div.style.padding = '6px 12px';
 
   const inicial = window.currentProfile?.username?.[0]?.toUpperCase() || 'U';
@@ -1695,7 +1695,7 @@ function widgetKeydown(e) {
    Usa window.__mundialitoUserId (seteado en onMundialitoAuth)
 ══════════════════════════════════════════════════════════════ */
 
-(function() {
+(function () {
   'use strict';
 
   // ─── Utilidades internas ───────────────────────────────────────
@@ -1735,14 +1735,14 @@ function widgetKeydown(e) {
    * Regla: si faltan ≤ 60 minutos para el inicio, o ya comenzó / terminó.
    */
   function esBloqueado(partido) {
-    const ahora     = Date.now();
-    const inicio    = new Date(partido.fecha_utc || partido.date_utc).getTime();
+    const ahora = Date.now();
+    const inicio = new Date(partido.fecha_utc || partido.date_utc).getTime();
     const unaHoraMs = 60 * 60 * 1000;
-    const estado    = (partido.estado || '').toLowerCase();
+    const estado = (partido.estado || '').toLowerCase();
     return estado === 'finalizado'
-        || estado === 'en_curso'
-        || estado === 'suspendido'
-        || (inicio - ahora) <= unaHoraMs;
+      || estado === 'en_curso'
+      || estado === 'suspendido'
+      || (inicio - ahora) <= unaHoraMs;
   }
 
   /**
@@ -1758,16 +1758,16 @@ function widgetKeydown(e) {
   }
 
   // ─── Estado del módulo ─────────────────────────────────────────
-  let _uid          = null;
-  let _partidos     = [];     // array de partidos desde Supabase
-  let _preds        = {};     // { [partido_id]: { local, visitante, puntos, bonusAplicado } }
-  let _pendientes   = new Set();
-  let _grupoActivo  = null;   // group_id seleccionado en la vista de comunidades
+  let _uid = null;
+  let _partidos = [];     // array de partidos desde Supabase
+  let _preds = {};     // { [partido_id]: { local, visitante, puntos, bonusAplicado } }
+  let _pendientes = new Set();
+  let _grupoActivo = null;   // group_id seleccionado en la vista de comunidades
 
   // ══════════════════════════════════════════════════════════════
   // PUNTO DE ENTRADA
   // ══════════════════════════════════════════════════════════════
-  window.prodeInit = async function(uid) {
+  window.prodeInit = async function (uid) {
     _uid = uid;
     if (!_uid || !sb()) {
       // Supabase aún no está listo — reintentar en 500ms
@@ -1795,7 +1795,7 @@ function widgetKeydown(e) {
         .order('fecha_utc', { ascending: true });
       if (error) throw error;
       _partidos = data || [];
-    } catch(e) {
+    } catch (e) {
       console.error('[Prode] Error cargando partidos:', e);
       _partidos = [];
     }
@@ -1815,13 +1815,13 @@ function widgetKeydown(e) {
       _preds = {};
       (data || []).forEach(p => {
         _preds[p.partido_id] = {
-          local:     p.pred_goles_local,
+          local: p.pred_goles_local,
           visitante: p.pred_goles_visitante,
-          puntos:    p.puntos_obtenidos,
+          puntos: p.puntos_obtenidos,
           bonusAplicado: p.bonus_aplicado,
         };
       });
-    } catch(e) {
+    } catch (e) {
       console.error('[Prode] Error cargando predicciones:', e);
     }
   }
@@ -1844,7 +1844,7 @@ function widgetKeydown(e) {
     }
 
     // ── Clasificar ──
-    const grupos   = {};
+    const grupos = {};
     const playoffs = [];
 
     _partidos.forEach(p => {
@@ -1913,26 +1913,26 @@ function widgetKeydown(e) {
   // HTML de cada tarjeta de partido
   // ──────────────────────────────────────────────────────────────
   function _cardHTML(p) {
-    const pred      = _preds[p.id] || null;
+    const pred = _preds[p.id] || null;
     const bloqueado = esBloqueado(p);
     const finalizado = (p.estado || '').toLowerCase() === 'finalizado';
 
     // Fecha / hora
     const fecha = new Date(p.fecha_utc);
     const fechaStr = fecha.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
-    const horaStr  = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    const horaStr = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
     // Clases de la card
     let cardCls = 'prode-match-card';
     if (bloqueado) cardCls += ' card--locked';
-    if (pred)      cardCls += ' card--saved';
+    if (pred) cardCls += ' card--saved';
 
     // Badge estado
     let statusBadge;
-    if (finalizado)                          statusBadge = `<span class="pmc-status pmc-status--finished">✅ Finalizado</span>`;
-    else if ((p.estado||'') === 'en_curso')  statusBadge = `<span class="pmc-status pmc-status--locked">🔴 En Vivo</span>`;
-    else if (bloqueado)                      statusBadge = `<span class="pmc-status pmc-status--locked">🔒 Bloqueado</span>`;
-    else                                     statusBadge = `<span class="pmc-status pmc-status--open">✏️ Abierto</span>`;
+    if (finalizado) statusBadge = `<span class="pmc-status pmc-status--finished">✅ Finalizado</span>`;
+    else if ((p.estado || '') === 'en_curso') statusBadge = `<span class="pmc-status pmc-status--locked">🔴 En Vivo</span>`;
+    else if (bloqueado) statusBadge = `<span class="pmc-status pmc-status--locked">🔒 Bloqueado</span>`;
+    else statusBadge = `<span class="pmc-status pmc-status--open">✏️ Abierto</span>`;
 
     // Escudos
     const shieldL = p.escudo_local
@@ -1943,9 +1943,9 @@ function widgetKeydown(e) {
       : `<div class="pmc-shield-fallback">⚽</div>`;
 
     // Valores de inputs
-    const valL = pred !== null ? pred.local    : '';
+    const valL = pred !== null ? pred.local : '';
     const valV = pred !== null ? pred.visitante : '';
-    const dis  = bloqueado ? 'disabled' : '';
+    const dis = bloqueado ? 'disabled' : '';
     const inputCls = pred ? 'pmc-input input--saved' : 'pmc-input';
 
     // Resultado real
@@ -1964,7 +1964,7 @@ function widgetKeydown(e) {
       const pts = r.puntos ?? 0;
       const ptsCls = pts === 3 ? 'pts--3' : pts === 1 ? 'pts--1' : 'pts--0';
       const ptsLbl = pts === 3 ? '¡Exacto!' : pts === 1 ? 'Signo OK' : 'Fallaste';
-      const bonus  = pred.bonusAplicado ? `<span class="pmc-bonus-badge">⭐ +5 BONUS</span>` : '';
+      const bonus = pred.bonusAplicado ? `<span class="pmc-bonus-badge">⭐ +5 BONUS</span>` : '';
       footerHTML = `<div class="pmc-footer">
         <div class="pmc-points">
           <span class="pmc-points-val ${ptsCls}">${pts}</span>
@@ -2039,7 +2039,7 @@ function widgetKeydown(e) {
       // Validar rango
       let v = parseInt(e.target.value, 10);
       if (isNaN(v) || v < 0) { e.target.value = ''; return; }
-      if (v > 99)             { e.target.value = 99; }
+      if (v > 99) { e.target.value = 99; }
 
       _pendientes.add(pid);
       _actualizarFAB();
@@ -2075,11 +2075,11 @@ function widgetKeydown(e) {
       const vV = parseInt(inputV.value, 10);
       if (isNaN(vL) || isNaN(vV)) continue;
       filas.push({
-        partido_id:            pid,
-        user_id:               _uid,
-        pred_goles_local:      vL,
-        pred_goles_visitante:  vV,
-        updated_at:            new Date().toISOString(),
+        partido_id: pid,
+        user_id: _uid,
+        pred_goles_local: vL,
+        pred_goles_visitante: vV,
+        updated_at: new Date().toISOString(),
       });
     }
 
@@ -2112,7 +2112,7 @@ function widgetKeydown(e) {
       _pendientes.clear();
       prodeToast(`${filas.length} predicción${filas.length !== 1 ? 'es' : ''} guardada${filas.length !== 1 ? 's' : ''} ✅`);
 
-    } catch(err) {
+    } catch (err) {
       console.error('[Prode] Error al guardar:', err);
       prodeToast('Error al guardar. Intentá de nuevo.', 'error');
     }
@@ -2173,7 +2173,7 @@ function widgetKeydown(e) {
   // ══════════════════════════════════════════════════════════════
   // SUB-TABS (expuesto globalmente)
   // ══════════════════════════════════════════════════════════════
-  window.prodeChangeSubTab = function(tab) {
+  window.prodeChangeSubTab = function (tab) {
     document.querySelectorAll('.prode-sub-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     document.querySelectorAll('.prode-subpanel').forEach(p => p.classList.toggle('active', p.id === `prode-${tab}-panel`));
 
@@ -2205,20 +2205,20 @@ function widgetKeydown(e) {
   // ──────────────────────────────────────────────────────────────
   // CREAR GRUPO
   // ──────────────────────────────────────────────────────────────
-  window.crearComunidad = async function() {
+  window.crearComunidad = async function () {
     // 1. Validaciones explícitas según requerimiento
     if (!window.supabaseClient || !window.__mundialitoUserId) {
       alert("Error de sesión: No se pudo verificar tu usuario o la conexión a la base de datos.");
       return;
     }
 
-    const nombre   = (document.getElementById('prode-nuevo-grupo')?.value || '').trim();
+    const nombre = (document.getElementById('prode-nuevo-grupo')?.value || '').trim();
     const esPublic = document.getElementById('new-group-public')?.checked || false;
-    const msgId    = 'create-group-msg';
+    const msgId = 'create-group-msg';
 
-    if (nombre.length < 2) { 
-      prodeSetMsg(msgId, 'El nombre debe tener al menos 2 caracteres.', 'error'); 
-      return; 
+    if (nombre.length < 2) {
+      prodeSetMsg(msgId, 'El nombre debe tener al menos 2 caracteres.', 'error');
+      return;
     }
 
     const btn = document.getElementById('btn-create-group');
@@ -2228,13 +2228,13 @@ function widgetKeydown(e) {
       // Data a insertar - Generamos IDs en frontend para saltar el bug de .select()
       const generatedId = crypto.randomUUID();
       const generatedInvite = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      const insertData = { 
+
+      const insertData = {
         id: generatedId,
         invite_code: generatedInvite,
-        nombre, 
-        admin_id: window.__mundialitoUserId, 
-        es_publico: esPublic 
+        nombre,
+        admin_id: window.__mundialitoUserId,
+        es_publico: esPublic
       };
       console.log('[Prode] Intentando crear comunidad. Data:', insertData);
 
@@ -2242,7 +2242,7 @@ function widgetKeydown(e) {
       const { error: errGrupo } = await sb()
         .from('prode_groups')
         .insert(insertData);
-        
+
       if (errGrupo) throw errGrupo;
 
       const memberData = { group_id: generatedId, user_id: window.__mundialitoUserId };
@@ -2252,7 +2252,7 @@ function widgetKeydown(e) {
       const { error: errMiembro } = await sb()
         .from('prode_group_members')
         .insert(memberData);
-        
+
       // Ignoramos el error 23505 (Duplicate Key) porque si salta en una PK nueva, 
       // significa que tienes un Trigger en tu base de datos que ya insertó al admin automáticamente.
       if (errMiembro && errMiembro.code !== '23505') throw errMiembro;
@@ -2266,7 +2266,7 @@ function widgetKeydown(e) {
       // 4. Refrescar lista de grupos
       setTimeout(() => _cargarMisGrupos(), 600);
 
-    } catch(err) {
+    } catch (err) {
       console.error('[Prode] Error crítico creando comunidad:', err);
       alert("Error: " + err.message);
       prodeSetMsg(msgId, err.message || 'Error al crear el grupo.', 'error');
@@ -2278,7 +2278,7 @@ function widgetKeydown(e) {
   // ──────────────────────────────────────────────────────────────
   // UNIRSE A UN GRUPO CON CÓDIGO
   // ──────────────────────────────────────────────────────────────
-  window.unirseComunidad = async function() {
+  window.unirseComunidad = async function () {
     // Validaciones explícitas
     if (!window.supabaseClient || !window.__mundialitoUserId) {
       alert("Error de sesión: No se pudo verificar tu usuario o la conexión a la base de datos.");
@@ -2286,7 +2286,7 @@ function widgetKeydown(e) {
     }
 
     const codigo = (document.getElementById('join-group-code')?.value || '').trim().toUpperCase();
-    const msgId  = 'join-group-msg';
+    const msgId = 'join-group-msg';
 
     if (codigo.length !== 6) { prodeSetMsg(msgId, 'El código debe tener exactamente 6 caracteres.', 'error'); return; }
 
@@ -2295,7 +2295,7 @@ function widgetKeydown(e) {
 
     try {
       console.log(`[Prode] Intentando unirse al grupo con código: ${codigo}`);
-      
+
       // 1. Buscar el grupo por invite_code
       const { data: grupo, error: errFind } = await sb()
         .from('prode_groups')
@@ -2330,14 +2330,14 @@ function widgetKeydown(e) {
       const { error: errJoin } = await sb()
         .from('prode_group_members')
         .insert(joinData);
-        
+
       if (errJoin) throw errJoin;
 
       prodeSetMsg(msgId, `✅ Te uniste a "${grupo.nombre}"!`, 'success');
       document.getElementById('join-group-code').value = '';
       setTimeout(() => _cargarMisGrupos(), 600);
 
-    } catch(err) {
+    } catch (err) {
       console.error('[Prode] Error crítico uniéndose al grupo:', err);
       alert("Error: " + err.message);
       prodeSetMsg(msgId, err.message || 'Error al unirse al grupo.', 'error');
@@ -2363,13 +2363,13 @@ function widgetKeydown(e) {
           prode_groups!prode_group_members_group_id_fkey ( id, nombre, invite_code, es_publico, admin_id, created_at )
         `)
         .eq('user_id', window.__mundialitoUserId);
-        
+
       if (error) {
         console.error("Error cargando comunidades:", error);
         alert("Error al cargar tus grupos: " + error.message);
         return;
       }
-      
+
       console.log("Comunidades recibidas:", data);
 
       // Si Supabase devuelve un arreglo dentro de prode_groups, extraemos el primer elemento.
@@ -2398,7 +2398,7 @@ function widgetKeydown(e) {
       // Bind de botones de admin/copy dentro de las cards
       _bindGrupoCardBtns();
 
-    } catch(err) {
+    } catch (err) {
       console.error('[Prode] Error cargando grupos:', err);
       cont.innerHTML = `<div style="color:#ff6680;font-size:13px;padding:14px 0">Error cargando grupos.</div>`;
     }
@@ -2426,7 +2426,7 @@ function widgetKeydown(e) {
 
     const membersHTML = members.slice(0, 10).map((m, i) => {
       const posCls = i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : i === 2 ? 'pos-3' : '';
-      const isMe   = m.id === _uid;
+      const isMe = m.id === _uid;
       const avatar = m.avatar_url
         ? `<img class="grr-avatar" src="${m.avatar_url}" alt="${m.username}" onerror="this.style.display='none'">`
         : `<div class="grr-avatar-fallback">👤</div>`;
@@ -2449,7 +2449,7 @@ function widgetKeydown(e) {
 
     const adminActsHTML = esAdmin ? `
       <div class="group-admin-actions">
-        <button class="group-admin-btn prode-edit-name-btn" data-group="${g.id}" data-name="${(g.nombre).replace(/'/g,"\\'")}">
+        <button class="group-admin-btn prode-edit-name-btn" data-group="${g.id}" data-name="${(g.nombre).replace(/'/g, "\\'")}">
           ✏️ Editar nombre
         </button>
         <button class="group-admin-btn prode-toggle-public-btn"
@@ -2511,7 +2511,7 @@ function widgetKeydown(e) {
           const row = document.getElementById(`mbr-${group}-${user}`);
           if (row) { row.style.animation = 'slideOut .3s ease forwards'; setTimeout(() => row.remove(), 320); }
           prodeToast(`${name} fue expulsado.`);
-        } catch(err) { prodeToast('Error al expulsar.', 'error'); }
+        } catch (err) { prodeToast('Error al expulsar.', 'error'); }
       });
     });
 
@@ -2531,7 +2531,7 @@ function widgetKeydown(e) {
           const card = document.getElementById(`group-card-${group}`);
           if (card) card.querySelector('.group-card-name').textContent = nuevo.trim();
           prodeToast('Nombre actualizado.');
-        } catch(err) { prodeToast('Error al actualizar nombre.', 'error'); }
+        } catch (err) { prodeToast('Error al actualizar nombre.', 'error'); }
       });
     });
 
@@ -2541,7 +2541,7 @@ function widgetKeydown(e) {
       btn.addEventListener('click', async () => {
         const { group } = btn.dataset;
         const actual = btn.dataset.public === 'true';
-        const nuevo  = !actual;
+        const nuevo = !actual;
         try {
           const { error } = await sb()
             .from('prode_groups')
@@ -2559,7 +2559,7 @@ function widgetKeydown(e) {
             }
           }
           prodeToast(`Grupo ahora es ${nuevo ? 'público' : 'privado'}.`);
-        } catch(err) { prodeToast('Error al cambiar visibilidad.', 'error'); }
+        } catch (err) { prodeToast('Error al cambiar visibilidad.', 'error'); }
       });
     });
   }
@@ -2567,7 +2567,7 @@ function widgetKeydown(e) {
   // ──────────────────────────────────────────────────────────────
   // ELIMINAR COMUNIDAD
   // ──────────────────────────────────────────────────────────────
-  window.eliminarComunidad = async function(groupId) {
+  window.eliminarComunidad = async function (groupId) {
     if (!confirm("¿Estás seguro de que deseas eliminar esta comunidad? Esta acción no se puede deshacer.")) return;
 
     try {
@@ -2587,7 +2587,7 @@ function widgetKeydown(e) {
 
       alert("Comunidad eliminada");
       _cargarMisGrupos();
-    } catch(err) {
+    } catch (err) {
       console.error("[Prode] Error eliminando comunidad:", err);
       alert("Error al eliminar comunidad: " + err.message);
     }
@@ -2614,13 +2614,13 @@ function widgetKeydown(e) {
       }
 
       const rows = data.map((p, i) => {
-        const pos    = i + 1;
+        const pos = i + 1;
         const posCls = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
-        const isMe   = p.id === _uid;
+        const isMe = p.id === _uid;
         const avatar = p.avatar_url
           ? `<img class="grt-avatar" src="${p.avatar_url}" alt="${p.username}" onerror="this.style.display='none'">`
           : `<div class="grt-avatar-fallback">👤</div>`;
-        const medal  = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+        const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
         return `<div class="grt-row ${isMe ? 'row--me' : ''}">
           <span class="grt-pos ${posCls}">${medal}</span>
           ${avatar}
@@ -2643,10 +2643,496 @@ function widgetKeydown(e) {
           ${rows}
         </div>`;
 
-    } catch(err) {
+    } catch (err) {
       console.error('[Prode] Error cargando ranking global:', err);
     }
   }
 
 })(); // fin IIFE Prode
 
+/* ══════════════════════════════════════════════════════════════════
+   HIGHERLOWER_04_js.js
+   DÓNDE: al final de Frontend/app.js
+   ══════════════════════════════════════════════════════════════════
+
+   IMPORTANTE: el uso de localStorage aquí es INTENCIONAL y necesario.
+   Este archivo NO corre dentro de un Artifact de Claude —
+   corre en el navegador del usuario final como parte del proyecto.
+   localStorage es perfectamente válido en este contexto.
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ──────────────────────────────────────────────────────────────────
+   BASE DE DATOS DEL JUEGO
+   Cada entidad tiene: nombre, tipo, imagen (URL o emoji de respaldo),
+   y un objeto 'stats' con sus métricas.
+
+   Para agregar imágenes de fondo reales, reemplazá image_url
+   con una URL directa (ej: escudo de la selección en tamaño grande,
+   o una foto de estadio).
+──────────────────────────────────────────────────────────────────── */
+const HL_DATA = {
+
+  /* ── SELECCIONES ── */
+  selecciones: [
+    { name: 'Argentina', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/1.svg', stats: { mundiales_ganados: 3, goles_mundiales: 137, participaciones: 18, copas_jugadas: 18 } },
+    { name: 'Brasil', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/12.svg', stats: { mundiales_ganados: 5, goles_mundiales: 229, participaciones: 22, copas_jugadas: 22 } },
+    { name: 'Alemania', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/11.svg', stats: { mundiales_ganados: 4, goles_mundiales: 226, participaciones: 20, copas_jugadas: 20 } },
+    { name: 'Francia', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/8.svg', stats: { mundiales_ganados: 2, goles_mundiales: 120, participaciones: 16, copas_jugadas: 16 } },
+    { name: 'Italia', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/16.svg', stats: { mundiales_ganados: 4, goles_mundiales: 128, participaciones: 18, copas_jugadas: 18 } },
+    { name: 'España', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/9.svg', stats: { mundiales_ganados: 1, goles_mundiales: 98, participaciones: 16, copas_jugadas: 16 } },
+    { name: 'Uruguay', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/6.svg', stats: { mundiales_ganados: 2, goles_mundiales: 88, participaciones: 14, copas_jugadas: 14 } },
+    { name: 'Países Bajos', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 82, participaciones: 11, copas_jugadas: 11 } },
+    { name: 'Portugal', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 45, participaciones: 8, copas_jugadas: 8 } },
+    { name: 'Inglaterra', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 1, goles_mundiales: 79, participaciones: 16, copas_jugadas: 16 } },
+    { name: 'México', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 63, participaciones: 17, copas_jugadas: 17 } },
+    { name: 'Colombia', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 7, copas_jugadas: 7 } },
+    { name: 'Croacia', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 6, copas_jugadas: 6 } },
+    { name: 'Marruecos', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 14, participaciones: 7, copas_jugadas: 7 } },
+  ],
+
+  /* ── ESTADIOS ── */
+  estadios: [
+    { name: 'MetLife Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 82500, año_inauguracion: 2010, costo_millones_usd: 1600 } },
+    { name: 'SoFi Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 70240, año_inauguracion: 2020, costo_millones_usd: 5500 } },
+    { name: 'AT&T Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 80000, año_inauguracion: 2009, costo_millones_usd: 1150 } },
+    { name: 'Estadio Azteca', type: 'ESTADIO', image_url: '', stats: { capacidad: 87523, año_inauguracion: 1966, costo_millones_usd: 400 } },
+    { name: 'Hard Rock Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 65326, año_inauguracion: 1987, costo_millones_usd: 600 } },
+    { name: 'NRG Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 72220, año_inauguracion: 2002, costo_millones_usd: 352 } },
+    { name: "Levi's Stadium", type: 'ESTADIO', image_url: '', stats: { capacidad: 68500, año_inauguracion: 2014, costo_millones_usd: 1300 } },
+    { name: 'BC Place', type: 'ESTADIO', image_url: '', stats: { capacidad: 54500, año_inauguracion: 1983, costo_millones_usd: 514 } },
+    { name: 'BMO Field', type: 'ESTADIO', image_url: '', stats: { capacidad: 45736, año_inauguracion: 2007, costo_millones_usd: 62 } },
+    { name: 'Estadio Akron', type: 'ESTADIO', image_url: '', stats: { capacidad: 45000, año_inauguracion: 2010, costo_millones_usd: 160 } },
+    { name: 'Estadio BBVA', type: 'ESTADIO', image_url: '', stats: { capacidad: 53500, año_inauguracion: 2015, costo_millones_usd: 200 } },
+    { name: 'Lincoln Financial', type: 'ESTADIO', image_url: '', stats: { capacidad: 69796, año_inauguracion: 2003, costo_millones_usd: 512 } },
+    { name: 'Arrowhead Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 76416, año_inauguracion: 1972, costo_millones_usd: 375 } },
+  ],
+
+  /* ── LEYENDAS (stats de carrera en mundiales) ── */
+  leyendas: [
+    { name: 'Miroslav Klose', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 16, mundiales_jugados: 4, partidos_mundiales: 24, copas_ganadas: 1 } },
+    { name: 'Ronaldo (Brasil)', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 15, mundiales_jugados: 4, partidos_mundiales: 19, copas_ganadas: 2 } },
+    { name: 'Gerd Müller', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 14, mundiales_jugados: 2, partidos_mundiales: 13, copas_ganadas: 1 } },
+    { name: 'Just Fontaine', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 13, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
+    { name: 'Pelé', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 12, mundiales_jugados: 4, partidos_mundiales: 14, copas_ganadas: 3 } },
+    { name: 'Lionel Messi', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 13, mundiales_jugados: 5, partidos_mundiales: 26, copas_ganadas: 1 } },
+    { name: 'Jürgen Klinsmann', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 11, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
+    { name: 'Gabriel Batistuta', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 12, copas_ganadas: 0 } },
+    { name: 'Kylian Mbappé', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 12, mundiales_jugados: 2, partidos_mundiales: 14, copas_ganadas: 1 } },
+    { name: 'Sándor Kocsis', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 11, mundiales_jugados: 1, partidos_mundiales: 5, copas_ganadas: 0 } },
+    { name: 'Thomas Müller', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
+    { name: 'Eusébio', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 9, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
+  ],
+};
+
+/* ──────────────────────────────────────────────────────────────────
+   DEFINICIÓN DE MÉTRICAS
+   Cada métrica define:
+   - id: clave en el objeto stats de la entidad
+   - label: texto mostrado en pantalla
+   - unit: unidad mostrada bajo el número
+   - types: qué categorías de HL_DATA usa esta métrica
+   - format: función para formatear el valor (opcional)
+──────────────────────────────────────────────────────────────────── */
+const HL_METRICS = [
+  {
+    id: 'goles_mundiales',
+    label: 'Goles en Mundiales',
+    unit: 'goles totales',
+    types: ['selecciones', 'leyendas'],
+    entityType: 'mixed',
+  },
+  {
+    id: 'participaciones',
+    label: 'Participaciones en Mundiales',
+    unit: 'copas jugadas',
+    types: ['selecciones'],
+    entityType: 'selecciones',
+  },
+  {
+    id: 'mundiales_ganados',
+    label: 'Títulos Mundiales',
+    unit: 'copas ganadas',
+    types: ['selecciones'],
+    entityType: 'selecciones',
+  },
+  {
+    id: 'capacidad',
+    label: 'Capacidad del Estadio',
+    unit: 'espectadores',
+    types: ['estadios'],
+    entityType: 'estadios',
+    format: (v) => v.toLocaleString('es-AR'),
+  },
+  {
+    id: 'año_inauguracion',
+    label: 'Año de Inauguración',
+    unit: 'año',
+    types: ['estadios'],
+    entityType: 'estadios',
+  },
+  {
+    id: 'costo_millones_usd',
+    label: 'Costo de Construcción',
+    unit: 'millones USD',
+    types: ['estadios'],
+    entityType: 'estadios',
+    format: (v) => '$' + v.toLocaleString('es-AR'),
+  },
+  {
+    id: 'partidos_mundiales',
+    label: 'Partidos en Mundiales',
+    unit: 'partidos jugados',
+    types: ['leyendas'],
+    entityType: 'leyendas',
+  },
+  {
+    id: 'goles_mundiales',
+    label: 'Goles en Mundiales',
+    unit: 'goles anotados',
+    types: ['leyendas'],
+    entityType: 'leyendas',
+  },
+];
+
+/* ──────────────────────────────────────────────────────────────────
+   CONSTANTES Y ESTADO GLOBAL
+──────────────────────────────────────────────────────────────────── */
+const HL_MAX_DAILY_ATTEMPTS = 5;
+const HL_LS_KEY = 'mundialito_hl_data';
+
+let hlState = {
+  score: 0,
+  currentLeft: null,
+  currentRight: null,
+  currentMetric: null,
+  isAnswered: false,
+  previousRightEntity: null,
+};
+
+/* ──────────────────────────────────────────────────────────────────
+   GESTIÓN DE localStorage (intentos diarios y récord)
+──────────────────────────────────────────────────────────────────── */
+function hlGetStorage() {
+  try {
+    const raw = localStorage.getItem(HL_LS_KEY);
+    if (!raw) return { attempts: 0, date: '', record: 0 };
+    return JSON.parse(raw);
+  } catch { return { attempts: 0, date: '', record: 0 }; }
+}
+
+function hlSaveStorage(data) {
+  try { localStorage.setItem(HL_LS_KEY, JSON.stringify(data)); } catch { }
+}
+
+function hlGetTodayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function hlGetAttemptsLeft() {
+  const data = hlGetStorage();
+  if (data.date !== hlGetTodayStr()) return HL_MAX_DAILY_ATTEMPTS;
+  return Math.max(0, HL_MAX_DAILY_ATTEMPTS - (data.attempts || 0));
+}
+
+function hlIncrementAttempt() {
+  const data = hlGetStorage();
+  const today = hlGetTodayStr();
+  if (data.date !== today) {
+    data.date = today;
+    data.attempts = 0;
+  }
+  data.attempts = (data.attempts || 0) + 1;
+  hlSaveStorage(data);
+}
+
+function hlGetRecord() {
+  return hlGetStorage().record || 0;
+}
+
+function hlUpdateRecord(score) {
+  const data = hlGetStorage();
+  if (score > (data.record || 0)) {
+    data.record = score;
+    hlSaveStorage(data);
+    return true;
+  }
+  return false;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   LÓGICA DE SELECCIÓN ALEATORIA
+──────────────────────────────────────────────────────────────────── */
+function hlPickRandom(arr, excludeItem = null) {
+  const pool = excludeItem ? arr.filter(x => x.name !== excludeItem.name) : arr;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function hlPickMetric() {
+  return HL_METRICS[Math.floor(Math.random() * HL_METRICS.length)];
+}
+
+function hlGetPool(metric) {
+  let pool = [];
+  metric.types.forEach(type => {
+    if (HL_DATA[type]) pool = pool.concat(HL_DATA[type]);
+  });
+  return pool;
+}
+
+function hlNewRound(keepLeft = false) {
+  const metric = hlPickMetric();
+  const pool = hlGetPool(metric);
+
+  let leftEntity, rightEntity;
+
+  if (keepLeft && hlState.previousRightEntity) {
+    leftEntity = hlState.previousRightEntity;
+    const leftPool = pool.filter(e => e.stats && e.stats[metric.id] !== undefined);
+    rightEntity = hlPickRandom(leftPool, leftEntity);
+  } else {
+    const validPool = pool.filter(e => e.stats && e.stats[metric.id] !== undefined);
+    leftEntity = hlPickRandom(validPool);
+    rightEntity = hlPickRandom(validPool, leftEntity);
+  }
+
+  if (!leftEntity || !rightEntity) {
+    return hlNewRound(false);
+  }
+
+  hlState.currentLeft = leftEntity;
+  hlState.currentRight = rightEntity;
+  hlState.currentMetric = metric;
+  hlState.isAnswered = false;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   RENDERIZADO DE LA UI
+──────────────────────────────────────────────────────────────────── */
+function hlRenderRound() {
+  const { currentLeft: L, currentRight: R, currentMetric: M } = hlState;
+  if (!L || !R || !M) return;
+
+  const formatVal = (v) => M.format ? M.format(v) : v.toLocaleString('es-AR');
+  const leftVal = L.stats[M.id];
+  const rightVal = R.stats[M.id];
+
+  document.getElementById('hl-metric-label').textContent = M.label;
+
+  document.getElementById('hl-left-type').textContent = L.type;
+  document.getElementById('hl-left-name').textContent = L.name;
+  document.getElementById('hl-left-metric-name').textContent = M.label;
+  document.getElementById('hl-left-value').textContent = formatVal(leftVal);
+  document.getElementById('hl-left-unit').textContent = M.unit;
+
+  document.getElementById('hl-right-type').textContent = R.type;
+  document.getElementById('hl-right-name').textContent = R.name;
+  document.getElementById('hl-right-metric-name').textContent = M.label;
+  document.getElementById('hl-right-value').textContent = formatVal(rightVal);
+  document.getElementById('hl-right-unit').textContent = M.unit;
+
+  const rightValEl = document.getElementById('hl-right-value');
+  rightValEl.classList.add('hl-hidden');
+  rightValEl.classList.remove('hl-reveal');
+
+  document.getElementById('hl-buttons').style.display = 'flex';
+  const resultEl = document.getElementById('hl-result');
+  resultEl.style.display = 'none';
+  resultEl.className = 'hl-result';
+
+  if (L.image_url) {
+    document.getElementById('hl-bg-left').style.backgroundImage = `url('${L.image_url}')`;
+  } else {
+    document.getElementById('hl-bg-left').style.backgroundImage = '';
+  }
+  if (R.image_url) {
+    document.getElementById('hl-bg-right').style.backgroundImage = `url('${R.image_url}')`;
+  } else {
+    document.getElementById('hl-bg-right').style.backgroundImage = '';
+  }
+}
+
+function hlUpdateScoreDisplay() {
+  document.getElementById('hl-score').textContent = hlState.score;
+  const attLeft = hlGetAttemptsLeft();
+  const dots = Array(HL_MAX_DAILY_ATTEMPTS).fill('●')
+    .map((d, i) => `<span style="color:${i < attLeft ? 'var(--red)' : 'var(--border)'}">●</span>`)
+    .join(' ');
+  document.getElementById('hl-attempts-mini').innerHTML = dots;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   INICIO DEL JUEGO
+──────────────────────────────────────────────────────────────────── */
+function hlStartGame() {
+  const attLeft = hlGetAttemptsLeft();
+  if (attLeft <= 0) {
+    alert('¡Ya usaste tus 5 intentos de hoy! Volvé mañana para jugar de nuevo.');
+    return;
+  }
+
+  hlIncrementAttempt();
+  hlState.score = 0;
+  hlState.previousRightEntity = null;
+
+  hlNewRound(false);
+  hlRenderRound();
+  hlUpdateScoreDisplay();
+
+  hlShowScreen('game');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   ADIVINAR: higher o lower
+──────────────────────────────────────────────────────────────────── */
+function hlGuess(direction) {
+  if (hlState.isAnswered) return;
+  hlState.isAnswered = true;
+
+  const { currentLeft: L, currentRight: R, currentMetric: M } = hlState;
+  const leftVal = L.stats[M.id];
+  const rightVal = R.stats[M.id];
+
+  const rightValEl = document.getElementById('hl-right-value');
+  rightValEl.classList.remove('hl-hidden');
+  rightValEl.classList.add('hl-reveal');
+
+  document.getElementById('hl-buttons').style.display = 'none';
+
+  let isCorrect = false;
+  let isEqual = leftVal === rightVal;
+
+  if (isEqual) {
+    isCorrect = true;
+  } else if (direction === 'higher') {
+    isCorrect = rightVal > leftVal;
+  } else {
+    isCorrect = rightVal < leftVal;
+  }
+
+  const resultEl = document.getElementById('hl-result');
+  resultEl.style.display = 'flex';
+
+  if (isEqual) {
+    resultEl.className = 'hl-result hl-result--equal';
+    document.getElementById('hl-result-icon').textContent = '🤝';
+    document.getElementById('hl-result-text').textContent = '¡EMPATE! SIGUE';
+    document.getElementById('hl-btn-next').style.display = 'inline-block';
+    document.getElementById('hl-card-right').classList.add('hl-celebrate');
+    hlState.score++;
+    hlState.previousRightEntity = R;
+  } else if (isCorrect) {
+    resultEl.className = 'hl-result hl-result--correct';
+    document.getElementById('hl-result-icon').textContent = '✓';
+    document.getElementById('hl-result-text').textContent = '¡CORRECTO!';
+    document.getElementById('hl-btn-next').style.display = 'inline-block';
+    document.getElementById('hl-card-right').classList.add('hl-celebrate');
+    hlState.score++;
+    hlState.previousRightEntity = R;
+  } else {
+    resultEl.className = 'hl-result hl-result--wrong';
+    document.getElementById('hl-result-icon').textContent = '✗';
+    document.getElementById('hl-result-text').textContent = '¡INCORRECTO!';
+    document.getElementById('hl-btn-next').style.display = 'none';
+    document.getElementById('hl-card-right').classList.add('hl-shake');
+
+    setTimeout(() => hlShowGameOver(false), 1200);
+  }
+
+  hlUpdateScoreDisplay();
+
+  setTimeout(() => {
+    document.getElementById('hl-card-right').classList.remove('hl-shake', 'hl-celebrate');
+  }, 500);
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   SIGUIENTE RONDA
+──────────────────────────────────────────────────────────────────── */
+function hlNextRound() {
+  hlNewRound(true);
+  hlRenderRound();
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   GAME OVER
+──────────────────────────────────────────────────────────────────── */
+function hlShowGameOver(isVictory = false) {
+  const score = hlState.score;
+  const isRecord = hlUpdateRecord(score);
+  const attLeft = hlGetAttemptsLeft();
+
+  const { currentLeft: L, currentRight: R, currentMetric: M } = hlState;
+  const formatVal = (v) => M ? (M.format ? M.format(v) : v.toLocaleString('es-AR')) : v;
+
+  document.getElementById('hl-go-icon').textContent = score === 0 ? '😬' : score >= 10 ? '🏆' : '💀';
+  document.getElementById('hl-go-title').textContent = score >= 10 ? '¡MAESTRO!' : score >= 5 ? '¡BUEN JUEGO!' : '¡PERDISTE!';
+  document.getElementById('hl-go-sub').textContent = `Llegaste hasta el round ${score + 1}`;
+  document.getElementById('hl-go-score').textContent = score;
+
+  if (L && R && M) {
+    const lv = L.stats[M.id];
+    const rv = R.stats[M.id];
+    document.getElementById('hl-go-comparison').innerHTML =
+      `La respuesta era: <strong>${R.name}</strong> tiene <strong>${formatVal(rv)}</strong> ${M.unit}<br>` +
+      `vs. <strong>${L.name}</strong> con <strong>${formatVal(lv)}</strong> ${M.unit}`;
+  } else {
+    document.getElementById('hl-go-comparison').innerHTML = '';
+  }
+
+  document.getElementById('hl-go-record-msg').textContent =
+    isRecord && score > 0 ? `🏆 ¡NUEVO RÉCORD PERSONAL!` : `Tu récord: ${hlGetRecord()} puntos`;
+
+  document.getElementById('hl-go-attempts-left').textContent =
+    attLeft > 0 ? `Te quedan ${attLeft} intento${attLeft !== 1 ? 's' : ''} hoy` : 'Agotaste tus intentos de hoy. ¡Volvé mañana!';
+
+  document.getElementById('hl-btn-retry').disabled = attLeft <= 0;
+
+  hlShowScreen('gameover');
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   VOLVER AL INICIO
+──────────────────────────────────────────────────────────────────── */
+function hlGoHome() {
+  hlUpdateHomeScreen();
+  hlShowScreen('start');
+}
+
+function hlUpdateHomeScreen() {
+  const attLeft = hlGetAttemptsLeft();
+  const record = hlGetRecord();
+
+  document.getElementById('hl-attempts-display').textContent =
+    `${attLeft} intento${attLeft !== 1 ? 's' : ''} disponible${attLeft !== 1 ? 's' : ''} hoy`;
+
+  const startBtn = document.getElementById('hl-btn-start');
+  if (startBtn) {
+    startBtn.disabled = attLeft <= 0;
+    startBtn.textContent = attLeft <= 0 ? 'VOLVÉ MAÑANA' : 'JUGAR';
+  }
+
+  const recordEl = document.getElementById('hl-start-record');
+  if (recordEl) {
+    recordEl.textContent = record > 0 ? `Tu récord: ${record} puntos` : '';
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   GESTIÓN DE PANTALLAS
+──────────────────────────────────────────────────────────────────── */
+function hlShowScreen(name) {
+  ['start', 'game', 'gameover'].forEach(s => {
+    const el = document.getElementById(`hl-screen-${s}`);
+    if (el) el.style.display = s === name ? 'block' : 'none';
+  });
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   INICIALIZACIÓN
+   Se llama desde switchTab() en app.js cuando se abre la pestaña
+──────────────────────────────────────────────────────────────────── */
+function hlInit() {
+  hlUpdateHomeScreen();
+  hlShowScreen('start');
+}

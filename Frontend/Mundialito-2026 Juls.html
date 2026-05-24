@@ -1,1389 +1,1516 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mundialito — Mundial 2026</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="Prode/prode.css">
   <script>
     window.PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
-    window.imgFallback = function(img) {
+    window.imgFallback = function (img) {
       img.onerror = null;
       img.src = window.PLACEHOLDER_IMG;
     };
   </script>
 </head>
+
 <body>
 
-<!-- ══════════════════════════════════════
+  <!-- ══════════════════════════════════════
      AUTH OVERLAY — se oculta al loguearse
 ══════════════════════════════════════ -->
-<div id="auth-overlay">
-  <div class="auth-card">
+  <div id="auth-overlay">
+    <div class="auth-card">
 
-    <!-- Logo -->
-    <div class="auth-logo">
-      <span class="auth-logo-icon">⚽</span>
-      <div class="auth-logo-title"><span>MUNDIALITO</span></div>
-      <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
+      <!-- Logo -->
+      <div class="auth-logo">
+        <span class="auth-logo-icon">⚽</span>
+        <div class="auth-logo-title"><span>MUNDIALITO</span></div>
+        <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
+      </div>
+
+      <!-- Google OAuth -->
+      <button class="btn-google" id="btn-google-login">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+          <path fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+        </svg>
+        Continuar con Google
+      </button>
+
+      <div class="auth-divider"><span class="auth-divider-text">o ingresá con token</span></div>
+
+      <!-- Token / Email form -->
+      <div class="auth-form" id="auth-form-token">
+        <!-- Solo visible en modo registro -->
+        <div class="auth-field" id="auth-username-field" style="display:none">
+          <label class="auth-label">Nombre de usuario</label>
+          <input class="auth-input" type="text" id="auth-username" placeholder="tu_nombre" autocomplete="username" />
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input class="auth-input" type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email" />
+        </div>
+        <div class="auth-field" id="auth-password-field">
+          <label class="auth-label">Contraseña</label>
+          <input class="auth-input" type="password" id="auth-password" placeholder="••••••••"
+            autocomplete="current-password" />
+        </div>
+        <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+          <a href="#" id="auth-forgot-password"
+            style="font-size: 12px; color: var(--gold); text-decoration: none;">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="btn-token" id="btn-token-login">Ingresar</button>
+        <div class="auth-msg" id="auth-message"></div>
+      </div>
+
+      <!-- Forgot Password Form -->
+      <div class="auth-form" id="auth-form-forgot" style="display:none">
+        <div class="auth-field">
+          <label class="auth-label">Email para recuperar</label>
+          <input class="auth-input" type="email" id="auth-forgot-email" placeholder="tu@email.com" />
+        </div>
+        <button class="btn-token" id="btn-forgot-send">Enviar link de recuperación</button>
+        <button class="btn-token" id="btn-forgot-back"
+          style="background: var(--navy2); border: 1px solid var(--border); margin-top: 10px;">Volver al login</button>
+        <div class="auth-msg" id="auth-forgot-message"></div>
+      </div>
+
+      <!-- Reset Password Form (cuando vuelve de email) -->
+      <div class="auth-form" id="auth-form-reset" style="display:none">
+        <div class="auth-field">
+          <label class="auth-label">Nueva contraseña</label>
+          <input class="auth-input" type="password" id="auth-reset-password" placeholder="••••••••" />
+        </div>
+        <button class="btn-token" id="btn-reset-save">Actualizar contraseña</button>
+        <div class="auth-msg" id="auth-reset-message"></div>
+      </div>
+
+      <div class="auth-toggle">
+        <a id="auth-mode-toggle">¿No tenés cuenta? Registrate</a>
+      </div>
+
     </div>
-
-    <!-- Google OAuth -->
-    <button class="btn-google" id="btn-google-login">
-      <svg width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Continuar con Google
-    </button>
-
-    <div class="auth-divider"><span class="auth-divider-text">o ingresá con token</span></div>
-
-    <!-- Token / Email form -->
-    <div class="auth-form" id="auth-form-token">
-      <!-- Solo visible en modo registro -->
-      <div class="auth-field" id="auth-username-field" style="display:none">
-        <label class="auth-label">Nombre de usuario</label>
-        <input class="auth-input" type="text" id="auth-username" placeholder="tu_nombre" autocomplete="username"/>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Email</label>
-        <input class="auth-input" type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email"/>
-      </div>
-      <div class="auth-field" id="auth-password-field">
-        <label class="auth-label">Contraseña</label>
-        <input class="auth-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
-      </div>
-      <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-        <a href="#" id="auth-forgot-password" style="font-size: 12px; color: var(--gold); text-decoration: none;">¿Olvidaste tu contraseña?</a>
-      </div>
-      <button class="btn-token" id="btn-token-login">Ingresar</button>
-      <div class="auth-msg" id="auth-message"></div>
-    </div>
-
-    <!-- Forgot Password Form -->
-    <div class="auth-form" id="auth-form-forgot" style="display:none">
-      <div class="auth-field">
-        <label class="auth-label">Email para recuperar</label>
-        <input class="auth-input" type="email" id="auth-forgot-email" placeholder="tu@email.com"/>
-      </div>
-      <button class="btn-token" id="btn-forgot-send">Enviar link de recuperación</button>
-      <button class="btn-token" id="btn-forgot-back" style="background: var(--navy2); border: 1px solid var(--border); margin-top: 10px;">Volver al login</button>
-      <div class="auth-msg" id="auth-forgot-message"></div>
-    </div>
-
-    <!-- Reset Password Form (cuando vuelve de email) -->
-    <div class="auth-form" id="auth-form-reset" style="display:none">
-      <div class="auth-field">
-        <label class="auth-label">Nueva contraseña</label>
-        <input class="auth-input" type="password" id="auth-reset-password" placeholder="••••••••"/>
-      </div>
-      <button class="btn-token" id="btn-reset-save">Actualizar contraseña</button>
-      <div class="auth-msg" id="auth-reset-message"></div>
-    </div>
-
-    <div class="auth-toggle">
-      <a id="auth-mode-toggle">¿No tenés cuenta? Registrate</a>
-    </div>
-
   </div>
-</div>
 
-<!-- ══════════════════════════════════════
+  <!-- ══════════════════════════════════════
      APP — se muestra solo si está autenticado
 ══════════════════════════════════════ -->
-<div id="app-wrapper">
+  <div id="app-wrapper">
 
-<!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
      HEADER
 ══════════════════════════════════════ -->
-<header>
-  <div class="header-inner" style="position: relative;">
-    <!-- Izquierda: Logo -->
-    <div class="logo">
-      <span class="logo-icon">⚽</span>
-      <span class="logo-text"><span>MUNDIALITO</span></span>
-      <span class="logo-badge">MUNDIAL 2026</span>
-    </div>
+    <header>
+      <div class="header-inner" style="position: relative;">
+        <!-- Izquierda: Logo -->
+        <div class="logo">
+          <span class="logo-icon">⚽</span>
+          <span class="logo-text"><span>MUNDIALITO</span></span>
+          <span class="logo-badge">MUNDIAL 2026</span>
+        </div>
 
-    <!-- Centro: Cartel EN VIVO centrado absolutamente -->
-    <div class="live-pill" style="position: absolute; left: 50%; transform: translateX(-50%);">
-      <span class="live-dot"></span>
-      <span class="live-label">EN VIVO</span>
-    </div>
+        <!-- Centro: Cartel EN VIVO centrado absolutamente -->
+        <div class="live-pill" style="position: absolute; left: 50%; transform: translateX(-50%);">
+          <span class="live-dot"></span>
+          <span class="live-label">EN VIVO</span>
+        </div>
 
-    <!-- Derecha: Menú del Perfil de Usuario -->
-    <div class="header-right">
-      <!-- Menú de Usuario premium -->
-      <div class="user-menu" id="header-user-menu" data-auth="user" style="display: flex; align-items: center; cursor: pointer; position: relative;">
-        <img id="user-avatar" class="user-avatar" src="" alt="Avatar" onerror="window.imgFallback(this)" style="display: none;" />
-        <div id="header-user-avatar-fallback" class="user-avatar-fallback" style="display: none;"></div>
-        <span id="user-username" style="font-size: 14px; font-weight: bold; margin-left: 8px; color: var(--offwhite);"></span>
-        
-        <div class="user-dropdown" id="header-user-dropdown">
-          <div class="user-dropdown-name">
-            <span id="dropdown-username-display" style="font-weight: 700;">Usuario</span>
-            <div id="dropdown-email-display" style="font-size: 11px; color: var(--text3); font-weight: normal; margin-top: 2px;">usuario@email.com</div>
+        <!-- Derecha: Menú del Perfil de Usuario -->
+        <div class="header-right">
+          <!-- Menú de Usuario premium -->
+          <div class="user-menu" id="header-user-menu" data-auth="user"
+            style="display: flex; align-items: center; cursor: pointer; position: relative;">
+            <img id="user-avatar" class="user-avatar" src="" alt="Avatar" onerror="window.imgFallback(this)"
+              style="display: none;" />
+            <div id="header-user-avatar-fallback" class="user-avatar-fallback" style="display: none;"></div>
+            <span id="user-username"
+              style="font-size: 14px; font-weight: bold; margin-left: 8px; color: var(--offwhite);"></span>
+
+            <div class="user-dropdown" id="header-user-dropdown">
+              <div class="user-dropdown-name">
+                <span id="dropdown-username-display" style="font-weight: 700;">Usuario</span>
+                <div id="dropdown-email-display"
+                  style="font-size: 11px; color: var(--text3); font-weight: normal; margin-top: 2px;">usuario@email.com
+                </div>
+              </div>
+              <div class="user-dropdown-item" id="btn-perfil-dropdown">👤 Mi Perfil</div>
+              <div class="user-dropdown-item danger" id="btn-logout">🚪 Cerrar Sesión</div>
+            </div>
           </div>
-          <div class="user-dropdown-item" id="btn-perfil-dropdown">👤 Mi Perfil</div>
-          <div class="user-dropdown-item danger" id="btn-logout">🚪 Cerrar Sesión</div>
         </div>
       </div>
-    </div>
-  </div>
-</header>
+    </header>
 
-<!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
      TICKER
 ══════════════════════════════════════ -->
-<div class="ticker-wrap">
-  <div class="ticker-track" id="tickerTrack"></div>
-</div>
+    <div class="ticker-wrap">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
 
-<!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
      CONTENIDO PRINCIPAL
 ══════════════════════════════════════ -->
-<div class="main">
+    <div class="main">
 
-  <!-- TABS DE NAVEGACIÓN -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
-    <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
-    <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
-    <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
-    <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
-    <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
-    <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
-    <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
-    <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
-    <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
-  </div>
-
-  <!-- ══ PANEL: EN VIVO ══ -->
-  <div id="panel-live" class="panel active">
-    <div class="live-grid">
-      <div>
-        <p class="section-label">Partidos en curso</p>
-        <div id="live-matches-container">
-          <div style="text-align:center;padding:30px;color:var(--text3)">
-            <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
-            <div style="font-size:14px">No hay partidos en vivo en este momento</div>
-            <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026</div>
-          </div>
-        </div>
+      <!-- TABS DE NAVEGACIÓN -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
+        <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
+        <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
+        <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
+        <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
+        <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+        <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
+        <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
+        <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
+        <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
+        <button class="tab-btn" onclick="switchTab('higherlower', this)">🆚 Higher/Lower</button>
       </div>
 
-      <!-- SIDEBAR -->
-      <div>
-        <div class="sidebar-card">
-          <div class="sidebar-hdr">
-            <span class="sidebar-hdr-dot"></span>
-            <span class="sidebar-hdr-text">Top Goleadores</span>
-          </div>
-          <div id="liveScorers"></div>
-        </div>
-
-        <div class="sidebar-card">
-          <div class="sidebar-hdr">
-            <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
-            <span class="sidebar-hdr-text">Últimas Tarjetas</span>
-          </div>
-          <div id="liveCards">
-            <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PANEL: GRUPOS ══ -->
-  <div id="panel-groups" class="panel">
-    <div class="grp-selector" id="grpSelector"></div>
-    <div class="grp-layout" id="grpContent"></div>
-  </div>
-
-  <!-- ══ PANEL: FIXTURE ══ -->
-  <div id="panel-fixtures" class="panel">
-    <p class="section-label">Fixture completo — Todos los grupos</p>
-    <div class="fixture-grid" id="fixtureContent"></div>
-  </div>
-
-  <!-- ══ PANEL: GOLEADORES ══ -->
-  <div id="panel-scorers" class="panel">
-    <p class="section-label">Tabla de goleadores — Mundial 2026</p>
-    <div class="sc-tbl">
-      <div class="sc-hdr">
-        <span>#</span><span></span><span>JUGADOR</span>
-        <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
-      </div>
-      <div id="scorersBody"></div>
-    </div>
-  </div>
-
-  <!-- ══ PANEL: TARJETAS ══ -->
-  <div id="panel-cards" class="panel">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-      
-      <!-- Panel: Amarillas -->
-      <div>
-        <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
-        <div class="cd-tbl">
-          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-          </div>
-          <div id="cardsBodyYellow"></div>
-        </div>
-      </div>
-
-      <!-- Panel: Rojas -->
-      <div>
-        <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
-        <div class="cd-tbl">
-          <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-            <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-          </div>
-          <div id="cardsBodyRed"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══ PANEL: EDICIONES PASADAS ══ -->
-  <div id="panel-history" class="panel">
-
-    <!-- Estadísticas globales del torneo -->
-    <div class="hist-hero">
-      <div class="hist-stat">
-        <div class="hist-stat-num"><span>22</span></div>
-        <div class="hist-stat-lbl">Ediciones celebradas</div>
-      </div>
-      <div class="hist-stat">
-        <div class="hist-stat-num">8</div>
-        <div class="hist-stat-lbl">Campeones distintos</div>
-      </div>
-      <div class="hist-stat">
-        <div class="hist-stat-num">5</div>
-        <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
-      </div>
-      <div class="hist-stat">
-        <div class="hist-stat-num">8<span>5</span></div>
-        <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
-      </div>
-    </div>
-
-    <!-- Campeonatos por confederación -->
-    <p class="section-label">Títulos por confederación (1930–2022)</p>
-    <div style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
-      <div class="conf-bar-wrap">
-        <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span class="conf-count">9</span></div>
-        <div class="conf-track"><div class="conf-fill" style="width:100%"></div></div>
-      </div>
-      <div class="conf-bar-wrap" style="margin-top:14px">
-        <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span></div>
-        <div class="conf-track"><div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div></div>
-      </div>
-      <div class="conf-bar-wrap" style="margin-top:14px">
-        <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span class="conf-count">0</span></div>
-        <div class="conf-track"><div class="conf-fill" style="width:3%;background:var(--border)"></div></div>
-      </div>
-    </div>
-
-    <!-- Selector de edición -->
-    <p class="section-label">Explorar edición</p>
-    <div class="edition-selector" id="editionSelector"></div>
-    <div id="editionCards"></div>
-
-  </div>
-
-  <!-- ══ PANEL: NOTICIAS ══ -->
-  <div id="panel-noticias" class="panel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-      <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
-      <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
-        <option value="">🌎 Ver Todo el Mundial</option>
-      </select>
-    </div>
-    <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
-      Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
-    </p>
-    <div id="grid-noticias" class="cards-grid"></div>
-  </div>
-  <!-- ══ PANEL: TIENDA ══ -->
-  <div id="panel-tienda" class="panel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-      <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
-      <select id="filtro-tienda" onchange="window.cargarProductos(this.value)" style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
-        <option value="">🌎 Todo el Mundial</option>
-      </select>
-    </div>
-    <div id="grid-productos" class="cards-grid"></div>
-  </div>
-
-  <div id="panel-chatbot" class="panel">
-
-  <!-- Encabezado del panel -->
-  <div class="chatbot-panel-header">
-    <div class="chatbot-panel-title">
-      <span class="chatbot-panel-icon">🤖</span>
-      <div>
-        <div class="chatbot-panel-name">Mundialito Bot</div>
-        <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
-      </div>
-    </div>
-    <div class="chatbot-status-badge">
-      <span class="chatbot-status-dot"></span>
-      En línea
-    </div>
-  </div>
-
-  <!-- Layout de dos columnas: chat + sidebar de productos -->
-  <div class="chatbot-layout">
-
-    <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
-    <div class="chatbot-main">
-
-      <!-- Mensajes del chat -->
-      <div class="chatbot-mensajes" id="chatbot-mensajes">
-        <!-- Mensaje inicial del bot -->
-        <div class="chatbot-msg chatbot-msg--bot">
-          <div class="chatbot-msg-avatar">⚽</div>
-          <div class="chatbot-msg-contenido">
-            <div class="chatbot-msg-texto">
-              ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
-              Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial. También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+      <!-- ══ PANEL: EN VIVO ══ -->
+      <div id="panel-live" class="panel active">
+        <div class="live-grid">
+          <div>
+            <p class="section-label">Partidos en curso</p>
+            <div id="live-matches-container">
+              <div style="text-align:center;padding:30px;color:var(--text3)">
+                <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+                <div style="font-size:14px">No hay partidos en vivo en este momento</div>
+                <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026
+                </div>
+              </div>
             </div>
-            <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
-            <div class="chatbot-sugerencias">
-              <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
-              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el Mundial?</button>
-              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
-              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos participan?</button>
-              <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para ganar?</button>
+          </div>
+
+          <!-- SIDEBAR -->
+          <div>
+            <div class="sidebar-card">
+              <div class="sidebar-hdr">
+                <span class="sidebar-hdr-dot"></span>
+                <span class="sidebar-hdr-text">Top Goleadores</span>
+              </div>
+              <div id="liveScorers"></div>
+            </div>
+
+            <div class="sidebar-card">
+              <div class="sidebar-hdr">
+                <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
+                <span class="sidebar-hdr-text">Últimas Tarjetas</span>
+              </div>
+              <div id="liveCards">
+                <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Input del usuario -->
-      <div class="chatbot-input-area">
-        <div class="chatbot-input-wrap">
-          <textarea
-            id="chatbot-input"
-            class="chatbot-textarea"
-            placeholder="Preguntame sobre el Mundial 2026..."
-            rows="1"
-            maxlength="500"
-            onkeydown="chatbotKeydown(event)"
-            oninput="autoResizeTextarea(this)"
-          ></textarea>
-          <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-        <div class="chatbot-input-footer">
-          <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
-          <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
-    <div class="chatbot-sidebar">
-      <div class="chatbot-sidebar-titulo">
-        <span>🛒</span> Productos sugeridos
-      </div>
-      <div id="chatbot-productos" class="chatbot-productos-lista">
-        <!-- Estado vacío inicial -->
-        <div class="chatbot-sidebar-empty">
-          <span>⚽</span>
-          <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
-        </div>
+      <!-- ══ PANEL: GRUPOS ══ -->
+      <div id="panel-groups" class="panel">
+        <div class="grp-selector" id="grpSelector"></div>
+        <div class="grp-layout" id="grpContent"></div>
       </div>
 
-      <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
-      <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
-        <div class="chatbot-sidebar-titulo" style="margin-top:20px">
-          <span>📅</span> Agendar en Google Calendar
-        </div>
-        <div id="chatbot-calendario-info" class="chatbot-calendario-info">
-          <!-- Información del evento se inyecta dinámicamente -->
-        </div>
-        <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
-          📅 Agregar a mi Google Calendar
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
-  <!-- ══ PANEL: PRODE ══ -->
-  <div id="panel-prode" class="panel">
-
-    <!-- Sub-tabs -->
-    <div class="prode-sub-tabs">
-      <button class="prode-sub-tab active" data-tab="predictions" onclick="switchProdeSubTab('predictions')">🔮 Mis Predicciones</button>
-      <button class="prode-sub-tab" data-tab="communities" onclick="switchProdeSubTab('communities')">👥 Comunidades</button>
-    </div>
-
-    <!-- Sub-panel: Predicciones -->
-    <div class="prode-subpanel active" id="prode-predictions-panel">
-
-      <!-- Barra de búsqueda -->
-      <div class="prode-search-wrap">
-        <span class="prode-search-icon">🔍</span>
-        <input
-          type="text"
-          id="prode-search"
-          class="prode-search-input"
-          placeholder="Buscá por país (ej: Argentina, Brasil...)"
-          autocomplete="off"
-        />
+      <!-- ══ PANEL: FIXTURE ══ -->
+      <div id="panel-fixtures" class="panel">
+        <p class="section-label">Fixture completo — Todos los grupos</p>
+        <div class="fixture-grid" id="fixtureContent"></div>
       </div>
 
-      <!-- Mensaje sin resultados (hidden by default) -->
-      <div id="prode-no-results" style="display:none;" class="prode-empty" style="padding:30px 0">
-        <span class="prode-empty-icon">🔍</span>
-        <div class="prode-empty-title">Sin partidos para esa búsqueda</div>
-        <div class="prode-empty-sub">Probá con otro nombre de selección.</div>
-      </div>
-
-      <!-- Contenido dinámico de predicciones -->
-      <div id="prode-predictions-content">
-        <!-- Se llena dinámicamente por prode.js -->
-        <div class="prode-empty">
-          <span class="prode-empty-icon">⚽</span>
-          <div class="prode-empty-title">Iniciando Prode...</div>
-          <div class="prode-empty-sub">Por favor iniciá sesión para cargar tus predicciones.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sub-panel: Comunidades -->
-    <div class="prode-subpanel" id="prode-communities-panel">
-      <div class="communities-layout">
-
-        <!-- ── Columna principal: mis grupos + ranking global ── -->
-        <div>
-          <!-- Mis grupos -->
-          <div class="my-groups-header">
-            <p class="section-label" style="margin:0">Mis Grupos</p>
-            <span class="groups-count-badge" id="prode-groups-count">0 grupos</span>
+      <!-- ══ PANEL: GOLEADORES ══ -->
+      <div id="panel-scorers" class="panel">
+        <p class="section-label">Tabla de goleadores — Mundial 2026</p>
+        <div class="sc-tbl">
+          <div class="sc-hdr">
+            <span>#</span><span></span><span>JUGADOR</span>
+            <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
           </div>
-          <!-- Lista dinámica de tarjetas de grupo -->
-          <div id="prode-my-groups-list">
-            <div class="prode-empty" style="padding:30px 0">
-              <span class="prode-empty-icon">👥</span>
-              <div class="prode-empty-title">Cargando grupos...</div>
-              <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+          <div id="scorersBody"></div>
+        </div>
+      </div>
+
+      <!-- ══ PANEL: TARJETAS ══ -->
+      <div id="panel-cards" class="panel">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+
+          <!-- Panel: Amarillas -->
+          <div>
+            <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
+            <div class="cd-tbl">
+              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+              </div>
+              <div id="cardsBodyYellow"></div>
             </div>
           </div>
 
-          <!-- Ranking global -->
-          <div class="global-ranking-section">
-            <p class="section-label">🌎 Ranking Global</p>
-            <div id="prode-global-ranking-cont">
-              <div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando ranking...</div>
+          <!-- Panel: Rojas -->
+          <div>
+            <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
+            <div class="cd-tbl">
+              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+              </div>
+              <div id="cardsBodyRed"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ PANEL: EDICIONES PASADAS ══ -->
+      <div id="panel-history" class="panel">
+
+        <!-- Estadísticas globales del torneo -->
+        <div class="hist-hero">
+          <div class="hist-stat">
+            <div class="hist-stat-num"><span>22</span></div>
+            <div class="hist-stat-lbl">Ediciones celebradas</div>
+          </div>
+          <div class="hist-stat">
+            <div class="hist-stat-num">8</div>
+            <div class="hist-stat-lbl">Campeones distintos</div>
+          </div>
+          <div class="hist-stat">
+            <div class="hist-stat-num">5</div>
+            <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
+          </div>
+          <div class="hist-stat">
+            <div class="hist-stat-num">8<span>5</span></div>
+            <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
+          </div>
+        </div>
+
+        <!-- Campeonatos por confederación -->
+        <p class="section-label">Títulos por confederación (1930–2022)</p>
+        <div
+          style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
+          <div class="conf-bar-wrap">
+            <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span
+                class="conf-count">9</span></div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:100%"></div>
+            </div>
+          </div>
+          <div class="conf-bar-wrap" style="margin-top:14px">
+            <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span>
+            </div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div>
+            </div>
+          </div>
+          <div class="conf-bar-wrap" style="margin-top:14px">
+            <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span
+                class="conf-count">0</span></div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:3%;background:var(--border)"></div>
             </div>
           </div>
         </div>
 
-        <!-- ── Sidebar: Crear / Unirse ── -->
-        <div class="community-sidebar">
+        <!-- Selector de edición -->
+        <p class="section-label">Explorar edición</p>
+        <div class="edition-selector" id="editionSelector"></div>
+        <div id="editionCards"></div>
 
-          <!-- Crear grupo -->
-          <div class="community-action-card">
-            <div class="community-action-title">🏆 Crear Grupo</div>
-            <input
-              type="text"
-              id="prode-nuevo-grupo"
-              class="community-input"
-              placeholder="Nombre del grupo (mín. 2 caracteres)"
-              maxlength="50"
-            />
-            <label class="community-toggle-row" style="cursor:pointer">
-              <span class="community-toggle-label">🌐 Grupo público</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="new-group-public" />
-                <span class="toggle-slider"></span>
-              </label>
-            </label>
-            <button class="community-btn" id="btn-create-group" onclick="crearComunidad()">Crear Grupo</button>
-            <div class="community-msg" id="create-group-msg"></div>
+      </div>
+
+      <!-- ══ PANEL: NOTICIAS ══ -->
+      <div id="panel-noticias" class="panel">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+          <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
+          <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)"
+            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+            <option value="">🌎 Ver Todo el Mundial</option>
+          </select>
+        </div>
+        <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
+          Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
+        </p>
+        <div id="grid-noticias" class="cards-grid"></div>
+      </div>
+      <!-- ══ PANEL: TIENDA ══ -->
+      <div id="panel-tienda" class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
+          <select id="filtro-tienda" onchange="window.cargarProductos(this.value)"
+            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
+            <option value="">🌎 Todo el Mundial</option>
+          </select>
+        </div>
+        <div id="grid-productos" class="cards-grid"></div>
+      </div>
+
+      <div id="panel-chatbot" class="panel">
+
+        <!-- Encabezado del panel -->
+        <div class="chatbot-panel-header">
+          <div class="chatbot-panel-title">
+            <span class="chatbot-panel-icon">🤖</span>
+            <div>
+              <div class="chatbot-panel-name">Mundialito Bot</div>
+              <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
+            </div>
           </div>
-
-          <!-- Unirse con código -->
-          <div class="community-action-card">
-            <div class="community-action-title">🔑 Unirse con Código</div>
-            <input
-              type="text"
-              id="join-group-code"
-              class="community-input"
-              placeholder="Código de 6 letras"
-              maxlength="6"
-              style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center"
-            />
-            <button class="community-btn btn--secondary" id="btn-join-group" onclick="unirseComunidad()">Unirse al Grupo</button>
-            <div class="community-msg" id="join-group-msg"></div>
+          <div class="chatbot-status-badge">
+            <span class="chatbot-status-dot"></span>
+            En línea
           </div>
-
-        </div><!-- /community-sidebar -->
-      </div><!-- /communities-layout -->
-    </div>
-
-
-  </div>
-
-  <!-- ══ PANEL: PERFIL ══ -->
-  <div id="panel-perfil" class="panel">
-    <div class="perfil-layout">
-      
-      <!-- Columna Izquierda: Información Básica + Estadísticas del Prode -->
-      <div>
-        <div class="perfil-card main-info-card">
-          <div class="perfil-card-bg"></div>
-          
-          <div class="perfil-avatar-wrapper">
-            <img id="perfil-large-avatar" class="perfil-large-avatar" src="" alt="Foto de perfil" onerror="window.imgFallback(this)" style="display: none;" />
-            <div id="perfil-large-avatar-fallback" class="perfil-large-avatar-fallback" style="display: none;"></div>
-            
-            <label for="perfil-file-input" class="avatar-edit-overlay" title="Cambiar foto de perfil">
-              <span>📷</span>
-            </label>
-            <input type="file" id="perfil-file-input" accept="image/*" style="display: none;" />
-          </div>
-          
-          <div class="perfil-username-title" id="perfil-username-display">Usuario</div>
-          <div class="perfil-email-sub" id="perfil-email-display">usuario@email.com</div>
-          
-          <div class="perfil-avatar-actions">
-            <button class="btn-perfil-secondary" onclick="document.getElementById('perfil-file-input').click()">Cambiar Foto</button>
-            <button id="btn-borrar-avatar" class="btn-perfil-danger" style="display: none;">Borrar Foto</button>
-          </div>
-          <div id="perfil-avatar-msg" class="auth-msg" style="display: none;"></div>
         </div>
 
-        <p class="section-label">🏆 Mi Desempeño en el Prode</p>
-        <div class="perfil-card" style="padding: 20px;">
-          <div class="prode-stats-grid">
-            
-            <!-- Puntos Totales -->
-            <div class="prode-stat-widget widget-gold">
-              <span class="widget-icon">🏅</span>
-              <div class="widget-data">
-                <span class="widget-value" id="prode-puntos">0</span>
-                <span class="widget-label">Puntos</span>
+        <!-- Layout de dos columnas: chat + sidebar de productos -->
+        <div class="chatbot-layout">
+
+          <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
+          <div class="chatbot-main">
+
+            <!-- Mensajes del chat -->
+            <div class="chatbot-mensajes" id="chatbot-mensajes">
+              <!-- Mensaje inicial del bot -->
+              <div class="chatbot-msg chatbot-msg--bot">
+                <div class="chatbot-msg-avatar">⚽</div>
+                <div class="chatbot-msg-contenido">
+                  <div class="chatbot-msg-texto">
+                    ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
+                    Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial.
+                    También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+                  </div>
+                  <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
+                  <div class="chatbot-sugerencias">
+                    <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
+                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el
+                      Mundial?</button>
+                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
+                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos
+                      participan?</button>
+                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para
+                      ganar?</button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Aciertos Exactos -->
-            <div class="prode-stat-widget widget-green">
-              <span class="widget-icon">🎯</span>
-              <div class="widget-data">
-                <span class="widget-value" id="prode-aciertos-exactos">0</span>
-                <span class="widget-label">Aciertos Exactos</span>
+            <!-- Input del usuario -->
+            <div class="chatbot-input-area">
+              <div class="chatbot-input-wrap">
+                <textarea id="chatbot-input" class="chatbot-textarea" placeholder="Preguntame sobre el Mundial 2026..."
+                  rows="1" maxlength="500" onkeydown="chatbotKeydown(event)"
+                  oninput="autoResizeTextarea(this)"></textarea>
+                <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+              <div class="chatbot-input-footer">
+                <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
+                <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
               </div>
             </div>
-
-            <!-- Aciertos Signo -->
-            <div class="prode-stat-widget widget-blue">
-              <span class="widget-icon">⚖️</span>
-              <div class="widget-data">
-                <span class="widget-value" id="prode-aciertos-signo">0</span>
-                <span class="widget-label">Aciertos Signo</span>
-              </div>
-            </div>
-
           </div>
 
-          <!-- Precisión general -->
-          <div class="accuracy-section">
-            <div class="accuracy-header">
-              <span>Precisión de Pronósticos</span>
-              <span id="prode-precision-label">0%</span>
+          <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
+          <div class="chatbot-sidebar">
+            <div class="chatbot-sidebar-titulo">
+              <span>🛒</span> Productos sugeridos
             </div>
-            <div class="accuracy-track">
-              <div id="prode-precision-bar" class="accuracy-fill" style="width: 0%;"></div>
+            <div id="chatbot-productos" class="chatbot-productos-lista">
+              <!-- Estado vacío inicial -->
+              <div class="chatbot-sidebar-empty">
+                <span>⚽</span>
+                <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
+              </div>
             </div>
-            <div class="accuracy-legend">
-              Basado en partidos finalizados y pronosticados.
+
+            <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
+            <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
+              <div class="chatbot-sidebar-titulo" style="margin-top:20px">
+                <span>📅</span> Agendar en Google Calendar
+              </div>
+              <div id="chatbot-calendario-info" class="chatbot-calendario-info">
+                <!-- Información del evento se inyecta dinámicamente -->
+              </div>
+              <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
+                📅 Agregar a mi Google Calendar
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- ══ PANEL: PRODE ══ -->
+      <div id="panel-prode" class="panel">
+
+        <!-- Sub-tabs -->
+        <div class="prode-sub-tabs">
+          <button class="prode-sub-tab active" data-tab="predictions" onclick="switchProdeSubTab('predictions')">🔮 Mis
+            Predicciones</button>
+          <button class="prode-sub-tab" data-tab="communities" onclick="switchProdeSubTab('communities')">👥
+            Comunidades</button>
+        </div>
+
+        <!-- Sub-panel: Predicciones -->
+        <div class="prode-subpanel active" id="prode-predictions-panel">
+
+          <!-- Barra de búsqueda -->
+          <div class="prode-search-wrap">
+            <span class="prode-search-icon">🔍</span>
+            <input type="text" id="prode-search" class="prode-search-input"
+              placeholder="Buscá por país (ej: Argentina, Brasil...)" autocomplete="off" />
+          </div>
+
+          <!-- Mensaje sin resultados (hidden by default) -->
+          <div id="prode-no-results" style="display:none;" class="prode-empty" style="padding:30px 0">
+            <span class="prode-empty-icon">🔍</span>
+            <div class="prode-empty-title">Sin partidos para esa búsqueda</div>
+            <div class="prode-empty-sub">Probá con otro nombre de selección.</div>
+          </div>
+
+          <!-- Contenido dinámico de predicciones -->
+          <div id="prode-predictions-content">
+            <!-- Se llena dinámicamente por prode.js -->
+            <div class="prode-empty">
+              <span class="prode-empty-icon">⚽</span>
+              <div class="prode-empty-title">Iniciando Prode...</div>
+              <div class="prode-empty-sub">Por favor iniciá sesión para cargar tus predicciones.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-panel: Comunidades -->
+        <div class="prode-subpanel" id="prode-communities-panel">
+          <div class="communities-layout">
+
+            <!-- ── Columna principal: mis grupos + ranking global ── -->
+            <div>
+              <!-- Mis grupos -->
+              <div class="my-groups-header">
+                <p class="section-label" style="margin:0">Mis Grupos</p>
+                <span class="groups-count-badge" id="prode-groups-count">0 grupos</span>
+              </div>
+              <!-- Lista dinámica de tarjetas de grupo -->
+              <div id="prode-my-groups-list">
+                <div class="prode-empty" style="padding:30px 0">
+                  <span class="prode-empty-icon">👥</span>
+                  <div class="prode-empty-title">Cargando grupos...</div>
+                  <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+                </div>
+              </div>
+
+              <!-- Ranking global -->
+              <div class="global-ranking-section">
+                <p class="section-label">🌎 Ranking Global</p>
+                <div id="prode-global-ranking-cont">
+                  <div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando ranking...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Sidebar: Crear / Unirse ── -->
+            <div class="community-sidebar">
+
+              <!-- Crear grupo -->
+              <div class="community-action-card">
+                <div class="community-action-title">🏆 Crear Grupo</div>
+                <input type="text" id="prode-nuevo-grupo" class="community-input"
+                  placeholder="Nombre del grupo (mín. 2 caracteres)" maxlength="50" />
+                <label class="community-toggle-row" style="cursor:pointer">
+                  <span class="community-toggle-label">🌐 Grupo público</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="new-group-public" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </label>
+                <button class="community-btn" id="btn-create-group" onclick="crearComunidad()">Crear Grupo</button>
+                <div class="community-msg" id="create-group-msg"></div>
+              </div>
+
+              <!-- Unirse con código -->
+              <div class="community-action-card">
+                <div class="community-action-title">🔑 Unirse con Código</div>
+                <input type="text" id="join-group-code" class="community-input" placeholder="Código de 6 letras"
+                  maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center" />
+                <button class="community-btn btn--secondary" id="btn-join-group" onclick="unirseComunidad()">Unirse al
+                  Grupo</button>
+                <div class="community-msg" id="join-group-msg"></div>
+              </div>
+
+            </div><!-- /community-sidebar -->
+          </div><!-- /communities-layout -->
+        </div>
+
+
+      </div>
+
+      <!-- ══ PANEL: PERFIL ══ -->
+      <div id="panel-perfil" class="panel">
+        <div class="perfil-layout">
+
+          <!-- Columna Izquierda: Información Básica + Estadísticas del Prode -->
+          <div>
+            <div class="perfil-card main-info-card">
+              <div class="perfil-card-bg"></div>
+
+              <div class="perfil-avatar-wrapper">
+                <img id="perfil-large-avatar" class="perfil-large-avatar" src="" alt="Foto de perfil"
+                  onerror="window.imgFallback(this)" style="display: none;" />
+                <div id="perfil-large-avatar-fallback" class="perfil-large-avatar-fallback" style="display: none;">
+                </div>
+
+                <label for="perfil-file-input" class="avatar-edit-overlay" title="Cambiar foto de perfil">
+                  <span>📷</span>
+                </label>
+                <input type="file" id="perfil-file-input" accept="image/*" style="display: none;" />
+              </div>
+
+              <div class="perfil-username-title" id="perfil-username-display">Usuario</div>
+              <div class="perfil-email-sub" id="perfil-email-display">usuario@email.com</div>
+
+              <div class="perfil-avatar-actions">
+                <button class="btn-perfil-secondary"
+                  onclick="document.getElementById('perfil-file-input').click()">Cambiar Foto</button>
+                <button id="btn-borrar-avatar" class="btn-perfil-danger" style="display: none;">Borrar Foto</button>
+              </div>
+              <div id="perfil-avatar-msg" class="auth-msg" style="display: none;"></div>
+            </div>
+
+            <p class="section-label">🏆 Mi Desempeño en el Prode</p>
+            <div class="perfil-card" style="padding: 20px;">
+              <div class="prode-stats-grid">
+
+                <!-- Puntos Totales -->
+                <div class="prode-stat-widget widget-gold">
+                  <span class="widget-icon">🏅</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="prode-puntos">0</span>
+                    <span class="widget-label">Puntos</span>
+                  </div>
+                </div>
+
+                <!-- Aciertos Exactos -->
+                <div class="prode-stat-widget widget-green">
+                  <span class="widget-icon">🎯</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="prode-aciertos-exactos">0</span>
+                    <span class="widget-label">Aciertos Exactos</span>
+                  </div>
+                </div>
+
+                <!-- Aciertos Signo -->
+                <div class="prode-stat-widget widget-blue">
+                  <span class="widget-icon">⚖️</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="prode-aciertos-signo">0</span>
+                    <span class="widget-label">Aciertos Signo</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Precisión general -->
+              <div class="accuracy-section">
+                <div class="accuracy-header">
+                  <span>Precisión de Pronósticos</span>
+                  <span id="prode-precision-label">0%</span>
+                </div>
+                <div class="accuracy-track">
+                  <div id="prode-precision-bar" class="accuracy-fill" style="width: 0%;"></div>
+                </div>
+                <div class="accuracy-legend">
+                  Basado en partidos finalizados y pronosticados.
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Configuración de Cuenta & Cambio de Contraseña -->
+          <div>
+            <!-- Ajustes de Perfil -->
+            <div class="perfil-card">
+              <div class="perfil-card-title">⚙️ Ajustes de Cuenta</div>
+              <div class="profile-settings-form">
+                <div class="auth-field">
+                  <label class="auth-label">Nombre de Usuario</label>
+                  <input class="auth-input" type="text" id="perfil-username-input" placeholder="Nombre de usuario" />
+                </div>
+                <button class="btn-token" id="btn-perfil-save-username">Actualizar Nombre</button>
+                <div id="perfil-settings-msg" class="auth-msg" style="display: none;"></div>
+              </div>
+            </div>
+
+            <!-- Seguridad / Contraseña -->
+            <div class="perfil-card">
+              <div class="perfil-card-title">🔒 Seguridad</div>
+              <div class="profile-settings-form">
+                <div class="auth-field">
+                  <label class="auth-label">Contraseña Actual</label>
+                  <input class="auth-input" type="password" id="perfil-current-password-input"
+                    placeholder="Tu contraseña actual" />
+                </div>
+                <div class="auth-field">
+                  <label class="auth-label">Nueva Contraseña</label>
+                  <input class="auth-input" type="password" id="perfil-password-input"
+                    placeholder="Min. 6 caracteres" />
+                </div>
+                <div class="auth-field">
+                  <label class="auth-label">Confirmar Nueva Contraseña</label>
+                  <input class="auth-input" type="password" id="perfil-confirm-password-input" placeholder="••••••••" />
+                </div>
+                <button class="btn-token" id="btn-perfil-save-password">Cambiar Contraseña</button>
+                <div class="secure-badge">
+                  <span class="badge-dot-green"></span>
+                  Conexión Encriptada
+                </div>
+                <div id="perfil-security-msg" class="auth-msg" style="display: none;"></div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
 
-      <!-- Columna Derecha: Configuración de Cuenta & Cambio de Contraseña -->
-      <div>
-        <!-- Ajustes de Perfil -->
-        <div class="perfil-card">
-          <div class="perfil-card-title">⚙️ Ajustes de Cuenta</div>
-          <div class="profile-settings-form">
-            <div class="auth-field">
-              <label class="auth-label">Nombre de Usuario</label>
-              <input class="auth-input" type="text" id="perfil-username-input" placeholder="Nombre de usuario" />
-            </div>
-            <button class="btn-token" id="btn-perfil-save-username">Actualizar Nombre</button>
-            <div id="perfil-settings-msg" class="auth-msg" style="display: none;"></div>
+      <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
+    </div>
+
+    <div id="panel-higherlower" class="panel">
+
+      <!-- PANTALLA INICIO -->
+      <div id="hl-screen-start" class="hl-screen">
+        <div class="hl-start-card">
+          <div class="hl-start-badge">MINIJUEGO</div>
+          <h1 class="hl-start-title">HIGHER<span>/</span>LOWER</h1>
+          <p class="hl-start-sub">Mundial de Fútbol Edition</p>
+          <p class="hl-start-desc">Decidí si el segundo valor es mayor o menor. ¡Un error y perdés todo!</p>
+          <div class="hl-start-rules">
+            <div class="hl-rule-item"><span class="hl-rule-icon">⚡</span><span>Muerte súbita</span></div>
+            <div class="hl-rule-item"><span class="hl-rule-icon">🎲</span><span>Métricas aleatorias</span></div>
+            <div class="hl-rule-item"><span class="hl-rule-icon">📅</span><span id="hl-attempts-display">5 intentos por
+                día</span></div>
           </div>
+          <button class="hl-btn-primary" id="hl-btn-start" onclick="hlStartGame()">JUGAR</button>
+          <div id="hl-start-record" class="hl-start-record"></div>
+        </div>
+      </div>
+
+      <!-- PANTALLA DE JUEGO -->
+      <div id="hl-screen-game" class="hl-screen" style="display:none">
+        <div class="hl-game-header">
+          <div class="hl-score-display">
+            <span class="hl-score-label">PUNTAJE</span>
+            <span class="hl-score-num" id="hl-score">0</span>
+          </div>
+          <div class="hl-metric-display" id="hl-metric-label">Goles en Mundiales</div>
+          <div class="hl-attempts-mini" id="hl-attempts-mini">● ● ● ● ●</div>
         </div>
 
-        <!-- Seguridad / Contraseña -->
-        <div class="perfil-card">
-          <div class="perfil-card-title">🔒 Seguridad</div>
-          <div class="profile-settings-form">
-            <div class="auth-field">
-              <label class="auth-label">Contraseña Actual</label>
-              <input class="auth-input" type="password" id="perfil-current-password-input" placeholder="Tu contraseña actual" />
+        <div class="hl-split">
+          <!-- IZQUIERDA -->
+          <div class="hl-card hl-card-left" id="hl-card-left">
+            <div class="hl-card-bg" id="hl-bg-left"></div>
+            <div class="hl-card-content">
+              <div class="hl-card-type" id="hl-left-type">SELECCIÓN</div>
+              <div class="hl-card-name" id="hl-left-name">Argentina</div>
+              <div class="hl-card-metric" id="hl-left-metric-name">Goles en Mundiales</div>
+              <div class="hl-card-value" id="hl-left-value">67</div>
+              <div class="hl-card-unit" id="hl-left-unit">goles totales</div>
             </div>
-            <div class="auth-field">
-              <label class="auth-label">Nueva Contraseña</label>
-              <input class="auth-input" type="password" id="perfil-password-input" placeholder="Min. 6 caracteres" />
+          </div>
+
+          <!-- VERSUS -->
+          <div class="hl-vs-divider">
+            <div class="hl-vs-circle">VS</div>
+          </div>
+
+          <!-- DERECHA -->
+          <div class="hl-card hl-card-right" id="hl-card-right">
+            <div class="hl-card-bg" id="hl-bg-right"></div>
+            <div class="hl-card-content">
+              <div class="hl-card-type" id="hl-right-type">SELECCIÓN</div>
+              <div class="hl-card-name" id="hl-right-name">Brasil</div>
+              <div class="hl-card-metric" id="hl-right-metric-name">Goles en Mundiales</div>
+              <div class="hl-card-value hl-hidden" id="hl-right-value">229</div>
+              <div class="hl-card-unit" id="hl-right-unit">goles totales</div>
+
+              <!-- Botones de elección -->
+              <div class="hl-buttons" id="hl-buttons">
+                <button class="hl-btn-choice hl-btn-higher" onclick="hlGuess('higher')">
+                  <span class="hl-btn-arrow">▲</span> MAYOR
+                </button>
+                <button class="hl-btn-choice hl-btn-lower" onclick="hlGuess('lower')">
+                  <span class="hl-btn-arrow">▼</span> MENOR
+                </button>
+              </div>
+
+              <!-- Resultado (hidden) -->
+              <div class="hl-result" id="hl-result" style="display:none">
+                <div class="hl-result-icon" id="hl-result-icon">✓</div>
+                <div class="hl-result-text" id="hl-result-text">¡CORRECTO!</div>
+                <button class="hl-btn-next" id="hl-btn-next" onclick="hlNextRound()">SIGUIENTE ▶</button>
+              </div>
             </div>
-            <div class="auth-field">
-              <label class="auth-label">Confirmar Nueva Contraseña</label>
-              <input class="auth-input" type="password" id="perfil-confirm-password-input" placeholder="••••••••" />
-            </div>
-            <button class="btn-token" id="btn-perfil-save-password">Cambiar Contraseña</button>
-            <div class="secure-badge">
-              <span class="badge-dot-green"></span>
-              Conexión Encriptada
-            </div>
-            <div id="perfil-security-msg" class="auth-msg" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANTALLA GAME OVER -->
+      <div id="hl-screen-gameover" class="hl-screen" style="display:none">
+        <div class="hl-gameover-card">
+          <div class="hl-gameover-icon" id="hl-go-icon">💀</div>
+          <h2 class="hl-gameover-title" id="hl-go-title">¡PERDISTE!</h2>
+          <p class="hl-gameover-sub" id="hl-go-sub">Llegaste hasta el round 5</p>
+          <div class="hl-gameover-score">
+            <span class="hl-go-score-label">PUNTAJE FINAL</span>
+            <span class="hl-go-score-num" id="hl-go-score">4</span>
+          </div>
+          <div class="hl-go-comparison" id="hl-go-comparison"></div>
+          <div id="hl-go-record-msg" class="hl-go-record-msg"></div>
+          <div id="hl-go-attempts-left" class="hl-go-attempts-left"></div>
+          <div class="hl-go-buttons">
+            <button class="hl-btn-primary" id="hl-btn-retry" onclick="hlStartGame()">JUGAR DE NUEVO</button>
+            <button class="hl-btn-secondary" onclick="hlGoHome()">INICIO</button>
           </div>
         </div>
       </div>
 
     </div>
+
+  </div><!-- /main -->
+
+  <!-- FOOTER -->
+  <footer
+    style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); background: var(--navy); margin-top: 40px;">
+    <span class="footer-brand"
+      style="color: var(--white); font-weight: bold; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;">Mundialito
+      2026 © Todos los derechos reservados.</span>
+    <div class="footer-info" style="display: flex; gap: 15px; align-items: center;">
+      <a href="#"
+        style="color: var(--gold); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); transition: color 0.2s;"
+        onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gold)'">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+        </svg>
+        @Mundialito2026
+      </a>
+    </div>
+  </footer>
+
+
+
+
+  <!-- ══ MODAL: DETALLE DE PARTIDO ══ -->
+  <div id="match-detail-modal" class="modal-overlay" onclick="if(event.target===this)cerrarDetallePartido()">
+    <div class="modal-card">
+      <button class="modal-close" onclick="cerrarDetallePartido()">✕</button>
+      <div id="match-detail-content"></div>
+    </div>
   </div>
 
-  <!-- ══ PANEL: GUÍA DE CÓDIGO ELIMINADA ══ -->
-  </div>
 
-</div><!-- /main -->
-
-<!-- FOOTER -->
-<footer style="display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); background: var(--navy); margin-top: 40px;">
-  <span class="footer-brand" style="color: var(--white); font-weight: bold; font-family: var(--font-display); font-size: 16px; letter-spacing: 1px;">Mundialito 2026 © Todos los derechos reservados.</span>
-  <div class="footer-info" style="display: flex; gap: 15px; align-items: center;">
-    <a href="#" style="color: var(--gold); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); transition: color 0.2s;" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gold)'">
-      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-      @Mundialito2026
-    </a>
-  </div>
-</footer>
+  </div><!-- /app-wrapper -->
 
 
+  <script type="module">
+    // Importamos las funciones exactas de tu auth.js
+    import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from '../backend/auth.js';
+    import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
+    import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
 
+    // ╔═════════════════════════════════════════════════════
+    // EXPONER SUPABASE GLOBALMENTE
+    // app.js (classic script) necesita acceder al cliente de Supabase.
+    // Esto debe ir antes de que app.js se ejecute.
+    // ╚═════════════════════════════════════════════════════
+    window.supabaseClient = supabase;
 
-<!-- ══ MODAL: DETALLE DE PARTIDO ══ -->
-<div id="match-detail-modal" class="modal-overlay" onclick="if(event.target===this)cerrarDetallePartido()">
-  <div class="modal-card">
-    <button class="modal-close" onclick="cerrarDetallePartido()">✕</button>
-    <div id="match-detail-content"></div>
-  </div>
-</div>
+    console.log('🚀 Inline module script loaded successfully!');
 
+    // ─── 1. REFERENCIAS DE TU INTERFAZ ───
+    const overlay = document.getElementById('auth-overlay');
+    const appWrapper = document.getElementById('app-wrapper');
+    const msgEl = document.getElementById('auth-message');
+    const emailEl = document.getElementById('auth-email');
+    const passEl = document.getElementById('auth-password');
+    const usernameField = document.getElementById('auth-username-field');
+    const usernameEl = document.getElementById('auth-username');
+    const btnGoogle = document.getElementById('btn-google-login');
+    const btnToken = document.getElementById('btn-token-login');
+    const modeToggle = document.getElementById('auth-mode-toggle');
 
-</div><!-- /app-wrapper -->
+    // Referencias para recuperación de contraseña
+    const forgotLink = document.getElementById('auth-forgot-password');
+    const formToken = document.getElementById('auth-form-token');
+    const formForgot = document.getElementById('auth-form-forgot');
+    const formReset = document.getElementById('auth-form-reset');
+    const btnForgotSend = document.getElementById('btn-forgot-send');
+    const btnForgotBack = document.getElementById('btn-forgot-back');
+    const forgotEmailEl = document.getElementById('auth-forgot-email');
+    const msgForgotEl = document.getElementById('auth-forgot-message');
 
+    const btnResetSave = document.getElementById('btn-reset-save');
+    const resetPassEl = document.getElementById('auth-reset-password');
+    const msgResetEl = document.getElementById('auth-reset-message');
 
-<script type="module">
-  // Importamos las funciones exactas de tu auth.js
-  import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from '../backend/auth.js'; 
-  import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
-  import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
+    let authMode = 'login';
 
-  // ╔═════════════════════════════════════════════════════
-  // EXPONER SUPABASE GLOBALMENTE
-  // app.js (classic script) necesita acceder al cliente de Supabase.
-  // Esto debe ir antes de que app.js se ejecute.
-  // ╚═════════════════════════════════════════════════════
-  window.supabaseClient = supabase;
-
-  console.log('🚀 Inline module script loaded successfully!');
-
-  // ─── 1. REFERENCIAS DE TU INTERFAZ ───
-  const overlay       = document.getElementById('auth-overlay');
-  const appWrapper    = document.getElementById('app-wrapper');
-  const msgEl         = document.getElementById('auth-message');
-  const emailEl       = document.getElementById('auth-email');
-  const passEl        = document.getElementById('auth-password');
-  const usernameField = document.getElementById('auth-username-field');
-  const usernameEl    = document.getElementById('auth-username');
-  const btnGoogle     = document.getElementById('btn-google-login');
-  const btnToken      = document.getElementById('btn-token-login');
-  const modeToggle    = document.getElementById('auth-mode-toggle');
-  
-  // Referencias para recuperación de contraseña
-  const forgotLink    = document.getElementById('auth-forgot-password');
-  const formToken     = document.getElementById('auth-form-token');
-  const formForgot    = document.getElementById('auth-form-forgot');
-  const formReset     = document.getElementById('auth-form-reset');
-  const btnForgotSend = document.getElementById('btn-forgot-send');
-  const btnForgotBack = document.getElementById('btn-forgot-back');
-  const forgotEmailEl = document.getElementById('auth-forgot-email');
-  const msgForgotEl   = document.getElementById('auth-forgot-message');
-  
-  const btnResetSave  = document.getElementById('btn-reset-save');
-  const resetPassEl   = document.getElementById('auth-reset-password');
-  const msgResetEl    = document.getElementById('auth-reset-message');
-
-  let authMode = 'login';
-
-  function setMsg(text, type, element = msgEl) {
-    element.className = 'auth-msg ' + type;
-    element.textContent = text;
-    element.style.display = text ? 'block' : 'none';
-  }
-
-  // ─── 2. EVENTOS DE LOS BOTONES ───
-  
-  // Cambiar entre Login y Registro
-  modeToggle.addEventListener('click', () => {
-    authMode = authMode === 'login' ? 'register' : 'login';
-    btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
-    modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
-    usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
-    forgotLink.style.display = authMode === 'login' ? 'block' : 'none';
-    setMsg('', '');
-  });
-
-  // Mostrar form de olvidé contraseña
-  forgotLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    formToken.style.display = 'none';
-    formForgot.style.display = 'block';
-    modeToggle.parentElement.style.display = 'none';
-    btnGoogle.style.display = 'none';
-    document.querySelector('.auth-divider').style.display = 'none';
-  });
-
-  // Volver al login desde olvidé contraseña
-  btnForgotBack.addEventListener('click', () => {
-    formForgot.style.display = 'none';
-    formToken.style.display = 'block';
-    modeToggle.parentElement.style.display = 'block';
-    btnGoogle.style.display = 'flex';
-    document.querySelector('.auth-divider').style.display = 'flex';
-    setMsg('', '', msgForgotEl);
-  });
-
-  // Enviar email de recuperación
-  btnForgotSend.addEventListener('click', async () => {
-    const email = forgotEmailEl.value.trim();
-    if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
-    
-    btnForgotSend.textContent = 'Enviando...';
-    btnForgotSend.disabled = true;
-    
-    const { error } = await recuperarContrasena(email);
-    
-    btnForgotSend.textContent = 'Enviar link de recuperación';
-    btnForgotSend.disabled = false;
-    
-    if (error) {
-      setMsg(error.message, 'error', msgForgotEl);
-    } else {
-      setMsg('Revisá tu email para el enlace de recuperación.', 'success', msgForgotEl);
+    function setMsg(text, type, element = msgEl) {
+      element.className = 'auth-msg ' + type;
+      element.textContent = text;
+      element.style.display = text ? 'block' : 'none';
     }
-  });
 
-  // Escuchar evento de recuperación (de auth.js)
-  window.addEventListener('show-password-reset', () => {
-    overlay.classList.remove('hidden');
-    appWrapper.classList.remove('visible');
-    
-    formToken.style.display = 'none';
-    formForgot.style.display = 'none';
-    formReset.style.display = 'block';
-    modeToggle.parentElement.style.display = 'none';
-    btnGoogle.style.display = 'none';
-    document.querySelector('.auth-divider').style.display = 'none';
-    
-    document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Restablecer contraseña';
-  });
+    // ─── 2. EVENTOS DE LOS BOTONES ───
 
-  // Guardar nueva contraseña
-  btnResetSave.addEventListener('click', async () => {
-    const newPass = resetPassEl.value;
-    if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
-    
-    btnResetSave.textContent = 'Actualizando...';
-    btnResetSave.disabled = true;
-    
-    try {
-      const { error } = await actualizarContrasena(newPass);
-      
+    // Cambiar entre Login y Registro
+    modeToggle.addEventListener('click', () => {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
+      modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
+      usernameField.style.display = authMode === 'login' ? 'none' : 'flex';
+      forgotLink.style.display = authMode === 'login' ? 'block' : 'none';
+      setMsg('', '');
+    });
+
+    // Mostrar form de olvidé contraseña
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      formToken.style.display = 'none';
+      formForgot.style.display = 'block';
+      modeToggle.parentElement.style.display = 'none';
+      btnGoogle.style.display = 'none';
+      document.querySelector('.auth-divider').style.display = 'none';
+    });
+
+    // Volver al login desde olvidé contraseña
+    btnForgotBack.addEventListener('click', () => {
+      formForgot.style.display = 'none';
+      formToken.style.display = 'block';
+      modeToggle.parentElement.style.display = 'block';
+      btnGoogle.style.display = 'flex';
+      document.querySelector('.auth-divider').style.display = 'flex';
+      setMsg('', '', msgForgotEl);
+    });
+
+    // Enviar email de recuperación
+    btnForgotSend.addEventListener('click', async () => {
+      const email = forgotEmailEl.value.trim();
+      if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
+
+      btnForgotSend.textContent = 'Enviando...';
+      btnForgotSend.disabled = true;
+
+      const { error } = await recuperarContrasena(email);
+
+      btnForgotSend.textContent = 'Enviar link de recuperación';
+      btnForgotSend.disabled = false;
+
       if (error) {
-        btnResetSave.textContent = 'Actualizar contraseña';
-        btnResetSave.disabled = false;
-        setMsg(error.message, 'error', msgResetEl);
+        setMsg(error.message, 'error', msgForgotEl);
       } else {
-        setMsg('Contraseña actualizada. Volviendo al login...', 'success', msgResetEl);
-        
-        // Cerramos la sesión actual generada por el link de recuperación
-        await cerrarSesion();
-        
-        setTimeout(() => {
-          // Limpiamos el hash de la URL
-          window.location.hash = '';
-          
-          // Restauramos el estado inicial de los botones
+        setMsg('Revisá tu email para el enlace de recuperación.', 'success', msgForgotEl);
+      }
+    });
+
+    // Escuchar evento de recuperación (de auth.js)
+    window.addEventListener('show-password-reset', () => {
+      overlay.classList.remove('hidden');
+      appWrapper.classList.remove('visible');
+
+      formToken.style.display = 'none';
+      formForgot.style.display = 'none';
+      formReset.style.display = 'block';
+      modeToggle.parentElement.style.display = 'none';
+      btnGoogle.style.display = 'none';
+      document.querySelector('.auth-divider').style.display = 'none';
+
+      document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Restablecer contraseña';
+    });
+
+    // Guardar nueva contraseña
+    btnResetSave.addEventListener('click', async () => {
+      const newPass = resetPassEl.value;
+      if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
+
+      btnResetSave.textContent = 'Actualizando...';
+      btnResetSave.disabled = true;
+
+      try {
+        const { error } = await actualizarContrasena(newPass);
+
+        if (error) {
           btnResetSave.textContent = 'Actualizar contraseña';
           btnResetSave.disabled = false;
-          resetPassEl.value = '';
-          msgResetEl.style.display = 'none';
-          
-          // Volvemos al form de login
-          formReset.style.display = 'none';
-          formToken.style.display = 'block';
-          modeToggle.parentElement.style.display = 'block';
-          btnGoogle.style.display = 'flex';
-          document.querySelector('.auth-divider').style.display = 'flex';
-          document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Ingresá para continuar';
-          
-          setMsg('Iniciá sesión con tu nueva contraseña.', 'success', msgEl);
-        }, 1500);
-      }
-    } catch (err) {
-      console.error(err);
-      btnResetSave.textContent = 'Actualizar contraseña';
-      btnResetSave.disabled = false;
-      setMsg('Hubo un error inesperado.', 'error', msgResetEl);
-    }
-  });
-
-  // Botón de Google
-  btnGoogle.addEventListener('click', () => {
-    btnGoogle.textContent = 'Cargando...';
-    iniciarSesionGoogle();
-  });
-
-  // Botón de Email / Contraseña
-  btnToken.addEventListener('click', async () => {
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-    const username = usernameEl?.value?.trim();
-
-    if (!email || !password) return setMsg('Completá todos los campos.', 'error');
-
-    btnToken.disabled = true;
-    const originalText = btnToken.textContent;
-    btnToken.textContent = 'Cargando...';
-    setMsg('', '');
-
-    try {
-      if (authMode === 'register') {
-        if (!username) { 
-          setMsg('Elegí un usuario.', 'error'); 
-          return; 
-        }
-        
-        const { error } = await registrarse(email, password, username);
-        
-        if (error) {
-          setMsg(error.message, 'error');
+          setMsg(error.message, 'error', msgResetEl);
         } else {
-          setMsg('Revisá tu email para confirmar.', 'success');
+          setMsg('Contraseña actualizada. Volviendo al login...', 'success', msgResetEl);
+
+          // Cerramos la sesión actual generada por el link de recuperación
+          await cerrarSesion();
+
+          setTimeout(() => {
+            // Limpiamos el hash de la URL
+            window.location.hash = '';
+
+            // Restauramos el estado inicial de los botones
+            btnResetSave.textContent = 'Actualizar contraseña';
+            btnResetSave.disabled = false;
+            resetPassEl.value = '';
+            msgResetEl.style.display = 'none';
+
+            // Volvemos al form de login
+            formReset.style.display = 'none';
+            formToken.style.display = 'block';
+            modeToggle.parentElement.style.display = 'block';
+            btnGoogle.style.display = 'flex';
+            document.querySelector('.auth-divider').style.display = 'flex';
+            document.querySelector('.auth-logo-sub').textContent = 'Mundial 2026 · Ingresá para continuar';
+
+            setMsg('Iniciá sesión con tu nueva contraseña.', 'success', msgEl);
+          }, 1500);
+        }
+      } catch (err) {
+        console.error(err);
+        btnResetSave.textContent = 'Actualizar contraseña';
+        btnResetSave.disabled = false;
+        setMsg('Hubo un error inesperado.', 'error', msgResetEl);
+      }
+    });
+
+    // Botón de Google
+    btnGoogle.addEventListener('click', () => {
+      btnGoogle.textContent = 'Cargando...';
+      iniciarSesionGoogle();
+    });
+
+    // Botón de Email / Contraseña
+    btnToken.addEventListener('click', async () => {
+      const email = emailEl.value.trim();
+      const password = passEl.value;
+      const username = usernameEl?.value?.trim();
+
+      if (!email || !password) return setMsg('Completá todos los campos.', 'error');
+
+      btnToken.disabled = true;
+      const originalText = btnToken.textContent;
+      btnToken.textContent = 'Cargando...';
+      setMsg('', '');
+
+      try {
+        if (authMode === 'register') {
+          if (!username) {
+            setMsg('Elegí un usuario.', 'error');
+            return;
+          }
+
+          const { error } = await registrarse(email, password, username);
+
+          if (error) {
+            setMsg(error.message, 'error');
+          } else {
+            setMsg('Revisá tu email para confirmar.', 'success');
+          }
+        } else {
+          const { error } = await iniciarSesionEmail(email, password);
+          if (error) {
+            setMsg('Email o contraseña incorrectos.', 'error');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        setMsg('Hubo un error inesperado al conectar.', 'error');
+      } finally {
+        btnToken.disabled = false;
+        btnToken.textContent = originalText;
+      }
+    });
+
+    // --- Lógica del Perfil de Usuario ---
+    let userSession = null;
+    let userProfile = null;
+
+    // --- Callback de Autenticación de Mundialito ---
+    // Se ejecuta de manera sincronizada desde auth.js al inicializar o cambiar la sesión
+    window.onMundialitoAuth = function (user, profile) {
+      console.log('🔑 window.onMundialitoAuth callback triggered!', { user, profile });
+
+      if (user) {
+        userSession = user;
+
+        // Exponer el user_id globalmente para que app.js (Prode en vanilla) lo use
+        window.__mundialitoUserId = user.id;
+
+        // Inicializar el Prode — módulo ESM
+        initProde(user.id);
+        // Inicializar el Prode — módulo vanilla (app.js) como respaldo
+        if (typeof window.prodeInit === 'function') window.prodeInit(user.id);
+
+        // Sincronizar visibilidad de overlays
+        const overlayEl = document.getElementById('auth-overlay');
+        const appWrapperEl = document.getElementById('app-wrapper');
+        if (overlayEl) overlayEl.classList.add('hidden');
+        if (appWrapperEl) appWrapperEl.classList.add('visible');
+
+        if (profile) {
+          userProfile = profile;
+          updateUIWithProfile(user, profile);
+        } else {
+          console.log('Generating fallback profile...');
+          // Generar un fallback robusto en caso de que no tenga registro de perfil en la BD
+          const fallbackProfile = {
+            id: user.id,
+            username: user.user_metadata?.username || user.email.split('@')[0],
+            avatar_url: user.user_metadata?.avatar_url || null,
+            puntos_prode: 0,
+            aciertos_exactos: 0,
+            aciertos_signo: 0
+          };
+          userProfile = fallbackProfile;
+          updateUIWithProfile(user, fallbackProfile);
         }
       } else {
-        const { error } = await iniciarSesionEmail(email, password);
-        if (error) {
-          setMsg('Email o contraseña incorrectos.', 'error');
-        }
+        userSession = null;
+        userProfile = null;
+
+        const overlayEl = document.getElementById('auth-overlay');
+        const appWrapperEl = document.getElementById('app-wrapper');
+        if (overlayEl) overlayEl.classList.remove('hidden');
+        if (appWrapperEl) appWrapperEl.classList.remove('visible');
+
+        const headerUserMenu = document.getElementById('header-user-menu');
+        if (headerUserMenu) headerUserMenu.style.display = 'none';
       }
-    } catch (err) {
-      console.error(err);
-      setMsg('Hubo un error inesperado al conectar.', 'error');
-    } finally {
-      btnToken.disabled = false;
-      btnToken.textContent = originalText;
-    }
-  });
+    };
 
-  // --- Lógica del Perfil de Usuario ---
-  let userSession = null;
-  let userProfile = null;
+    // Función global para cambiar al panel de Perfil manualmente (sin tocar app.js)
+    window.switchTabToPerfil = function () {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-  // --- Callback de Autenticación de Mundialito ---
-  // Se ejecuta de manera sincronizada desde auth.js al inicializar o cambiar la sesión
-  window.onMundialitoAuth = function(user, profile) {
-    console.log('🔑 window.onMundialitoAuth callback triggered!', { user, profile });
-    
-    if (user) {
-      userSession = user;
-      
-      // Exponer el user_id globalmente para que app.js (Prode en vanilla) lo use
-      window.__mundialitoUserId = user.id;
+      const panel = document.getElementById('panel-perfil');
+      if (panel) panel.classList.add('active');
+    };
 
-      // Inicializar el Prode — módulo ESM
-      initProde(user.id);
-      // Inicializar el Prode — módulo vanilla (app.js) como respaldo
-      if (typeof window.prodeInit === 'function') window.prodeInit(user.id);
-      
-      // Sincronizar visibilidad de overlays
-      const overlayEl = document.getElementById('auth-overlay');
-      const appWrapperEl = document.getElementById('app-wrapper');
-      if (overlayEl) overlayEl.classList.add('hidden');
-      if (appWrapperEl) appWrapperEl.classList.add('visible');
+    // Función global para cambiar sub-tabs del Prode
+    // Intenta el módulo ESM, si falla usa la función vanilla de app.js
+    window.switchProdeSubTab = function (tab) {
+      try { prodeSubTab(tab); } catch (e) { }
+      if (typeof window.prodeChangeSubTab === 'function') window.prodeChangeSubTab(tab);
+    };
 
-      if (profile) {
-        userProfile = profile;
-        updateUIWithProfile(user, profile);
-      } else {
-        console.log('Generating fallback profile...');
-        // Generar un fallback robusto en caso de que no tenga registro de perfil en la BD
-        const fallbackProfile = {
-          id: user.id,
-          username: user.user_metadata?.username || user.email.split('@')[0],
-          avatar_url: user.user_metadata?.avatar_url || null,
-          puntos_prode: 0,
-          aciertos_exactos: 0,
-          aciertos_signo: 0
-        };
-        userProfile = fallbackProfile;
-        updateUIWithProfile(user, fallbackProfile);
-      }
-    } else {
-      userSession = null;
-      userProfile = null;
-      
-      const overlayEl = document.getElementById('auth-overlay');
-      const appWrapperEl = document.getElementById('app-wrapper');
-      if (overlayEl) overlayEl.classList.remove('hidden');
-      if (appWrapperEl) appWrapperEl.classList.remove('visible');
-      
-      const headerUserMenu = document.getElementById('header-user-menu');
-      if (headerUserMenu) headerUserMenu.style.display = 'none';
-    }
-  };
-
-  // Función global para cambiar al panel de Perfil manualmente (sin tocar app.js)
-  window.switchTabToPerfil = function() {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    
-    const panel = document.getElementById('panel-perfil');
-    if (panel) panel.classList.add('active');
-  };
-
-  // Función global para cambiar sub-tabs del Prode
-  // Intenta el módulo ESM, si falla usa la función vanilla de app.js
-  window.switchProdeSubTab = function(tab) {
-    try { prodeSubTab(tab); } catch(e) {}
-    if (typeof window.prodeChangeSubTab === 'function') window.prodeChangeSubTab(tab);
-  };
-
-  // Asignar evento al clic del botón en el dropdown
-  document.getElementById('btn-perfil-dropdown')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    window.switchTabToPerfil();
-    document.getElementById('header-user-dropdown')?.classList.remove('open');
-  });
-
-  // Asignar evento al botón de Cerrar Sesión en el dropdown
-  document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    document.getElementById('header-user-dropdown')?.classList.remove('open');
-    await cerrarSesion();
-  });
-
-  // Toggle del Dropdown de Cabecera
-  const headerUserMenu = document.getElementById('header-user-menu');
-  const headerUserDropdown = document.getElementById('header-user-dropdown');
-  if (headerUserMenu && headerUserDropdown) {
-    headerUserMenu.addEventListener('click', (e) => {
+    // Asignar evento al clic del botón en el dropdown
+    document.getElementById('btn-perfil-dropdown')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      headerUserDropdown.classList.toggle('open');
+      window.switchTabToPerfil();
+      document.getElementById('header-user-dropdown')?.classList.remove('open');
     });
-    document.addEventListener('click', () => {
-      headerUserDropdown.classList.remove('open');
+
+    // Asignar evento al botón de Cerrar Sesión en el dropdown
+    document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      document.getElementById('header-user-dropdown')?.classList.remove('open');
+      await cerrarSesion();
     });
-  }
 
-  // Helper para actualizar todas las referencias del perfil en la UI
-  function updateUIWithProfile(user, profile) {
-    if (!user || !profile) return;
-
-    // A) Header / Cabecera
+    // Toggle del Dropdown de Cabecera
     const headerUserMenu = document.getElementById('header-user-menu');
-    const headerAvatarImg = document.getElementById('user-avatar');
-    const headerAvatarFallback = document.getElementById('header-user-avatar-fallback');
-    const headerUsername = document.getElementById('user-username');
-    const dropdownUsername = document.getElementById('dropdown-username-display');
-    const dropdownEmail = document.getElementById('dropdown-email-display');
+    const headerUserDropdown = document.getElementById('header-user-dropdown');
+    if (headerUserMenu && headerUserDropdown) {
+      headerUserMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerUserDropdown.classList.toggle('open');
+      });
+      document.addEventListener('click', () => {
+        headerUserDropdown.classList.remove('open');
+      });
+    }
 
-    console.log('👤 updateUIWithProfile called. User:', user.email, 'Profile:', profile);
-    console.log('Elements found inside updateUIWithProfile:', { headerUserMenu, headerAvatarImg, headerAvatarFallback, headerUsername });
+    // Helper para actualizar todas las referencias del perfil en la UI
+    function updateUIWithProfile(user, profile) {
+      if (!user || !profile) return;
 
-    if (headerUserMenu) headerUserMenu.style.display = 'flex';
+      // A) Header / Cabecera
+      const headerUserMenu = document.getElementById('header-user-menu');
+      const headerAvatarImg = document.getElementById('user-avatar');
+      const headerAvatarFallback = document.getElementById('header-user-avatar-fallback');
+      const headerUsername = document.getElementById('user-username');
+      const dropdownUsername = document.getElementById('dropdown-username-display');
+      const dropdownEmail = document.getElementById('dropdown-email-display');
 
-    if (profile.avatar_url) {
-      if (headerAvatarImg) {
-        headerAvatarImg.src = profile.avatar_url;
-        headerAvatarImg.style.display = 'block';
+      console.log('👤 updateUIWithProfile called. User:', user.email, 'Profile:', profile);
+      console.log('Elements found inside updateUIWithProfile:', { headerUserMenu, headerAvatarImg, headerAvatarFallback, headerUsername });
+
+      if (headerUserMenu) headerUserMenu.style.display = 'flex';
+
+      if (profile.avatar_url) {
+        if (headerAvatarImg) {
+          headerAvatarImg.src = profile.avatar_url;
+          headerAvatarImg.style.display = 'block';
+        }
+        if (headerAvatarFallback) headerAvatarFallback.style.display = 'none';
+      } else {
+        if (headerAvatarImg) headerAvatarImg.style.display = 'none';
+        if (headerAvatarFallback) {
+          headerAvatarFallback.textContent = '👤';
+          headerAvatarFallback.style.display = 'flex';
+        }
       }
-      if (headerAvatarFallback) headerAvatarFallback.style.display = 'none';
-    } else {
-      if (headerAvatarImg) headerAvatarImg.style.display = 'none';
-      if (headerAvatarFallback) {
-        headerAvatarFallback.textContent = '👤';
-        headerAvatarFallback.style.display = 'flex';
+
+      if (headerUsername) headerUsername.textContent = profile.username || 'Usuario';
+      if (dropdownUsername) dropdownUsername.textContent = profile.username || 'Usuario';
+      if (dropdownEmail) dropdownEmail.textContent = user.email || 'sin@email.com';
+
+      // B) Panel de Perfil
+      const perfLargeAvatar = document.getElementById('perfil-large-avatar');
+      const perfLargeAvatarFallback = document.getElementById('perfil-large-avatar-fallback');
+      const perfUsernameDisplay = document.getElementById('perfil-username-display');
+      const perfEmailDisplay = document.getElementById('perfil-email-display');
+      const perfUsernameInput = document.getElementById('perfil-username-input');
+      const btnBorrarAvatar = document.getElementById('btn-borrar-avatar');
+
+      if (profile.avatar_url) {
+        if (perfLargeAvatar) {
+          perfLargeAvatar.src = profile.avatar_url;
+          perfLargeAvatar.style.display = 'block';
+        }
+        if (perfLargeAvatarFallback) perfLargeAvatarFallback.style.display = 'none';
+        if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'inline-block';
+      } else {
+        if (perfLargeAvatar) perfLargeAvatar.style.display = 'none';
+        if (perfLargeAvatarFallback) {
+          perfLargeAvatarFallback.textContent = '👤';
+          perfLargeAvatarFallback.style.display = 'flex';
+        }
+        if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'none';
+      }
+
+      if (perfUsernameDisplay) perfUsernameDisplay.textContent = profile.username || 'Usuario';
+      if (perfEmailDisplay) perfEmailDisplay.textContent = user.email || 'sin@email.com';
+      if (perfUsernameInput) perfUsernameInput.value = profile.username || '';
+
+      // C) Widgets de Estadísticas del Prode
+      const prodePuntos = document.getElementById('prode-puntos');
+      const prodeExactos = document.getElementById('prode-aciertos-exactos');
+      const prodeSigno = document.getElementById('prode-aciertos-signo');
+      const precisionLabel = document.getElementById('prode-precision-label');
+      const precisionBar = document.getElementById('prode-precision-bar');
+
+      const pts = profile.puntos_prode || 0;
+      const exacts = profile.aciertos_exactos || 0;
+      const signo = profile.aciertos_signo || 0;
+
+      if (prodePuntos) prodePuntos.textContent = pts;
+      if (prodeExactos) prodeExactos.textContent = exacts;
+      if (prodeSigno) prodeSigno.textContent = signo;
+
+      const totalAciertos = exacts + signo;
+      if (totalAciertos > 0) {
+        const precision = Math.round((exacts / totalAciertos) * 100);
+        if (precisionLabel) precisionLabel.textContent = `${precision}% exactos`;
+        if (precisionBar) precisionBar.style.width = `${precision}%`;
+      } else {
+        if (precisionLabel) precisionLabel.textContent = '0%';
+        if (precisionBar) precisionBar.style.width = '0%';
       }
     }
 
-    if (headerUsername) headerUsername.textContent = profile.username || 'Usuario';
-    if (dropdownUsername) dropdownUsername.textContent = profile.username || 'Usuario';
-    if (dropdownEmail) dropdownEmail.textContent = user.email || 'sin@email.com';
+    // Evento: Subida de Foto de Perfil
+    document.getElementById('perfil-file-input')?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    // B) Panel de Perfil
-    const perfLargeAvatar = document.getElementById('perfil-large-avatar');
-    const perfLargeAvatarFallback = document.getElementById('perfil-large-avatar-fallback');
-    const perfUsernameDisplay = document.getElementById('perfil-username-display');
-    const perfEmailDisplay = document.getElementById('perfil-email-display');
-    const perfUsernameInput = document.getElementById('perfil-username-input');
-    const btnBorrarAvatar = document.getElementById('btn-borrar-avatar');
+      const msgEl = document.getElementById('perfil-avatar-msg');
+      setMsg('Subiendo foto de perfil...', 'info', msgEl);
 
-    if (profile.avatar_url) {
-      if (perfLargeAvatar) {
-        perfLargeAvatar.src = profile.avatar_url;
-        perfLargeAvatar.style.display = 'block';
+      try {
+        const publicUrl = await subirAvatar(file);
+        if (!publicUrl) {
+          setMsg('Error al subir la imagen. Comprobá el almacenamiento.', 'error', msgEl);
+          return;
+        }
+
+        const { data, error } = await actualizarPerfil({
+          username: userProfile.username,
+          avatar_url: publicUrl
+        });
+
+        if (error) {
+          setMsg(error.message, 'error', msgEl);
+        } else {
+          setMsg('¡Foto actualizada con éxito!', 'success', msgEl);
+          userProfile = data;
+          updateUIWithProfile(userSession, data);
+          setTimeout(() => setMsg('', '', msgEl), 3000);
+        }
+      } catch (err) {
+        console.error(err);
+        setMsg('Hubo un error inesperado.', 'error', msgEl);
       }
-      if (perfLargeAvatarFallback) perfLargeAvatarFallback.style.display = 'none';
-      if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'inline-block';
-    } else {
-      if (perfLargeAvatar) perfLargeAvatar.style.display = 'none';
-      if (perfLargeAvatarFallback) {
-        perfLargeAvatarFallback.textContent = '👤';
-        perfLargeAvatarFallback.style.display = 'flex';
+    });
+
+    // Evento: Borrar Foto de Perfil
+    document.getElementById('btn-borrar-avatar')?.addEventListener('click', async () => {
+      const msgEl = document.getElementById('perfil-avatar-msg');
+      setMsg('Eliminando foto...', 'info', msgEl);
+
+      try {
+        const { data, error } = await actualizarPerfil({
+          username: userProfile.username,
+          avatar_url: null
+        });
+
+        if (error) {
+          setMsg(error.message, 'error', msgEl);
+        } else {
+          setMsg('¡Foto eliminada!', 'success', msgEl);
+          userProfile = data;
+          updateUIWithProfile(userSession, data);
+          setTimeout(() => setMsg('', '', msgEl), 3000);
+        }
+      } catch (err) {
+        console.error(err);
+        setMsg('Error al eliminar foto.', 'error', msgEl);
       }
-      if (btnBorrarAvatar) btnBorrarAvatar.style.display = 'none';
-    }
+    });
 
-    if (perfUsernameDisplay) perfUsernameDisplay.textContent = profile.username || 'Usuario';
-    if (perfEmailDisplay) perfEmailDisplay.textContent = user.email || 'sin@email.com';
-    if (perfUsernameInput) perfUsernameInput.value = profile.username || '';
+    // Evento: Guardar Nombre de Usuario
+    document.getElementById('btn-perfil-save-username')?.addEventListener('click', async () => {
+      const newUsername = document.getElementById('perfil-username-input').value.trim();
+      const msgEl = document.getElementById('perfil-settings-msg');
 
-    // C) Widgets de Estadísticas del Prode
-    const prodePuntos = document.getElementById('prode-puntos');
-    const prodeExactos = document.getElementById('prode-aciertos-exactos');
-    const prodeSigno = document.getElementById('prode-aciertos-signo');
-    const precisionLabel = document.getElementById('prode-precision-label');
-    const precisionBar = document.getElementById('prode-precision-bar');
-
-    const pts = profile.puntos_prode || 0;
-    const exacts = profile.aciertos_exactos || 0;
-    const signo = profile.aciertos_signo || 0;
-
-    if (prodePuntos) prodePuntos.textContent = pts;
-    if (prodeExactos) prodeExactos.textContent = exacts;
-    if (prodeSigno) prodeSigno.textContent = signo;
-
-    const totalAciertos = exacts + signo;
-    if (totalAciertos > 0) {
-      const precision = Math.round((exacts / totalAciertos) * 100);
-      if (precisionLabel) precisionLabel.textContent = `${precision}% exactos`;
-      if (precisionBar) precisionBar.style.width = `${precision}%`;
-    } else {
-      if (precisionLabel) precisionLabel.textContent = '0%';
-      if (precisionBar) precisionBar.style.width = '0%';
-    }
-  }
-
-  // Evento: Subida de Foto de Perfil
-  document.getElementById('perfil-file-input')?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const msgEl = document.getElementById('perfil-avatar-msg');
-    setMsg('Subiendo foto de perfil...', 'info', msgEl);
-
-    try {
-      const publicUrl = await subirAvatar(file);
-      if (!publicUrl) {
-        setMsg('Error al subir la imagen. Comprobá el almacenamiento.', 'error', msgEl);
+      if (!newUsername) {
+        setMsg('El nombre de usuario no puede estar vacío.', 'error', msgEl);
         return;
       }
 
-      const { data, error } = await actualizarPerfil({
-        username: userProfile.username,
-        avatar_url: publicUrl
-      });
+      setMsg('Guardando cambios...', 'info', msgEl);
 
-      if (error) {
-        setMsg(error.message, 'error', msgEl);
-      } else {
-        setMsg('¡Foto actualizada con éxito!', 'success', msgEl);
-        userProfile = data;
-        updateUIWithProfile(userSession, data);
-        setTimeout(() => setMsg('', '', msgEl), 3000);
-      }
-    } catch (err) {
-      console.error(err);
-      setMsg('Hubo un error inesperado.', 'error', msgEl);
-    }
-  });
-
-  // Evento: Borrar Foto de Perfil
-  document.getElementById('btn-borrar-avatar')?.addEventListener('click', async () => {
-    const msgEl = document.getElementById('perfil-avatar-msg');
-    setMsg('Eliminando foto...', 'info', msgEl);
-
-    try {
-      const { data, error } = await actualizarPerfil({
-        username: userProfile.username,
-        avatar_url: null
-      });
-
-      if (error) {
-        setMsg(error.message, 'error', msgEl);
-      } else {
-        setMsg('¡Foto eliminada!', 'success', msgEl);
-        userProfile = data;
-        updateUIWithProfile(userSession, data);
-        setTimeout(() => setMsg('', '', msgEl), 3000);
-      }
-    } catch (err) {
-      console.error(err);
-      setMsg('Error al eliminar foto.', 'error', msgEl);
-    }
-  });
-
-  // Evento: Guardar Nombre de Usuario
-  document.getElementById('btn-perfil-save-username')?.addEventListener('click', async () => {
-    const newUsername = document.getElementById('perfil-username-input').value.trim();
-    const msgEl = document.getElementById('perfil-settings-msg');
-
-    if (!newUsername) {
-      setMsg('El nombre de usuario no puede estar vacío.', 'error', msgEl);
-      return;
-    }
-
-    setMsg('Guardando cambios...', 'info', msgEl);
-
-    try {
-      const { data, error } = await actualizarPerfil({
-        username: newUsername,
-        avatar_url: userProfile.avatar_url
-      });
-
-      if (error) {
-        setMsg(error.message, 'error', msgEl);
-      } else {
-        setMsg('Nombre de usuario actualizado con éxito.', 'success', msgEl);
-        userProfile = data;
-        updateUIWithProfile(userSession, data);
-        setTimeout(() => setMsg('', '', msgEl), 3000);
-      }
-    } catch (err) {
-      console.error(err);
-      setMsg('Hubo un error al guardar.', 'error', msgEl);
-    }
-  });
-
-  // Evento: Cambiar Contraseña
-  document.getElementById('btn-perfil-save-password')?.addEventListener('click', async () => {
-    const btnEl = document.getElementById('btn-perfil-save-password');
-    const currentPassword = document.getElementById('perfil-current-password-input').value;
-    const newPassword = document.getElementById('perfil-password-input').value;
-    const confirmPassword = document.getElementById('perfil-confirm-password-input').value;
-    const msgEl = document.getElementById('perfil-security-msg');
-
-    if (!currentPassword) {
-      setMsg('Ingresá tu contraseña actual.', 'error', msgEl);
-      return;
-    }
-
-    if (!newPassword || newPassword.length < 6) {
-      setMsg('La nueva contraseña debe tener al menos 6 caracteres.', 'error', msgEl);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setMsg('Las contraseñas no coinciden.', 'error', msgEl);
-      return;
-    }
-
-    btnEl.disabled = true;
-    const originalText = btnEl.textContent;
-    btnEl.textContent = 'Actualizando...';
-    setMsg('Actualizando contraseña...', 'info', msgEl);
-
-    try {
-      const { error } = await actualizarContrasena(newPassword, currentPassword);
-      if (error) {
-        setMsg(error.message === 'Current password required when setting new password.' ? 'La contraseña actual es incorrecta.' : error.message, 'error', msgEl);
-      } else {
-        setMsg('Contraseña actualizada con éxito.', 'success', msgEl);
-        document.getElementById('perfil-current-password-input').value = '';
-        document.getElementById('perfil-password-input').value = '';
-        document.getElementById('perfil-confirm-password-input').value = '';
-        setTimeout(() => setMsg('', '', msgEl), 3000);
-      }
-    } catch (err) {
-      console.error(err);
-      setMsg('Error inesperado al cambiar contraseña.', 'error', msgEl);
-    } finally {
-      btnEl.disabled = false;
-      btnEl.textContent = originalText;
-    }
-  });
-
-
-
-  // ─── 3. CARGA DE DATOS ───
-  async function cargarFixtureBD() {
-    console.log("⏳ Cargando partidos desde la API de Mundialito...");
-    try {
-      const res = await fetch('http://localhost:3000/api/fixture');
-      if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        let gruposReales = {};
-        
-        data.forEach(p => {
-          // Determinar la clave del grupo/fase
-          let clave = null;
-          if (p.fase && p.fase.includes('Grupo')) {
-            // "Grupo A", "Grupo B", etc.
-            clave = p.fase.replace('Grupo ', '').trim();
-          } else if (p.fase) {
-            // Fases eliminatorias: "Ronda 1", "Octavos de Final", "Final", etc.
-            clave = p.fase;
-          }
-          
-          if (!clave) return;
-          
-          if(!gruposReales[clave]) gruposReales[clave] = { teams: [], matches: [] };
-          
-          if(p.equipo_local && !gruposReales[clave].teams.includes(p.equipo_local)) gruposReales[clave].teams.push(p.equipo_local);
-          if(p.equipo_visitante && !gruposReales[clave].teams.includes(p.equipo_visitante)) gruposReales[clave].teams.push(p.equipo_visitante);
-
-          const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', {day:'2-digit', month:'short'});
-          
-          gruposReales[clave].matches.push({
-            id: p.id, home: p.equipo_local, away: p.equipo_visitante,
-            hs: p.goles_local === null ? '-' : p.goles_local,
-            as: p.goles_visitante === null ? '-' : p.goles_visitante,
-            date: fechaFormateada, estado: p.estado,
-            escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
-            minuto: p.minuto
-          });
+      try {
+        const { data, error } = await actualizarPerfil({
+          username: newUsername,
+          avatar_url: userProfile.avatar_url
         });
 
-        const letrasDeGrupos = Object.keys(gruposReales);
-        if (letrasDeGrupos.length > 0) {
-          window.GROUPS = gruposReales;
-          renderGroups(letrasDeGrupos[0]);
-          renderFixtures();
+        if (error) {
+          setMsg(error.message, 'error', msgEl);
+        } else {
+          setMsg('Nombre de usuario actualizado con éxito.', 'success', msgEl);
+          userProfile = data;
+          updateUIWithProfile(userSession, data);
+          setTimeout(() => setMsg('', '', msgEl), 3000);
         }
+      } catch (err) {
+        console.error(err);
+        setMsg('Hubo un error al guardar.', 'error', msgEl);
       }
-    } catch (err) {
-      console.error('Error cargando partidos desde API:', err);
+    });
+
+    // Evento: Cambiar Contraseña
+    document.getElementById('btn-perfil-save-password')?.addEventListener('click', async () => {
+      const btnEl = document.getElementById('btn-perfil-save-password');
+      const currentPassword = document.getElementById('perfil-current-password-input').value;
+      const newPassword = document.getElementById('perfil-password-input').value;
+      const confirmPassword = document.getElementById('perfil-confirm-password-input').value;
+      const msgEl = document.getElementById('perfil-security-msg');
+
+      if (!currentPassword) {
+        setMsg('Ingresá tu contraseña actual.', 'error', msgEl);
+        return;
+      }
+
+      if (!newPassword || newPassword.length < 6) {
+        setMsg('La nueva contraseña debe tener al menos 6 caracteres.', 'error', msgEl);
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setMsg('Las contraseñas no coinciden.', 'error', msgEl);
+        return;
+      }
+
+      btnEl.disabled = true;
+      const originalText = btnEl.textContent;
+      btnEl.textContent = 'Actualizando...';
+      setMsg('Actualizando contraseña...', 'info', msgEl);
+
+      try {
+        const { error } = await actualizarContrasena(newPassword, currentPassword);
+        if (error) {
+          setMsg(error.message === 'Current password required when setting new password.' ? 'La contraseña actual es incorrecta.' : error.message, 'error', msgEl);
+        } else {
+          setMsg('Contraseña actualizada con éxito.', 'success', msgEl);
+          document.getElementById('perfil-current-password-input').value = '';
+          document.getElementById('perfil-password-input').value = '';
+          document.getElementById('perfil-confirm-password-input').value = '';
+          setTimeout(() => setMsg('', '', msgEl), 3000);
+        }
+      } catch (err) {
+        console.error(err);
+        setMsg('Error inesperado al cambiar contraseña.', 'error', msgEl);
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = originalText;
+      }
+    });
+
+
+
+    // ─── 3. CARGA DE DATOS ───
+    async function cargarFixtureBD() {
+      console.log("⏳ Cargando partidos desde la API de Mundialito...");
+      try {
+        const res = await fetch('http://localhost:3000/api/fixture');
+        if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+          let gruposReales = {};
+
+          data.forEach(p => {
+            // Determinar la clave del grupo/fase
+            let clave = null;
+            if (p.fase && p.fase.includes('Grupo')) {
+              // "Grupo A", "Grupo B", etc.
+              clave = p.fase.replace('Grupo ', '').trim();
+            } else if (p.fase) {
+              // Fases eliminatorias: "Ronda 1", "Octavos de Final", "Final", etc.
+              clave = p.fase;
+            }
+
+            if (!clave) return;
+
+            if (!gruposReales[clave]) gruposReales[clave] = { teams: [], matches: [] };
+
+            if (p.equipo_local && !gruposReales[clave].teams.includes(p.equipo_local)) gruposReales[clave].teams.push(p.equipo_local);
+            if (p.equipo_visitante && !gruposReales[clave].teams.includes(p.equipo_visitante)) gruposReales[clave].teams.push(p.equipo_visitante);
+
+            const fechaFormateada = new Date(p.fecha_utc).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+
+            gruposReales[clave].matches.push({
+              id: p.id, home: p.equipo_local, away: p.equipo_visitante,
+              hs: p.goles_local === null ? '-' : p.goles_local,
+              as: p.goles_visitante === null ? '-' : p.goles_visitante,
+              date: fechaFormateada, estado: p.estado,
+              escudo_local: p.escudo_local, escudo_visitante: p.escudo_visitante,
+              minuto: p.minuto
+            });
+          });
+
+          const letrasDeGrupos = Object.keys(gruposReales);
+          if (letrasDeGrupos.length > 0) {
+            window.GROUPS = gruposReales;
+            renderGroups(letrasDeGrupos[0]);
+            renderFixtures();
+          }
+        }
+      } catch (err) {
+        console.error('Error cargando partidos desde API:', err);
+      }
     }
-  }
 
-  async function cargarHistoriaBD() {
-    console.log("⏳ Cargando historia detallada desde Supabase...");
-    const cards = document.getElementById('editionCards');
-    if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
+    async function cargarHistoriaBD() {
+      console.log("⏳ Cargando historia detallada desde Supabase...");
+      const cards = document.getElementById('editionCards');
+      if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
 
-    const res = await fetch('http://localhost:3000/api/historia');
-    
-    if (!res.ok) {
-      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
-      return console.error('Error cargando historia desde API:', res.statusText);
+      const res = await fetch('http://localhost:3000/api/historia');
+
+      if (!res.ok) {
+        if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
+        return console.error('Error cargando historia desde API:', res.statusText);
+      }
+
+      const data = await res.json();
+
+      if (!data || data.length === 0) {
+        if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Supabase respondió bien, pero la tabla está vacía. Data length: ${data ? data.length : 'N/A'}</div>`;
+        return;
+      }
+
+      if (data && data.length > 0) {
+        window.EDITIONS = data.map(h => ({
+          year: h.año,
+          host: h.sede,
+          dates: h.fechas,
+          champion: h.campeon,
+          champFlag: h.campeon_bandera || "🏆",
+          runnersUp: h.subcampeon,
+          runnersUpFlag: h.subcampeon_bandera || "🏳️",
+          scorers: h.goleadores || [],
+          records: h.records || [],
+          facts: h.datos_curiosos || [],
+          videos: h.videos || []
+        }));
+        renderHistory();
+      }
     }
-    
-    const data = await res.json();
 
-    if (!data || data.length === 0) {
-      if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Supabase respondió bien, pero la tabla está vacía. Data length: ${data ? data.length : 'N/A'}</div>`;
-      return;
+    // ─── 4. INICIALIZACIÓN FINAL ───
+    function inicializarApp() {
+      cargarFixtureBD().catch(e => console.error(e));
+      cargarHistoriaBD().catch(e => console.error(e));
     }
 
-    if (data && data.length > 0) {
-      window.EDITIONS = data.map(h => ({
-        year: h.año,
-        host: h.sede,
-        dates: h.fechas,
-        champion: h.campeon,
-        champFlag: h.campeon_bandera || "🏆",
-        runnersUp: h.subcampeon,
-        runnersUpFlag: h.subcampeon_bandera || "🏳️",
-        scorers: h.goleadores || [],
-        records: h.records || [],
-        facts: h.datos_curiosos || [],
-        videos: h.videos || []
-      }));
-      renderHistory();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', inicializarApp);
+    } else {
+      inicializarApp();
     }
-  }
+  </script>
 
-  // ─── 4. INICIALIZACIÓN FINAL ───
-  function inicializarApp() {
-    cargarFixtureBD().catch(e => console.error(e));
-    cargarHistoriaBD().catch(e => console.error(e));
-  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarApp);
-  } else {
-    inicializarApp();
-  }
-</script>
- 
+  <!-- Botón flotante de guardar predicciones (Prode FAB) -->
+  <button class="prode-save-fab" id="prode-save-fab" style="display:none" aria-label="Guardar predicciones">
+    <span class="fab-icon">💾</span>
+    Guardar Predicciones
+    <span class="prode-fab-count" id="prode-fab-count">0</span>
+  </button>
 
- <!-- Botón flotante de guardar predicciones (Prode FAB) -->
- <button class="prode-save-fab" id="prode-save-fab" style="display:none" aria-label="Guardar predicciones">
-   <span class="fab-icon">💾</span>
-   Guardar Predicciones
-   <span class="prode-fab-count" id="prode-fab-count">0</span>
- </button>
-
- <div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
-  <span class="chatbot-fab-icon">⚽</span>
-  <span class="chatbot-fab-badge" id="chatbot-fab-badge" style="display:none">1</span>
-</div>
-
-<!-- Widget flotante (mini-versión del chat para usar desde cualquier panel) -->
-<div id="chatbot-widget" class="chatbot-widget" style="display:none">
-  <div class="chatbot-widget-header">
-    <div class="chatbot-widget-title">
-      <span>⚽</span> Mundialito Bot
-    </div>
-    <button class="chatbot-widget-close" onclick="toggleChatbotWidget()">✕</button>
+  <div id="chatbot-fab" class="chatbot-fab" onclick="toggleChatbotWidget()" title="Abrir Mundialito Bot">
+    <span class="chatbot-fab-icon">⚽</span>
+    <span class="chatbot-fab-badge" id="chatbot-fab-badge" style="display:none">1</span>
   </div>
-  <div class="chatbot-widget-mensajes" id="chatbot-widget-mensajes">
-    <div class="chatbot-msg chatbot-msg--bot" style="padding:12px">
-      <div class="chatbot-msg-avatar" style="width:28px;height:28px;font-size:14px">⚽</div>
-      <div class="chatbot-msg-texto" style="font-size:13px">
-        ¡Hola! Preguntame sobre el Mundial 2026. 🏆
+
+  <!-- Widget flotante (mini-versión del chat para usar desde cualquier panel) -->
+  <div id="chatbot-widget" class="chatbot-widget" style="display:none">
+    <div class="chatbot-widget-header">
+      <div class="chatbot-widget-title">
+        <span>⚽</span> Mundialito Bot
+      </div>
+      <button class="chatbot-widget-close" onclick="toggleChatbotWidget()">✕</button>
+    </div>
+    <div class="chatbot-widget-mensajes" id="chatbot-widget-mensajes">
+      <div class="chatbot-msg chatbot-msg--bot" style="padding:12px">
+        <div class="chatbot-msg-avatar" style="width:28px;height:28px;font-size:14px">⚽</div>
+        <div class="chatbot-msg-texto" style="font-size:13px">
+          ¡Hola! Preguntame sobre el Mundial 2026. 🏆
+        </div>
       </div>
     </div>
+    <div class="chatbot-widget-input">
+      <input type="text" id="chatbot-widget-input" placeholder="Preguntá sobre el Mundial..." maxlength="300"
+        onkeydown="widgetKeydown(event)" />
+      <button onclick="widgetEnviar()">↑</button>
+    </div>
   </div>
-  <div class="chatbot-widget-input">
-    <input
-      type="text"
-      id="chatbot-widget-input"
-      placeholder="Preguntá sobre el Mundial..."
-      maxlength="300"
-      onkeydown="widgetKeydown(event)"
-    />
-    <button onclick="widgetEnviar()">↑</button>
-  </div>
-</div>
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
-  
