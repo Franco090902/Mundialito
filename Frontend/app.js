@@ -2360,12 +2360,23 @@ function widgetKeydown(e) {
         .from('prode_group_members')
         .select(`
           group_id,
-          prode_groups ( id, nombre, invite_code, es_publico, admin_id, created_at )
+          prode_groups!prode_group_members_group_id_fkey ( id, nombre, invite_code, es_publico, admin_id, created_at )
         `)
-        .eq('user_id', _uid);
-      if (error) throw error;
+        .eq('user_id', window.__mundialitoUserId);
+        
+      if (error) {
+        console.error("Error cargando comunidades:", error);
+        alert("Error al cargar tus grupos: " + error.message);
+        return;
+      }
+      
+      console.log("Comunidades recibidas:", data);
 
-      const grupos = (data || []).map(r => r.prode_groups).filter(Boolean);
+      // Si Supabase devuelve un arreglo dentro de prode_groups, extraemos el primer elemento.
+      const grupos = (data || []).map(r => {
+        if (Array.isArray(r.prode_groups)) return r.prode_groups[0];
+        return r.prode_groups;
+      }).filter(Boolean);
 
       // Badge contador
       const badge = document.getElementById('prode-groups-count');
@@ -2444,6 +2455,9 @@ function widgetKeydown(e) {
         <button class="group-admin-btn prode-toggle-public-btn"
             data-group="${g.id}" data-public="${g.es_publico}">
           ${g.es_publico ? '🔒 Hacer privado' : '🌐 Hacer público'}
+        </button>
+        <button class="group-admin-btn" style="background-color: var(--primary); color: white; margin-top: 8px; width: 100%; border-radius: 4px;" onclick="window.eliminarComunidad('${g.id}')">
+          🗑️ Eliminar Comunidad
         </button>
       </div>` : '';
 
@@ -2549,6 +2563,35 @@ function widgetKeydown(e) {
       });
     });
   }
+
+  // ──────────────────────────────────────────────────────────────
+  // ELIMINAR COMUNIDAD
+  // ──────────────────────────────────────────────────────────────
+  window.eliminarComunidad = async function(groupId) {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta comunidad? Esta acción no se puede deshacer.")) return;
+
+    try {
+      // 1. Eliminar a los miembros primero por restricción de Foreign Key
+      const { error: errMembers } = await window.supabaseClient
+        .from('prode_group_members')
+        .delete()
+        .eq('group_id', groupId);
+      if (errMembers) throw errMembers;
+
+      // 2. Eliminar el grupo
+      const { error: errGroup } = await window.supabaseClient
+        .from('prode_groups')
+        .delete()
+        .eq('id', groupId);
+      if (errGroup) throw errGroup;
+
+      alert("Comunidad eliminada");
+      _cargarMisGrupos();
+    } catch(err) {
+      console.error("[Prode] Error eliminando comunidad:", err);
+      alert("Error al eliminar comunidad: " + err.message);
+    }
+  };
 
   // ──────────────────────────────────────────────────────────────
   // RANKING GLOBAL (top 50)
