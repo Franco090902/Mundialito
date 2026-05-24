@@ -1682,3 +1682,919 @@ function widgetKeydown(e) {
     widgetEnviar();
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ██████╗ ██████╗  ██████╗ ██████╗ ███████╗
+   ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔════╝
+   ██████╔╝██████╔╝██║   ██║██║  ██║█████╗
+   ██╔═══╝ ██╔══██╗██║   ██║██║  ██║██╔══╝
+   ██║     ██║  ██║╚██████╔╝██████╔╝███████╗
+   ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
+   Módulo de Predicciones Deportivas — Vanilla JS
+   Usa window.supabaseClient (expuesto desde el módulo ESM del HTML)
+   Usa window.__mundialitoUserId (seteado en onMundialitoAuth)
+══════════════════════════════════════════════════════════════ */
+
+(function() {
+  'use strict';
+
+  // ─── Utilidades internas ───────────────────────────────────────
+  function sb() {
+    return window.supabaseClient;
+  }
+
+  function userId() {
+    return window.__mundialitoUserId || null;
+  }
+
+  function prodeToast(msg, tipo = 'success') {
+    const existing = document.getElementById('prode-toast');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'prode-toast';
+    el.className = `prode-toast toast--${tipo}`;
+    el.innerHTML = `<span>${tipo === 'success' ? '✅' : '❌'}</span> ${msg}`;
+    document.body.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transition = 'opacity .4s';
+      setTimeout(() => el.remove(), 400);
+    }, 3500);
+  }
+
+  function prodeSetMsg(elId, msg, tipo) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.className = `community-msg msg--${tipo}`;
+    el.textContent = msg;
+    if (tipo === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+
+  /**
+   * Determina si un partido debe estar bloqueado para predicciones.
+   * Regla: si faltan ≤ 60 minutos para el inicio, o ya comenzó / terminó.
+   */
+  function esBloqueado(partido) {
+    const ahora     = Date.now();
+    const inicio    = new Date(partido.fecha_utc || partido.date_utc).getTime();
+    const unaHoraMs = 60 * 60 * 1000;
+    const estado    = (partido.estado || '').toLowerCase();
+    return estado === 'finalizado'
+        || estado === 'en_curso'
+        || estado === 'suspendido'
+        || (inicio - ahora) <= unaHoraMs;
+  }
+
+  /**
+   * Calcula los puntos de una predicción.
+   * @returns {{ puntos: number|null, tipo: string }}
+   */
+  function calcPts(pL, pV, rL, rV) {
+    if (rL === null || rL === undefined || rV === null || rV === undefined)
+      return { puntos: null, tipo: 'pendiente' };
+    if (pL === rL && pV === rV) return { puntos: 3, tipo: 'exacto' };
+    if (Math.sign(pL - pV) === Math.sign(rL - rV)) return { puntos: 1, tipo: 'signo' };
+    return { puntos: 0, tipo: 'fallo' };
+  }
+
+  // ─── Estado del módulo ─────────────────────────────────────────
+  let _uid          = null;
+  let _partidos     = [];     // array de partidos desde Supabase
+  let _preds        = {};     // { [partido_id]: { local, visitante, puntos, bonusAplicado } }
+  let _pendientes   = new Set();
+  let _grupoActivo  = null;   // group_id seleccionado en la vista de comunidades
+
+  // ══════════════════════════════════════════════════════════════
+  // PUNTO DE ENTRADA
+  // ══════════════════════════════════════════════════════════════
+  window.prodeInit = async function(uid) {
+    _uid = uid;
+    if (!_uid || !sb()) {
+      // Supabase aún no está listo — reintentar en 500ms
+      setTimeout(() => {
+        if (userId() && sb()) window.prodeInit(userId());
+      }, 500);
+      return;
+    }
+    console.log('[Prode] Iniciando para usuario', _uid);
+    await _cargarPartidos();
+    await _cargarPredicciones();
+    _renderPredicciones();
+    _bindSaveButton();
+    _bindSearchBar();
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // FETCH: Partidos desde Supabase
+  // ══════════════════════════════════════════════════════════════
+  async function _cargarPartidos() {
+    try {
+      const { data, error } = await sb()
+        .from('partidos')
+        .select('id, fase, equipo_local, equipo_visitante, escudo_local, escudo_visitante, fecha_utc, goles_local, goles_visitante, estado')
+        .order('fecha_utc', { ascending: true });
+      if (error) throw error;
+      _partidos = data || [];
+    } catch(e) {
+      console.error('[Prode] Error cargando partidos:', e);
+      _partidos = [];
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // FETCH: Predicciones del usuario
+  // ══════════════════════════════════════════════════════════════
+  async function _cargarPredicciones() {
+    if (!_uid) return;
+    try {
+      const { data, error } = await sb()
+        .from('prode_predictions')
+        .select('partido_id, pred_goles_local, pred_goles_visitante, puntos_obtenidos, bonus_aplicado')
+        .eq('user_id', _uid);
+      if (error) throw error;
+      _preds = {};
+      (data || []).forEach(p => {
+        _preds[p.partido_id] = {
+          local:     p.pred_goles_local,
+          visitante: p.pred_goles_visitante,
+          puntos:    p.puntos_obtenidos,
+          bonusAplicado: p.bonus_aplicado,
+        };
+      });
+    } catch(e) {
+      console.error('[Prode] Error cargando predicciones:', e);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // RENDER: Panel de predicciones
+  // ══════════════════════════════════════════════════════════════
+  function _renderPredicciones() {
+    const cont = document.getElementById('prode-predictions-content');
+    if (!cont) return;
+
+    if (_partidos.length === 0) {
+      cont.innerHTML = `
+        <div class="prode-empty">
+          <span class="prode-empty-icon">⚽</span>
+          <div class="prode-empty-title">Sin partidos cargados</div>
+          <div class="prode-empty-sub">Volvé más tarde cuando el fixture esté disponible.</div>
+        </div>`;
+      return;
+    }
+
+    // ── Clasificar ──
+    const grupos   = {};
+    const playoffs = [];
+
+    _partidos.forEach(p => {
+      const fase = (p.fase || '').trim();
+      const m = fase.match(/^(?:Grupo\s*)?([A-L])$/i);
+      if (m) {
+        const l = m[1].toUpperCase();
+        if (!grupos[l]) grupos[l] = [];
+        grupos[l].push(p);
+      } else {
+        playoffs.push(p);
+      }
+    });
+
+    let html = '';
+
+    // ── Grupos ──
+    const letras = Object.keys(grupos).sort();
+    if (letras.length > 0) {
+      html += `<div class="prode-section-header">
+        <div class="prode-section-title">Fase de Grupos</div>
+        <div class="prode-section-badge">GRUPOS</div>
+        <div class="prode-section-line"></div>
+      </div>`;
+      letras.forEach(l => {
+        html += `<div class="prode-group-block" data-group="${l}">
+          <div class="prode-group-label">Grupo ${l}</div>
+          <div class="prode-matches-grid">
+            ${grupos[l].map(p => _cardHTML(p)).join('')}
+          </div>
+        </div>`;
+      });
+    }
+
+    // ── Playoffs ──
+    if (playoffs.length > 0) {
+      // Agrupar por fase
+      const fases = {};
+      playoffs.forEach(p => {
+        const f = p.fase || 'Por definirse';
+        if (!fases[f]) fases[f] = [];
+        fases[f].push(p);
+      });
+
+      html += `<div class="prode-section-header" style="margin-top:40px">
+        <div class="prode-section-title">Playoffs</div>
+        <div class="prode-section-badge">ELIMINATORIAS</div>
+        <div class="prode-section-line"></div>
+      </div>`;
+
+      Object.entries(fases).forEach(([fase, pds]) => {
+        html += `<div class="prode-group-block" data-group="${fase}">
+          <div class="prode-group-label">${fase}</div>
+          <div class="prode-matches-grid">
+            ${pds.map(p => _cardHTML(p)).join('')}
+          </div>
+        </div>`;
+      });
+    }
+
+    cont.innerHTML = html;
+    _attachInputListeners();
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // HTML de cada tarjeta de partido
+  // ──────────────────────────────────────────────────────────────
+  function _cardHTML(p) {
+    const pred      = _preds[p.id] || null;
+    const bloqueado = esBloqueado(p);
+    const finalizado = (p.estado || '').toLowerCase() === 'finalizado';
+
+    // Fecha / hora
+    const fecha = new Date(p.fecha_utc);
+    const fechaStr = fecha.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
+    const horaStr  = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+    // Clases de la card
+    let cardCls = 'prode-match-card';
+    if (bloqueado) cardCls += ' card--locked';
+    if (pred)      cardCls += ' card--saved';
+
+    // Badge estado
+    let statusBadge;
+    if (finalizado)                          statusBadge = `<span class="pmc-status pmc-status--finished">✅ Finalizado</span>`;
+    else if ((p.estado||'') === 'en_curso')  statusBadge = `<span class="pmc-status pmc-status--locked">🔴 En Vivo</span>`;
+    else if (bloqueado)                      statusBadge = `<span class="pmc-status pmc-status--locked">🔒 Bloqueado</span>`;
+    else                                     statusBadge = `<span class="pmc-status pmc-status--open">✏️ Abierto</span>`;
+
+    // Escudos
+    const shieldL = p.escudo_local
+      ? `<img class="pmc-shield" src="${p.escudo_local}" alt="${p.equipo_local}" onerror="this.style.display='none'">`
+      : `<div class="pmc-shield-fallback">⚽</div>`;
+    const shieldV = p.escudo_visitante
+      ? `<img class="pmc-shield" src="${p.escudo_visitante}" alt="${p.equipo_visitante}" onerror="this.style.display='none'">`
+      : `<div class="pmc-shield-fallback">⚽</div>`;
+
+    // Valores de inputs
+    const valL = pred !== null ? pred.local    : '';
+    const valV = pred !== null ? pred.visitante : '';
+    const dis  = bloqueado ? 'disabled' : '';
+    const inputCls = pred ? 'pmc-input input--saved' : 'pmc-input';
+
+    // Resultado real
+    let resultHTML = '';
+    if (finalizado && p.goles_local !== null) {
+      resultHTML = `<div class="pmc-result">
+        <span class="pmc-result-label">FT</span>
+        <span class="pmc-result-score">${p.goles_local} – ${p.goles_visitante}</span>
+      </div>`;
+    }
+
+    // Footer: puntos
+    let footerHTML = '';
+    if (finalizado && pred) {
+      const r = calcPts(pred.local, pred.visitante, p.goles_local, p.goles_visitante);
+      const pts = r.puntos ?? 0;
+      const ptsCls = pts === 3 ? 'pts--3' : pts === 1 ? 'pts--1' : 'pts--0';
+      const ptsLbl = pts === 3 ? '¡Exacto!' : pts === 1 ? 'Signo OK' : 'Fallaste';
+      const bonus  = pred.bonusAplicado ? `<span class="pmc-bonus-badge">⭐ +5 BONUS</span>` : '';
+      footerHTML = `<div class="pmc-footer">
+        <div class="pmc-points">
+          <span class="pmc-points-val ${ptsCls}">${pts}</span>
+          <span class="pmc-points-label">pts · ${ptsLbl}</span>
+        </div>${bonus}
+      </div>`;
+    } else if (bloqueado && !finalizado) {
+      footerHTML = `<div class="pmc-footer">
+        <div class="pmc-lock-msg">🔒 Cerrado — el partido está próximo o en curso</div>
+      </div>`;
+    } else {
+      footerHTML = `<div class="pmc-footer">
+        <div class="pmc-points">
+          <span class="pmc-points-val pts--null">—</span>
+          <span class="pmc-points-label">pts · Pendiente</span>
+        </div>
+      </div>`;
+    }
+
+    return `
+      <div class="${cardCls}"
+           data-id="${p.id}"
+           data-search="${(p.equipo_local + ' ' + p.equipo_visitante).toLowerCase()}">
+        <div class="pmc-header">
+          <div>
+            <div class="pmc-date">${fechaStr} · ${horaStr}h</div>
+            <div class="pmc-phase">${p.fase || 'Grupos'}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="pmc-body">
+          <div class="pmc-team">
+            ${shieldL}
+            <div class="pmc-team-name">${p.equipo_local}</div>
+          </div>
+          <div class="pmc-center">
+            ${resultHTML}
+            <div class="pmc-inputs">
+              <input type="number" class="${inputCls}"
+                id="prd-l-${p.id}" data-partido="${p.id}" data-side="local"
+                value="${valL}" min="0" max="99" ${dis} placeholder="—"
+                aria-label="Goles ${p.equipo_local}">
+              <span class="pmc-dash">–</span>
+              <input type="number" class="${inputCls}"
+                id="prd-v-${p.id}" data-partido="${p.id}" data-side="visitante"
+                value="${valV}" min="0" max="99" ${dis} placeholder="—"
+                aria-label="Goles ${p.equipo_visitante}">
+            </div>
+            <div class="pmc-vs">VS</div>
+          </div>
+          <div class="pmc-team">
+            ${shieldV}
+            <div class="pmc-team-name">${p.equipo_visitante}</div>
+          </div>
+        </div>
+        ${footerHTML}
+      </div>`;
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Listeners de inputs
+  // ──────────────────────────────────────────────────────────────
+  function _attachInputListeners() {
+    const cont = document.getElementById('prode-predictions-content');
+    if (!cont) return;
+
+    cont.addEventListener('input', e => {
+      if (!e.target.classList.contains('pmc-input')) return;
+      const pid = e.target.dataset.partido;
+      if (!pid) return;
+
+      // Validar rango
+      let v = parseInt(e.target.value, 10);
+      if (isNaN(v) || v < 0) { e.target.value = ''; return; }
+      if (v > 99)             { e.target.value = 99; }
+
+      _pendientes.add(pid);
+      _actualizarFAB();
+
+      // Marcar card con borde dorado (pendiente de guardar)
+      const card = cont.querySelector(`.prode-match-card[data-id="${pid}"]`);
+      if (card) card.style.borderColor = 'var(--gold)';
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // GUARDAR PREDICCIONES (batch upsert)
+  // ══════════════════════════════════════════════════════════════
+  function _bindSaveButton() {
+    const btn = document.getElementById('prode-save-fab');
+    if (!btn) return;
+    btn.addEventListener('click', prodeGuardar);
+  }
+
+  async function prodeGuardar() {
+    if (!_uid || !sb()) { prodeToast('Necesitás iniciar sesión.', 'error'); return; }
+    if (_pendientes.size === 0) { prodeToast('Nada que guardar aún.', 'error'); return; }
+
+    const btn = document.getElementById('prode-save-fab');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="fab-icon">⏳</span> Guardando...'; }
+
+    const filas = [];
+    for (const pid of _pendientes) {
+      const inputL = document.getElementById(`prd-l-${pid}`);
+      const inputV = document.getElementById(`prd-v-${pid}`);
+      if (!inputL || !inputV) continue;
+      const vL = parseInt(inputL.value, 10);
+      const vV = parseInt(inputV.value, 10);
+      if (isNaN(vL) || isNaN(vV)) continue;
+      filas.push({
+        partido_id:            pid,
+        user_id:               _uid,
+        pred_goles_local:      vL,
+        pred_goles_visitante:  vV,
+        updated_at:            new Date().toISOString(),
+      });
+    }
+
+    if (filas.length === 0) {
+      prodeToast('Completá los dos campos de cada partido.', 'error');
+      _resetFAB();
+      return;
+    }
+
+    try {
+      const { error } = await sb()
+        .from('prode_predictions')
+        .upsert(filas, { onConflict: 'partido_id,user_id' });
+      if (error) throw error;
+
+      // Actualizar caché local y marcar cards como guardadas
+      const cont = document.getElementById('prode-predictions-content');
+      filas.forEach(f => {
+        _preds[f.partido_id] = { local: f.pred_goles_local, visitante: f.pred_goles_visitante, puntos: null, bonusAplicado: false };
+        if (cont) {
+          const card = cont.querySelector(`.prode-match-card[data-id="${f.partido_id}"]`);
+          if (card) {
+            card.classList.add('card--saved');
+            card.style.borderColor = '';
+            card.querySelectorAll('.pmc-input').forEach(inp => inp.classList.add('input--saved'));
+          }
+        }
+      });
+
+      _pendientes.clear();
+      prodeToast(`${filas.length} predicción${filas.length !== 1 ? 'es' : ''} guardada${filas.length !== 1 ? 's' : ''} ✅`);
+
+    } catch(err) {
+      console.error('[Prode] Error al guardar:', err);
+      prodeToast('Error al guardar. Intentá de nuevo.', 'error');
+    }
+
+    _resetFAB();
+    _actualizarFAB();
+  }
+
+  function _actualizarFAB() {
+    const btn = document.getElementById('prode-save-fab');
+    const cnt = document.getElementById('prode-fab-count');
+    if (cnt) cnt.textContent = _pendientes.size;
+    if (btn) btn.style.display = _pendientes.size > 0 ? 'flex' : 'none';
+  }
+
+  function _resetFAB() {
+    const btn = document.getElementById('prode-save-fab');
+    if (!btn) return;
+    btn.disabled = false;
+    btn.innerHTML = `<span class="fab-icon">💾</span> Guardar Predicciones <span class="prode-fab-count" id="prode-fab-count">${_pendientes.size}</span>`;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // BUSCADOR POR PAÍS
+  // ══════════════════════════════════════════════════════════════
+  function _bindSearchBar() {
+    const inp = document.getElementById('prode-search');
+    if (!inp) return;
+    let t;
+    inp.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => _filtrarCards(inp.value.trim().toLowerCase()), 200);
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { inp.value = ''; _filtrarCards(''); }
+    });
+  }
+
+  function _filtrarCards(q) {
+    const cards = document.querySelectorAll('#prode-predictions-content .prode-match-card');
+    let visible = 0;
+    cards.forEach(c => {
+      const match = !q || (c.dataset.search || '').includes(q);
+      c.classList.toggle('card--hidden', !match);
+      if (match) visible++;
+    });
+
+    // Ocultar grupos vacíos
+    document.querySelectorAll('#prode-predictions-content .prode-group-block').forEach(b => {
+      const shown = b.querySelectorAll('.prode-match-card:not(.card--hidden)').length;
+      b.style.display = shown === 0 ? 'none' : '';
+    });
+
+    const nr = document.getElementById('prode-no-results');
+    if (nr) nr.style.display = visible === 0 && q ? 'block' : 'none';
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // SUB-TABS (expuesto globalmente)
+  // ══════════════════════════════════════════════════════════════
+  window.prodeChangeSubTab = function(tab) {
+    document.querySelectorAll('.prode-sub-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.prode-subpanel').forEach(p => p.classList.toggle('active', p.id === `prode-${tab}-panel`));
+
+    // Ocultar FAB si no estamos en predicciones
+    const fab = document.getElementById('prode-save-fab');
+    if (fab) fab.style.display = (tab === 'predictions' && _pendientes.size > 0) ? 'flex' : 'none';
+
+    // Cargar comunidades al entrar
+    if (tab === 'communities') _renderComunidades();
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // COMUNIDADES
+  // ══════════════════════════════════════════════════════════════
+  async function _renderComunidades() {
+    if (!_uid || !sb()) return;
+
+    // Bindear botones de crear / unirse (solo una vez)
+    _bindComunidadBtns();
+
+    await _cargarMisGrupos();
+    await _cargarRankingGlobal();
+  }
+
+  function _bindComunidadBtns() {
+    // Ya no hacemos bind acá, se usa onclick="crearComunidad()" en el HTML
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // CREAR GRUPO
+  // ──────────────────────────────────────────────────────────────
+  window.crearComunidad = async function() {
+    // 1. Validaciones explícitas según requerimiento
+    if (!window.supabaseClient || !window.__mundialitoUserId) {
+      alert("Error de sesión: No se pudo verificar tu usuario o la conexión a la base de datos.");
+      return;
+    }
+
+    const nombre   = (document.getElementById('prode-nuevo-grupo')?.value || '').trim();
+    const esPublic = document.getElementById('new-group-public')?.checked || false;
+    const msgId    = 'create-group-msg';
+
+    if (nombre.length < 2) { 
+      prodeSetMsg(msgId, 'El nombre debe tener al menos 2 caracteres.', 'error'); 
+      return; 
+    }
+
+    const btn = document.getElementById('btn-create-group');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+
+    try {
+      // Data a insertar
+      const insertData = { nombre, admin_id: window.__mundialitoUserId, es_publico: esPublic };
+      console.log('[Prode] Intentando crear comunidad. Data:', insertData);
+
+      // 1. Insertar el grupo
+      const { data: grupo, error: errGrupo } = await sb()
+        .from('prode_groups')
+        .insert(insertData)
+        .select()
+        .single();
+        
+      if (errGrupo) throw errGrupo;
+
+      const memberData = { group_id: grupo.id, user_id: window.__mundialitoUserId };
+      console.log('[Prode] Comunidad creada. Intentando auto-unirse como admin. Data:', memberData);
+
+      // 2. Auto-unirse como admin/miembro
+      const { error: errMiembro } = await sb()
+        .from('prode_group_members')
+        .insert(memberData);
+        
+      if (errMiembro) throw errMiembro;
+
+      // 3. Mostrar código de invitación
+      prodeSetMsg(msgId,
+        `✅ Grupo "${grupo.nombre}" creado. Código de invitación: ${grupo.invite_code}`,
+        'success');
+      document.getElementById('prode-nuevo-grupo').value = '';
+
+      // 4. Refrescar lista de grupos
+      setTimeout(() => _cargarMisGrupos(), 600);
+
+    } catch(err) {
+      console.error('[Prode] Error crítico creando comunidad:', err);
+      alert("Error: " + err.message);
+      prodeSetMsg(msgId, err.message || 'Error al crear el grupo.', 'error');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Crear Grupo'; }
+  };
+
+  // ──────────────────────────────────────────────────────────────
+  // UNIRSE A UN GRUPO CON CÓDIGO
+  // ──────────────────────────────────────────────────────────────
+  window.unirseComunidad = async function() {
+    // Validaciones explícitas
+    if (!window.supabaseClient || !window.__mundialitoUserId) {
+      alert("Error de sesión: No se pudo verificar tu usuario o la conexión a la base de datos.");
+      return;
+    }
+
+    const codigo = (document.getElementById('join-group-code')?.value || '').trim().toUpperCase();
+    const msgId  = 'join-group-msg';
+
+    if (codigo.length !== 6) { prodeSetMsg(msgId, 'El código debe tener exactamente 6 caracteres.', 'error'); return; }
+
+    const btn = document.getElementById('btn-join-group');
+    if (btn) { btn.disabled = true; btn.textContent = 'Buscando...'; }
+
+    try {
+      console.log(`[Prode] Intentando unirse al grupo con código: ${codigo}`);
+      
+      // 1. Buscar el grupo por invite_code
+      const { data: grupo, error: errFind } = await sb()
+        .from('prode_groups')
+        .select('id, nombre')
+        .eq('invite_code', codigo)
+        .single();
+
+      if (errFind || !grupo) {
+        prodeSetMsg(msgId, 'Código inválido. Revisá y volvé a intentar.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Unirse al Grupo'; }
+        return;
+      }
+
+      // 2. Verificar que no sea ya miembro
+      const { data: ya } = await sb()
+        .from('prode_group_members')
+        .select('group_id')
+        .eq('group_id', grupo.id)
+        .eq('user_id', window.__mundialitoUserId)
+        .maybeSingle();
+
+      if (ya) {
+        prodeSetMsg(msgId, `Ya sos miembro de "${grupo.nombre}".`, 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Unirse al Grupo'; }
+        return;
+      }
+
+      const joinData = { group_id: grupo.id, user_id: window.__mundialitoUserId };
+      console.log(`[Prode] Insertando nuevo miembro en prode_group_members. Data:`, joinData);
+
+      // 3. Unirse
+      const { error: errJoin } = await sb()
+        .from('prode_group_members')
+        .insert(joinData);
+        
+      if (errJoin) throw errJoin;
+
+      prodeSetMsg(msgId, `✅ Te uniste a "${grupo.nombre}"!`, 'success');
+      document.getElementById('join-group-code').value = '';
+      setTimeout(() => _cargarMisGrupos(), 600);
+
+    } catch(err) {
+      console.error('[Prode] Error crítico uniéndose al grupo:', err);
+      alert("Error: " + err.message);
+      prodeSetMsg(msgId, err.message || 'Error al unirse al grupo.', 'error');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Unirse al Grupo'; }
+  };
+
+  // ──────────────────────────────────────────────────────────────
+  // CARGAR MIS GRUPOS + RANKING DE CADA UNO
+  // ──────────────────────────────────────────────────────────────
+  async function _cargarMisGrupos() {
+    const cont = document.getElementById('prode-my-groups-list');
+    if (!cont) return;
+
+    cont.innerHTML = `<div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando grupos...</div>`;
+
+    try {
+      const { data, error } = await sb()
+        .from('prode_group_members')
+        .select(`
+          group_id,
+          prode_groups ( id, nombre, invite_code, es_publico, admin_id, created_at )
+        `)
+        .eq('user_id', _uid);
+      if (error) throw error;
+
+      const grupos = (data || []).map(r => r.prode_groups).filter(Boolean);
+
+      // Badge contador
+      const badge = document.getElementById('prode-groups-count');
+      if (badge) badge.textContent = `${grupos.length} grupo${grupos.length !== 1 ? 's' : ''}`;
+
+      if (grupos.length === 0) {
+        cont.innerHTML = `<div class="prode-empty" style="padding:30px 0">
+          <span class="prode-empty-icon">👥</span>
+          <div class="prode-empty-title">Sin grupos todavía</div>
+          <div class="prode-empty-sub">Creá tu propio grupo o pedile el código a un amigo.</div>
+        </div>`;
+        return;
+      }
+
+      // Para cada grupo, cargar miembros y renderizar card
+      const cards = await Promise.all(grupos.map(g => _grupoCardHTML(g)));
+      cont.innerHTML = cards.join('');
+
+      // Bind de botones de admin/copy dentro de las cards
+      _bindGrupoCardBtns();
+
+    } catch(err) {
+      console.error('[Prode] Error cargando grupos:', err);
+      cont.innerHTML = `<div style="color:#ff6680;font-size:13px;padding:14px 0">Error cargando grupos.</div>`;
+    }
+  }
+
+  async function _grupoCardHTML(g) {
+    const esAdmin = g.admin_id === _uid;
+
+    // Miembros + puntos
+    const { data: miembros } = await sb()
+      .from('prode_group_members')
+      .select(`
+        user_id,
+        profiles ( id, username, avatar_url, puntos_prode, aciertos_exactos, aciertos_signo )
+      `)
+      .eq('group_id', g.id);
+
+    const members = ((miembros || []).map(m => m.profiles).filter(Boolean))
+      .sort((a, b) => (b.puntos_prode || 0) - (a.puntos_prode || 0));
+
+    const visiBadge = g.es_publico
+      ? `<span class="group-visibility-badge badge--public">🌐 Público</span>`
+      : `<span class="group-visibility-badge badge--private">🔒 Privado</span>`;
+    const adminBadge = esAdmin ? `<span class="group-visibility-badge badge--admin">⭐ Admin</span>` : '';
+
+    const membersHTML = members.slice(0, 10).map((m, i) => {
+      const posCls = i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : i === 2 ? 'pos-3' : '';
+      const isMe   = m.id === _uid;
+      const avatar = m.avatar_url
+        ? `<img class="grr-avatar" src="${m.avatar_url}" alt="${m.username}" onerror="this.style.display='none'">`
+        : `<div class="grr-avatar-fallback">👤</div>`;
+
+      const kickBtn = (esAdmin && !isMe)
+        ? `<button class="group-admin-btn btn--danger prode-kick-btn"
+              data-group="${g.id}" data-user="${m.id}" data-name="${m.username || 'este usuario'}"
+              style="padding:3px 8px;font-size:10px;margin-left:auto">🚫</button>`
+        : '';
+
+      return `<div class="group-ranking-row" id="mbr-${g.id}-${m.id}">
+        <span class="grr-pos ${posCls}">${i + 1}</span>
+        ${avatar}
+        <span class="grr-name ${isMe ? 'is-me' : ''}">${m.username || 'Anónimo'}${isMe ? ' (vos)' : ''}</span>
+        <span class="grr-exactos">🎯 ${m.aciertos_exactos || 0}</span>
+        <span class="grr-pts">${m.puntos_prode || 0}</span>
+        ${kickBtn}
+      </div>`;
+    }).join('');
+
+    const adminActsHTML = esAdmin ? `
+      <div class="group-admin-actions">
+        <button class="group-admin-btn prode-edit-name-btn" data-group="${g.id}" data-name="${(g.nombre).replace(/'/g,"\\'")}">
+          ✏️ Editar nombre
+        </button>
+        <button class="group-admin-btn prode-toggle-public-btn"
+            data-group="${g.id}" data-public="${g.es_publico}">
+          ${g.es_publico ? '🔒 Hacer privado' : '🌐 Hacer público'}
+        </button>
+      </div>` : '';
+
+    return `
+      <div class="group-card" id="group-card-${g.id}">
+        <div class="group-card-header">
+          <div class="group-card-name">${g.nombre}</div>
+          <div class="group-card-meta">${visiBadge}${adminBadge}</div>
+        </div>
+        <div class="group-card-body">
+          <div class="invite-code-display prode-copy-code" data-code="${g.invite_code}" title="Clic para copiar">
+            <span class="invite-code-val">${g.invite_code}</span>
+            <span class="invite-code-copy">📋</span>
+          </div>
+          <div style="font-size:11px;color:var(--text4);margin-bottom:12px">
+            Compartí este código · ${members.length} miembro${members.length !== 1 ? 's' : ''}
+          </div>
+          <div class="group-ranking-table">
+            ${membersHTML || '<div style="color:var(--text4);font-size:13px;padding:8px 0">Sin miembros.</div>'}
+          </div>
+          ${adminActsHTML}
+        </div>
+      </div>`;
+  }
+
+  function _bindGrupoCardBtns() {
+    // Copiar código
+    document.querySelectorAll('.prode-copy-code').forEach(el => {
+      if (el._bound) return; el._bound = true;
+      el.addEventListener('click', () => {
+        const code = el.dataset.code;
+        navigator.clipboard.writeText(code)
+          .then(() => prodeToast(`Código ${code} copiado 📋`))
+          .catch(() => prodeToast(`Código: ${code}`));
+      });
+    });
+
+    // Expulsar miembro
+    document.querySelectorAll('.prode-kick-btn').forEach(btn => {
+      if (btn._bound) return; btn._bound = true;
+      btn.addEventListener('click', async () => {
+        const { group, user, name } = btn.dataset;
+        if (!confirm(`¿Expulsar a "${name}" del grupo?`)) return;
+        try {
+          const { error } = await sb()
+            .from('prode_group_members')
+            .delete()
+            .eq('group_id', group)
+            .eq('user_id', user);
+          if (error) throw error;
+          const row = document.getElementById(`mbr-${group}-${user}`);
+          if (row) { row.style.animation = 'slideOut .3s ease forwards'; setTimeout(() => row.remove(), 320); }
+          prodeToast(`${name} fue expulsado.`);
+        } catch(err) { prodeToast('Error al expulsar.', 'error'); }
+      });
+    });
+
+    // Editar nombre
+    document.querySelectorAll('.prode-edit-name-btn').forEach(btn => {
+      if (btn._bound) return; btn._bound = true;
+      btn.addEventListener('click', async () => {
+        const { group, name } = btn.dataset;
+        const nuevo = prompt(`Nuevo nombre (actual: "${name}"):`, name);
+        if (!nuevo || nuevo.trim().length < 2 || nuevo.trim() === name) return;
+        try {
+          const { error } = await sb()
+            .from('prode_groups')
+            .update({ nombre: nuevo.trim(), updated_at: new Date().toISOString() })
+            .eq('id', group).eq('admin_id', _uid);
+          if (error) throw error;
+          const card = document.getElementById(`group-card-${group}`);
+          if (card) card.querySelector('.group-card-name').textContent = nuevo.trim();
+          prodeToast('Nombre actualizado.');
+        } catch(err) { prodeToast('Error al actualizar nombre.', 'error'); }
+      });
+    });
+
+    // Toggle público/privado
+    document.querySelectorAll('.prode-toggle-public-btn').forEach(btn => {
+      if (btn._bound) return; btn._bound = true;
+      btn.addEventListener('click', async () => {
+        const { group } = btn.dataset;
+        const actual = btn.dataset.public === 'true';
+        const nuevo  = !actual;
+        try {
+          const { error } = await sb()
+            .from('prode_groups')
+            .update({ es_publico: nuevo, updated_at: new Date().toISOString() })
+            .eq('id', group).eq('admin_id', _uid);
+          if (error) throw error;
+          btn.dataset.public = nuevo;
+          btn.textContent = nuevo ? '🔒 Hacer privado' : '🌐 Hacer público';
+          const card = document.getElementById(`group-card-${group}`);
+          if (card) {
+            const badge = card.querySelector('.group-visibility-badge.badge--public, .group-visibility-badge.badge--private');
+            if (badge) {
+              badge.className = `group-visibility-badge ${nuevo ? 'badge--public' : 'badge--private'}`;
+              badge.textContent = nuevo ? '🌐 Público' : '🔒 Privado';
+            }
+          }
+          prodeToast(`Grupo ahora es ${nuevo ? 'público' : 'privado'}.`);
+        } catch(err) { prodeToast('Error al cambiar visibilidad.', 'error'); }
+      });
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // RANKING GLOBAL (top 50)
+  // ──────────────────────────────────────────────────────────────
+  async function _cargarRankingGlobal() {
+    const cont = document.getElementById('prode-global-ranking-cont');
+    if (!cont) return;
+
+    try {
+      const { data, error } = await sb()
+        .from('profiles')
+        .select('id, username, avatar_url, puntos_prode, aciertos_exactos, aciertos_signo')
+        .order('puntos_prode', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        cont.innerHTML = `<div style="color:var(--text4);font-size:13px;padding:14px 0">Sin datos de ranking aún.</div>`;
+        return;
+      }
+
+      const rows = data.map((p, i) => {
+        const pos    = i + 1;
+        const posCls = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const isMe   = p.id === _uid;
+        const avatar = p.avatar_url
+          ? `<img class="grt-avatar" src="${p.avatar_url}" alt="${p.username}" onerror="this.style.display='none'">`
+          : `<div class="grt-avatar-fallback">👤</div>`;
+        const medal  = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+        return `<div class="grt-row ${isMe ? 'row--me' : ''}">
+          <span class="grt-pos ${posCls}">${medal}</span>
+          ${avatar}
+          <span class="grt-name ${isMe ? 'is-me' : ''}">${p.username || 'Anónimo'}${isMe ? ' ★' : ''}</span>
+          <span class="grt-pts">${p.puntos_prode || 0}</span>
+          <span class="grt-exactos">🎯 ${p.aciertos_exactos || 0}</span>
+          <span class="grt-signo">⚖️ ${p.aciertos_signo || 0}</span>
+        </div>`;
+      }).join('');
+
+      cont.innerHTML = `
+        <div class="global-ranking-table">
+          <div class="grt-header">
+            <span>#</span><span></span>
+            <span>Usuario</span>
+            <span style="text-align:center">Pts</span>
+            <span style="text-align:center">Exactos</span>
+            <span style="text-align:center">Signo</span>
+          </div>
+          ${rows}
+        </div>`;
+
+    } catch(err) {
+      console.error('[Prode] Error cargando ranking global:', err);
+    }
+  }
+
+})(); // fin IIFE Prode
+

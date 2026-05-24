@@ -469,13 +469,76 @@
 
     <!-- Sub-panel: Comunidades -->
     <div class="prode-subpanel" id="prode-communities-panel">
-      <!-- Se llena dinámicamente por prode.js -->
-      <div class="prode-empty">
-        <span class="prode-empty-icon">👥</span>
-        <div class="prode-empty-title">Cargando comunidades...</div>
-        <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
-      </div>
+      <div class="communities-layout">
+
+        <!-- ── Columna principal: mis grupos + ranking global ── -->
+        <div>
+          <!-- Mis grupos -->
+          <div class="my-groups-header">
+            <p class="section-label" style="margin:0">Mis Grupos</p>
+            <span class="groups-count-badge" id="prode-groups-count">0 grupos</span>
+          </div>
+          <!-- Lista dinámica de tarjetas de grupo -->
+          <div id="prode-my-groups-list">
+            <div class="prode-empty" style="padding:30px 0">
+              <span class="prode-empty-icon">👥</span>
+              <div class="prode-empty-title">Cargando grupos...</div>
+              <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+            </div>
+          </div>
+
+          <!-- Ranking global -->
+          <div class="global-ranking-section">
+            <p class="section-label">🌎 Ranking Global</p>
+            <div id="prode-global-ranking-cont">
+              <div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando ranking...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Sidebar: Crear / Unirse ── -->
+        <div class="community-sidebar">
+
+          <!-- Crear grupo -->
+          <div class="community-action-card">
+            <div class="community-action-title">🏆 Crear Grupo</div>
+            <input
+              type="text"
+              id="prode-nuevo-grupo"
+              class="community-input"
+              placeholder="Nombre del grupo (mín. 2 caracteres)"
+              maxlength="50"
+            />
+            <label class="community-toggle-row" style="cursor:pointer">
+              <span class="community-toggle-label">🌐 Grupo público</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="new-group-public" />
+                <span class="toggle-slider"></span>
+              </label>
+            </label>
+            <button class="community-btn" id="btn-create-group" onclick="crearComunidad()">Crear Grupo</button>
+            <div class="community-msg" id="create-group-msg"></div>
+          </div>
+
+          <!-- Unirse con código -->
+          <div class="community-action-card">
+            <div class="community-action-title">🔑 Unirse con Código</div>
+            <input
+              type="text"
+              id="join-group-code"
+              class="community-input"
+              placeholder="Código de 6 letras"
+              maxlength="6"
+              style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center"
+            />
+            <button class="community-btn btn--secondary" id="btn-join-group" onclick="unirseComunidad()">Unirse al Grupo</button>
+            <div class="community-msg" id="join-group-msg"></div>
+          </div>
+
+        </div><!-- /community-sidebar -->
+      </div><!-- /communities-layout -->
     </div>
+
 
   </div>
 
@@ -638,6 +701,13 @@
   import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from '../backend/auth.js'; 
   import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from '../backend/realtime.js';
   import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
+
+  // ╔═════════════════════════════════════════════════════
+  // EXPONER SUPABASE GLOBALMENTE
+  // app.js (classic script) necesita acceder al cliente de Supabase.
+  // Esto debe ir antes de que app.js se ejecute.
+  // ╚═════════════════════════════════════════════════════
+  window.supabaseClient = supabase;
 
   console.log('🚀 Inline module script loaded successfully!');
 
@@ -852,8 +922,13 @@
     if (user) {
       userSession = user;
       
-      // Inicializar el Prode para este usuario
+      // Exponer el user_id globalmente para que app.js (Prode en vanilla) lo use
+      window.__mundialitoUserId = user.id;
+
+      // Inicializar el Prode — módulo ESM
       initProde(user.id);
+      // Inicializar el Prode — módulo vanilla (app.js) como respaldo
+      if (typeof window.prodeInit === 'function') window.prodeInit(user.id);
       
       // Sincronizar visibilidad de overlays
       const overlayEl = document.getElementById('auth-overlay');
@@ -902,8 +977,10 @@
   };
 
   // Función global para cambiar sub-tabs del Prode
+  // Intenta el módulo ESM, si falla usa la función vanilla de app.js
   window.switchProdeSubTab = function(tab) {
-    prodeSubTab(tab);
+    try { prodeSubTab(tab); } catch(e) {}
+    if (typeof window.prodeChangeSubTab === 'function') window.prodeChangeSubTab(tab);
   };
 
   // Asignar evento al clic del botón en el dropdown
