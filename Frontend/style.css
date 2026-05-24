@@ -3,47 +3,30 @@
        — Paleta oficial FIFA World Cup 2026
     ════════════════════════════════════════════════ */
     :root {
-      /* Colores primarios FIFA 2026 */
-      --navy: #0A2A4A;
-      /* Fondo principal – azul medio */
-      /* Fondo principal – azul marino profundo */
-      --navy2: #0D3560;
-      /* Fondo de tarjetas */
-      /* Fondo de tarjetas */
-      --navy3: #114080;
-      /* Fondo de headers de sección */
-      /* Fondo de headers de sección */
-      --navy4: #1A5AAA;
-      /* Bordes y separadores */
-      /* Bordes y separadores */
+      /* Colores primarios FIFA 2026 - Ajustados para mayor legibilidad */
+      --navy: #05101E;     /* Fondo principal - azul marino muy oscuro casi negro */
+      --navy2: #0A1C30;    /* Fondo de tarjetas - un poco más claro */
+      --navy3: #0E2945;    /* Elementos secundarios - hover o modales */
+      --navy4: #153B60;    /* Headers o bordes suaves */
+      
+      /* Acentos */
       --red: #00AA55;
-      /* Verde esmeralda – acento primario */
-      /* Rojo FIFA – acento primario */
       --red2: #00CC66;
-      /* Verde hover */
-      /* Rojo hover */
       --red-dim: #006633;
-      /* Verde oscuro / bordes activos */
-      /* Rojo oscuro / bordes activos */
       --gold: #FFD700;
-      /* Amarillo dorado brillante */
-      /* Dorado – premios / ranking */
       --gold2: #E6B800;
+      
+      /* Texto - Aclarado para mayor contraste */
       --white: #FFFFFF;
-      --offwhite: #E8F4FF;
-      /* Texto principal */
-      /* Texto principal */
-      --text2: #90C4E8;
-      /* Texto secundario */
-      /* Texto secundario */
-      --text3: #4A90C0;
-      /* Texto muted */
-      /* Texto muted */
-      --text4: #2A6090;
-      /* Texto muy apagado */
-      /* Texto muy apagado */
-      --border: #1A5AAA;
-      --border2: #0D3560;
+      --offwhite: #F4F9FF; /* Blanco con apenas un tinte azul */
+      --text2: #D1E4F9;    /* Texto secundario - muy claro y legible */
+      --text3: #9CBDE6;    /* Texto terciario (muted) - claro pero diferenciable */
+      --text4: #648DB8;    /* Texto muy apagado pero sigue siendo legible sobre oscuro */
+      
+      /* Bordes */
+      --border: #1C3D60;
+      --border2: #122B48;
+      
       --live-red: #FFD700;
       /* Amarillo para indicadores en vivo */
       /* Rojo para indicadores en vivo */
@@ -223,10 +206,13 @@
       gap: 10px;
     }
 
-    .logo-icon {
-      font-size: 28px;
+    .logo-icon-img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
       animation: flagWave 3s ease-in-out infinite;
       display: inline-block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
     .logo-text {
@@ -1883,11 +1869,14 @@
       margin-bottom: 32px;
     }
 
-    .auth-logo-icon {
-      font-size: 44px;
+    .auth-logo-icon-img {
+      height: 64px;
+      width: auto;
+      object-fit: contain;
       display: block;
-      margin-bottom: 10px;
+      margin: 0 auto 10px auto;
       animation: flagWave 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
     }
 
     .auth-logo-title {
