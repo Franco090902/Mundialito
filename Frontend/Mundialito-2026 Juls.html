@@ -165,7 +165,30 @@
     <!-- ══════════════════════════════════════
      CONTENIDO PRINCIPAL
 ══════════════════════════════════════ -->
+    <!-- Nuevo Header de Navegación SPA -->
+    <nav class="spa-nav">
+      <ul>
+        <li>
+          <button class="spa-nav-btn active" data-target="section-inicio" onclick="switchTab('live', document.querySelector('#section-inicio .tabs .tab-btn:first-child'))">
+            <span class="nav-icon">🏠</span> Inicio
+          </button>
+        </li>
+        <li>
+          <button class="spa-nav-btn" data-target="section-chatbot" onclick="switchTab('chatbot', this)">
+            <span class="nav-icon">🤖</span> Chatbot
+          </button>
+        </li>
+        <li>
+          <button class="spa-nav-btn" data-target="section-juegos" onclick="switchTab('prode', document.querySelector('#section-juegos .tabs .tab-btn:first-child'))">
+            <span class="nav-icon">🎮</span> Juegos
+          </button>
+        </li>
+      </ul>
+    </nav>
     <div class="main">
+
+      <!-- SECCIÓN INICIO -->
+      <section id="section-inicio" class="spa-section active">
 
       <!-- TABS DE NAVEGACIÓN -->
       <div class="tabs">
@@ -177,9 +200,6 @@
         <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
         <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
         <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
-        <button class="tab-btn" onclick="switchTab('chatbot', this)">🤖 Chatbot</button>
-        <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
-        <button class="tab-btn" onclick="switchTab('higherlower', this)">🆚 Higher/Lower</button>
       </div>
 
       <!-- ══ PANEL: EN VIVO ══ -->
@@ -356,7 +376,10 @@
         </div>
         <div id="grid-productos" class="cards-grid"></div>
       </div>
+      </section>
 
+      <!-- SECCIÓN CHATBOT -->
+      <section id="section-chatbot" class="spa-section hidden">
       <div id="panel-chatbot" class="panel">
 
         <!-- Encabezado del panel -->
@@ -455,6 +478,16 @@
 
         </div>
       </div>
+      </section>
+
+      <!-- SECCIÓN JUEGOS -->
+      <section id="section-juegos" class="spa-section hidden">
+        <!-- Sub-tabs para Juegos -->
+        <div class="tabs" style="justify-content: center; margin-bottom: 20px;">
+          <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
+          <button class="tab-btn" onclick="switchTab('higherlower', this)">🆚 Higher/Lower</button>
+        </div>
+
       <!-- ══ PANEL: PRODE ══ -->
       <div id="panel-prode" class="panel">
 
@@ -558,6 +591,7 @@
 
 
       </div>
+      </section>
 
       <!-- ══ PANEL: PERFIL ══ -->
       <div id="panel-perfil" class="panel">
@@ -1510,6 +1544,20 @@
       <button onclick="widgetEnviar()">↑</button>
     </div>
   </div>
+  <script type="module" src="navigation.js"></script>
+  <script type="module">
+    import { initSPANavigation } from './navigation.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      initSPANavigation();
+      
+      // Mover panel-higherlower dentro de section-juegos
+      const hj = document.getElementById('panel-higherlower');
+      const sj = document.getElementById('section-juegos');
+      if (hj && sj) {
+        sj.appendChild(hj);
+      }
+    });
+  </script>
   <script src="app.js"></script>
 </body>
 

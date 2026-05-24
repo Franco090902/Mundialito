@@ -389,12 +389,67 @@
     }
 
     /* ════════════════════════════════════════════════
-       6. LAYOUT PRINCIPAL
+       6. LAYOUT PRINCIPAL & SPA SECTIONS
     ════════════════════════════════════════════════ */
     .main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 28px 70px;
+    }
+
+    .spa-nav {
+      background: var(--navy2);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 60px; /* Debajo del header principal */
+      z-index: 150;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .spa-nav ul {
+      list-style: none;
+      display: flex;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .spa-nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text3);
+      padding: 16px 24px;
+      border-bottom: 3px solid transparent;
+      transition: all .2s ease;
+      display: block;
+    }
+
+    .spa-nav-btn:hover {
+      color: var(--text2);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .spa-nav-btn.active {
+      color: var(--white);
+      border-bottom-color: var(--red);
+      background: rgba(0, 170, 85, 0.1);
+    }
+
+    .spa-section.hidden {
+      display: none !important;
+    }
+
+    .spa-section.active {
+      display: block;
+      animation: fadeUp .35s ease;
     }
 
     /* ════════════════════════════════════════════════
@@ -4041,3 +4096,105 @@
         font-size: 36px;
       }
     }
+
+/* =========================================
+   NAVEGACIÓN SPA PRINCIPAL
+========================================= */
+.main-spa-nav {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(10, 42, 74, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.spa-nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 10px;
+  width: 100%;
+  max-width: 800px;
+  justify-content: space-around;
+}
+
+.spa-nav-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.spa-nav-btn:hover {
+  color: var(--offwhite);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.spa-nav-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.spa-nav-btn .nav-icon {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.spa-nav-btn:hover .nav-icon {
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   MANEJO DE SECCIONES SPA
+========================================= */
+.spa-section {
+  display: block;
+  animation: fadeSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.spa-section.hidden {
+  display: none;
+}
+
+@keyframes fadeSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-spa-nav {
+    padding: 0 10px;
+  }
+  .spa-nav-btn {
+    font-size: 16px;
+    padding: 14px 10px;
+    gap: 5px;
+  }
+  .spa-nav-btn .nav-icon {
+    font-size: 18px;
+  }
+}
