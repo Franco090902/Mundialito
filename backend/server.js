@@ -738,10 +738,16 @@ async function actualizarGoleadores() {
       updated_at: new Date().toISOString()
     }));
 
+    // LIMPIEZA Y ACTUALIZACIÓN EN BD
+    // Limpiar tabla antes de insertar para no mezclar datos antiguos o de pruebas
+    await supabase.from('goleadores').delete().neq('id', 'borrar_todo');
+
     if (rows.length > 0) {
       const { error } = await supabase.from('goleadores').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
       console.log(`   ✅ ${rows.length} goleadores actualizados.`);
+    } else {
+      console.log('   Sin goleadores reportados aún.');
     }
   } catch (err) {
     console.error('   ❌ Error en actualizarGoleadores:', err.message);
@@ -751,9 +757,10 @@ async function actualizarGoleadores() {
 async function actualizarTarjetas() {
   console.log('\n🟨 [TARJETAS] Actualizando tarjetas...');
   try {
-    // Para modo TEST (Libertadores), forzamos la temporada 2024 para asegurarnos de tener datos.
-    // Para el Mundial 2026, usamos 2026.
-    const currentSeason = TEST_MODE ? 2024 : 2026;
+    // Primero limpiamos la tabla en Supabase para evitar datos residuales de otros torneos/temporadas
+    await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
+
+    const currentSeason = 2026;
     const tournamentId = TEST_MODE ? 384 : 16; // 384: Libertadores, 16: Mundial
     let rows = [];
     let sofascoreSuccess = false;
@@ -768,11 +775,25 @@ async function actualizarTarjetas() {
       if (activeSeason) {
         console.log(`      🏆 Temporada de Sofascore seleccionada: ${activeSeason.name} (ID: ${activeSeason.id})`);
         const urlStats = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics`;
-        const resStats = await safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-yellowCards&group=card&type=overall");
-        const players = resStats.data?.results || [];
+        
+        // Consultar líderes de amarillas y rojas en paralelo para no perder a los jugadores expulsados
+        const [resStatsYellow, resStatsRed] = await Promise.all([
+          safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-yellowCards&group=card&type=overall"),
+          safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-redCards&group=card&type=overall").catch(() => ({ data: { results: [] } }))
+        ]);
+
+        const playersYellow = resStatsYellow.data?.results || [];
+        const playersRed = resStatsRed.data?.results || [];
+
+        // Combinar ambas listas de forma única por ID de jugador
+        const playersMap = new Map();
+        playersYellow.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
+        playersRed.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
+
+        const players = Array.from(playersMap.values());
 
         if (players.length > 0) {
-          console.log(`      Encontrados ${players.length} líderes de tarjetas en Sofascore. Obteniendo estadísticas individuales...`);
+          console.log(`      Encontrados ${players.length} líderes únicos de tarjetas en Sofascore. Obteniendo estadísticas individuales...`);
           const cardsMap = new Map();
 
           // Consultar las estadísticas individuales en paralelo con safeSofascoreGet (que tiene throttling)
@@ -790,9 +811,9 @@ async function actualizarTarjetas() {
                 nombre: p.name,
                 equipo: t.name,
                 equipo_short: t.name,
-                escudo: `https://api.sofascore.app/api/v1/team/${t.id}/image`,
+                escudo: `https://api.sofascore.com/api/v1/team/${t.id}/image`,
                 amarillas: stats.yellowCards || 0,
-                rojas: (stats.redCards || 0) + (stats.yellowRedCards || 0),
+                rojas: stats.redCards || 0,
                 updated_at: new Date().toISOString()
               });
             } catch (err) {
@@ -862,10 +883,6 @@ async function actualizarTarjetas() {
       processCards(red.data?.response, 'red');
       rows = Array.from(cardsMap.values());
     }
-
-    // LIMPIEZA Y ACTUALIZACIÓN EN BD
-    // Limpiar tabla antes de insertar para no mezclar datos antiguos o de pruebas
-    await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
 
     if (rows.length > 0) {
       const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
@@ -1337,6 +1354,31 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', mode: TEST_MODE ? 'test_libertadores' : 'mundial_2026', time: new Date().toISOString() });
 });
 
+// Proxy para escudos de Sofascore para evadir protección de hotlinking (403 Forbidden)
+app.get('/api/escudo/:id', async (req, res) => {
+  const teamId = req.params.id;
+  const url = `https://api.sofascore.com/api/v1/team/${teamId}/image`;
+  
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Referer': 'https://www.sofascore.com/',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+      },
+      responseType: 'arraybuffer',
+      timeout: 6000
+    });
+    
+    res.setHeader('Content-Type', response.headers['content-type'] || 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cachear por 1 día
+    res.send(response.data);
+  } catch (err) {
+    console.error(`Error proxying team image for ID ${teamId}:`, err.message);
+    res.status(404).send('Not Found');
+  }
+});
+
 // ══════════════════════════════════════════════════════════════════
 // ENDPOINT: FIXTURE COMPLETO (cacheado desde Football-Data.org)
 // ══════════════════════════════════════════════════════════════════
@@ -1710,7 +1752,21 @@ app.get('/api/tarjetas', async (req, res) => {
 
     if (error) throw error;
     const sorted = data.sort((a, b) => (b.rojas || 0) - (a.rojas || 0) || (b.amarillas || 0) - (a.amarillas || 0));
-    res.json(sorted);
+    
+    // Mapear los escudos de Sofascore a través de nuestro proxy local para evadir 403 Forbidden hotlinks
+    const mapped = sorted.map(c => {
+      let escudo = c.escudo;
+      if (escudo && escudo.includes('sofascore.com') && escudo.includes('/team/')) {
+        const parts = escudo.split('/team/');
+        const teamId = parts[1]?.split('/')[0];
+        if (teamId) {
+          escudo = `http://localhost:3000/api/escudo/${teamId}`;
+        }
+      }
+      return { ...c, escudo };
+    });
+    
+    res.json(mapped);
   } catch (err) {
     console.error('Error /api/tarjetas:', err.message);
     res.json([]);
@@ -2042,8 +2098,13 @@ app.get('/api/equipo/:nombre', async (req, res) => {
       const { data: teamData } = await apiFootball.get('/teams', { params: { search: searchName } });
 
       if (teamData.response && teamData.response.length > 0) {
-        // Tomamos el primer resultado que sea selección nacional (o el primero)
-        const teamInfo = teamData.response.find(t => t.team.national === true) || teamData.response[0];
+        // Tomamos el primer resultado que sea selección nacional (filtrando las selecciones femeninas como USA W, Canada W)
+        const teamInfo = teamData.response.find(t => 
+          t.team.national === true && 
+          !t.team.name.endsWith(' W') && 
+          !t.team.name.includes('Women') && 
+          !t.team.name.includes('Femenino')
+        ) || teamData.response.find(t => t.team.national === true) || teamData.response[0];
         const teamId = teamInfo.team.id;
 
         console.log(`   ✅ Equipo encontrado en API: ${teamInfo.team.name} (ID: ${teamId})`);
@@ -2120,7 +2181,11 @@ app.get('/api/equipo/:nombre', async (req, res) => {
         
         let targetTeam = null;
         if (teams.length > 0) {
-          targetTeam = teams.find(t => sofascoreTeamMatch(t.entity.name, nombre)) || teams[0];
+          targetTeam = teams.find(t => 
+            sofascoreTeamMatch(t.entity.name, nombre) && 
+            !t.entity.name.includes('Women') && 
+            !t.entity.name.endsWith(' W')
+          ) || teams.find(t => sofascoreTeamMatch(t.entity.name, nombre)) || teams[0];
         }
 
         if (targetTeam) {
