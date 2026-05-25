@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mundialito — Mundial 2026</title>
-  <link rel="icon" type="image/png" href="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png">
+  <link rel="icon" type="image/png"
+    href="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap"
     rel="stylesheet" />
@@ -13,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="Prode/prode.css">
+  <link rel="stylesheet" href="wordle.css">
   <script>
     window.PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
     window.imgFallback = function (img) {
@@ -32,7 +34,8 @@
 
       <!-- Logo -->
       <div class="auth-logo">
-        <img src="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png" class="auth-logo-icon-img" alt="Trophy Logo">
+        <img src="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png"
+          class="auth-logo-icon-img" alt="Trophy Logo">
         <div class="auth-logo-title"><span>MUNDIALITO</span></div>
         <div class="auth-logo-sub">Mundial 2026 · Ingresá para continuar</div>
       </div>
@@ -119,7 +122,8 @@
       <div class="header-inner" style="position: relative;">
         <!-- Izquierda: Logo -->
         <div class="logo">
-          <img src="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png" class="logo-icon-img" alt="Trophy Logo">
+          <img src="https://png.pngtree.com/png-clipart/20221123/ourmid/pngtree-world-cup-trophy-png-image_6476187.png"
+            class="logo-icon-img" alt="Trophy Logo">
           <span class="logo-text"><span>MUNDIALITO</span></span>
           <span class="logo-badge">MUNDIAL 2026</span>
         </div>
@@ -170,7 +174,8 @@
     <nav class="spa-nav">
       <ul>
         <li>
-          <button class="spa-nav-btn active" data-target="section-inicio" onclick="switchTab('live', document.querySelector('#section-inicio .tabs .tab-btn:first-child'))">
+          <button class="spa-nav-btn active" data-target="section-inicio"
+            onclick="switchTab('live', document.querySelector('#section-inicio .tabs .tab-btn:first-child'))">
             <span class="nav-icon">🏠</span> Inicio
           </button>
         </li>
@@ -180,7 +185,8 @@
           </button>
         </li>
         <li>
-          <button class="spa-nav-btn" data-target="section-juegos" onclick="switchTab('prode', document.querySelector('#section-juegos .tabs .tab-btn:first-child'))">
+          <button class="spa-nav-btn" data-target="section-juegos"
+            onclick="switchTab('prode', document.querySelector('#section-juegos .tabs .tab-btn:first-child'))">
             <span class="nav-icon">🎮</span> Juegos
           </button>
         </li>
@@ -191,294 +197,296 @@
       <!-- SECCIÓN INICIO -->
       <section id="section-inicio" class="spa-section active">
 
-      <!-- TABS DE NAVEGACIÓN -->
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
-        <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
-        <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
-        <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
-        <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
-        <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
-        <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
-        <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
-      </div>
+        <!-- TABS DE NAVEGACIÓN -->
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('live',this)">⚡ En Vivo</button>
+          <button class="tab-btn" onclick="switchTab('groups',this)">☰ Grupos</button>
+          <button class="tab-btn" onclick="switchTab('fixtures',this)">📅 Fixture</button>
+          <button class="tab-btn" onclick="switchTab('scorers',this)">⚽ Goleadores</button>
+          <button class="tab-btn" onclick="switchTab('cards',this)">🟨 Tarjetas</button>
+          <button class="tab-btn" onclick="switchTab('history',this)">🏆 Ediciones Pasadas</button>
+          <button class="tab-btn" onclick="switchTab('noticias', this)">📰 Noticias</button>
+          <button class="tab-btn" onclick="switchTab('tienda', this)">🛒 Tienda ML</button>
+        </div>
 
-      <!-- ══ PANEL: EN VIVO ══ -->
-      <div id="panel-live" class="panel active">
-        <div class="live-grid">
-          <div>
-            <p class="section-label">Partidos en curso</p>
-            <div id="live-matches-container">
-              <div style="text-align:center;padding:30px;color:var(--text3)">
-                <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
-                <div style="font-size:14px">No hay partidos en vivo en este momento</div>
-                <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026
+        <!-- ══ PANEL: EN VIVO ══ -->
+        <div id="panel-live" class="panel active">
+          <div class="live-grid">
+            <div>
+              <p class="section-label">Partidos en curso</p>
+              <div id="live-matches-container">
+                <div style="text-align:center;padding:30px;color:var(--text3)">
+                  <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+                  <div style="font-size:14px">No hay partidos en vivo en este momento</div>
+                  <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de
+                    2026
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SIDEBAR -->
+            <div>
+              <div class="sidebar-card">
+                <div class="sidebar-hdr">
+                  <span class="sidebar-hdr-dot"></span>
+                  <span class="sidebar-hdr-text">Top Goleadores</span>
+                </div>
+                <div id="liveScorers"></div>
+              </div>
+
+              <div class="sidebar-card">
+                <div class="sidebar-hdr">
+                  <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
+                  <span class="sidebar-hdr-text">Últimas Tarjetas</span>
+                </div>
+                <div id="liveCards">
+                  <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- SIDEBAR -->
-          <div>
-            <div class="sidebar-card">
-              <div class="sidebar-hdr">
-                <span class="sidebar-hdr-dot"></span>
-                <span class="sidebar-hdr-text">Top Goleadores</span>
+        <!-- ══ PANEL: GRUPOS ══ -->
+        <div id="panel-groups" class="panel">
+          <div class="grp-selector" id="grpSelector"></div>
+          <div class="grp-layout" id="grpContent"></div>
+        </div>
+
+        <!-- ══ PANEL: FIXTURE ══ -->
+        <div id="panel-fixtures" class="panel">
+          <p class="section-label">Fixture completo — Todos los grupos</p>
+          <div class="fixture-grid" id="fixtureContent"></div>
+        </div>
+
+        <!-- ══ PANEL: GOLEADORES ══ -->
+        <div id="panel-scorers" class="panel">
+          <p class="section-label">Tabla de goleadores — Mundial 2026</p>
+          <div class="sc-tbl">
+            <div class="sc-hdr">
+              <span>#</span><span></span><span>JUGADOR</span>
+              <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
+            </div>
+            <div id="scorersBody"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: TARJETAS ══ -->
+        <div id="panel-cards" class="panel">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+
+            <!-- Panel: Amarillas -->
+            <div>
+              <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
+              <div class="cd-tbl">
+                <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+                  <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+                </div>
+                <div id="cardsBodyYellow"></div>
               </div>
-              <div id="liveScorers"></div>
             </div>
 
-            <div class="sidebar-card">
-              <div class="sidebar-hdr">
-                <span class="sidebar-hdr-dot" style="background:var(--gold)"></span>
-                <span class="sidebar-hdr-text">Últimas Tarjetas</span>
+            <!-- Panel: Rojas -->
+            <div>
+              <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
+              <div class="cd-tbl">
+                <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
+                  <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
+                </div>
+                <div id="cardsBodyRed"></div>
               </div>
-              <div id="liveCards">
-                <div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ PANEL: EDICIONES PASADAS ══ -->
+        <div id="panel-history" class="panel">
+
+          <!-- Estadísticas globales del torneo -->
+          <div class="hist-hero">
+            <div class="hist-stat">
+              <div class="hist-stat-num"><span>22</span></div>
+              <div class="hist-stat-lbl">Ediciones celebradas</div>
+            </div>
+            <div class="hist-stat">
+              <div class="hist-stat-num">8</div>
+              <div class="hist-stat-lbl">Campeones distintos</div>
+            </div>
+            <div class="hist-stat">
+              <div class="hist-stat-num">5</div>
+              <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
+            </div>
+            <div class="hist-stat">
+              <div class="hist-stat-num">8<span>5</span></div>
+              <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
+            </div>
+          </div>
+
+          <!-- Campeonatos por confederación -->
+          <p class="section-label">Títulos por confederación (1930–2022)</p>
+          <div
+            style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
+            <div class="conf-bar-wrap">
+              <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span
+                  class="conf-count">9</span></div>
+              <div class="conf-track">
+                <div class="conf-fill" style="width:100%"></div>
+              </div>
+            </div>
+            <div class="conf-bar-wrap" style="margin-top:14px">
+              <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span>
+              </div>
+              <div class="conf-track">
+                <div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div>
+              </div>
+            </div>
+            <div class="conf-bar-wrap" style="margin-top:14px">
+              <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span
+                  class="conf-count">0</span></div>
+              <div class="conf-track">
+                <div class="conf-fill" style="width:3%;background:var(--border)"></div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ══ PANEL: GRUPOS ══ -->
-      <div id="panel-groups" class="panel">
-        <div class="grp-selector" id="grpSelector"></div>
-        <div class="grp-layout" id="grpContent"></div>
-      </div>
-
-      <!-- ══ PANEL: FIXTURE ══ -->
-      <div id="panel-fixtures" class="panel">
-        <p class="section-label">Fixture completo — Todos los grupos</p>
-        <div class="fixture-grid" id="fixtureContent"></div>
-      </div>
-
-      <!-- ══ PANEL: GOLEADORES ══ -->
-      <div id="panel-scorers" class="panel">
-        <p class="section-label">Tabla de goleadores — Mundial 2026</p>
-        <div class="sc-tbl">
-          <div class="sc-hdr">
-            <span>#</span><span></span><span>JUGADOR</span>
-            <span>EQUIPO</span><span style="text-align:center">GOL</span><span style="text-align:center">AST</span>
-          </div>
-          <div id="scorersBody"></div>
-        </div>
-      </div>
-
-      <!-- ══ PANEL: TARJETAS ══ -->
-      <div id="panel-cards" class="panel">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-
-          <!-- Panel: Amarillas -->
-          <div>
-            <p class="section-label" style="margin-bottom: 12px;">🟨 Más Tarjetas Amarillas</p>
-            <div class="cd-tbl">
-              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-              </div>
-              <div id="cardsBodyYellow"></div>
-            </div>
-          </div>
-
-          <!-- Panel: Rojas -->
-          <div>
-            <p class="section-label" style="margin-bottom: 12px;">🟥 Más Tarjetas Rojas</p>
-            <div class="cd-tbl">
-              <div class="cd-hdr" style="grid-template-columns: 36px 36px 1fr 110px;">
-                <span>#</span><span></span><span>JUGADOR</span><span style="text-align:center">TOTAL</span>
-              </div>
-              <div id="cardsBodyRed"></div>
-            </div>
-          </div>
+          <!-- Selector de edición -->
+          <p class="section-label">Explorar edición</p>
+          <div class="edition-selector" id="editionSelector"></div>
+          <div id="editionCards"></div>
 
         </div>
-      </div>
 
-      <!-- ══ PANEL: EDICIONES PASADAS ══ -->
-      <div id="panel-history" class="panel">
-
-        <!-- Estadísticas globales del torneo -->
-        <div class="hist-hero">
-          <div class="hist-stat">
-            <div class="hist-stat-num"><span>22</span></div>
-            <div class="hist-stat-lbl">Ediciones celebradas</div>
+        <!-- ══ PANEL: NOTICIAS ══ -->
+        <div id="panel-noticias" class="panel">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
+            <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)"
+              style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+              <option value="">🌎 Ver Todo el Mundial</option>
+            </select>
           </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">8</div>
-            <div class="hist-stat-lbl">Campeones distintos</div>
-          </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">5</div>
-            <div class="hist-stat-lbl">Títulos Brasil 🇧🇷</div>
-          </div>
-          <div class="hist-stat">
-            <div class="hist-stat-num">8<span>5</span></div>
-            <div class="hist-stat-lbl">Goles Ronaldo (récord)</div>
-          </div>
+          <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
+            Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el
+              Mundial</span>
+          </p>
+          <div id="grid-noticias" class="cards-grid"></div>
         </div>
-
-        <!-- Campeonatos por confederación -->
-        <p class="section-label">Títulos por confederación (1930–2022)</p>
-        <div
-          style="background:var(--navy2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;margin-bottom:28px;max-width:600px">
-          <div class="conf-bar-wrap">
-            <div class="conf-label"><span class="conf-name">🌎 CONMEBOL (Sudamérica)</span><span
-                class="conf-count">9</span></div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:100%"></div>
-            </div>
+        <!-- ══ PANEL: TIENDA ══ -->
+        <div id="panel-tienda" class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
+            <select id="filtro-tienda" onchange="window.cargarProductos(this.value)"
+              style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
+              <option value="">🌎 Todo el Mundial</option>
+            </select>
           </div>
-          <div class="conf-bar-wrap" style="margin-top:14px">
-            <div class="conf-label"><span class="conf-name">🌍 UEFA (Europa)</span><span class="conf-count">12</span>
-            </div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:100%;background:linear-gradient(90deg,#6699ff,#aabbff)"></div>
-            </div>
-          </div>
-          <div class="conf-bar-wrap" style="margin-top:14px">
-            <div class="conf-label"><span class="conf-name">🌏 AFC / CAF / CONCACAF</span><span
-                class="conf-count">0</span></div>
-            <div class="conf-track">
-              <div class="conf-fill" style="width:3%;background:var(--border)"></div>
-            </div>
-          </div>
+          <div id="grid-productos" class="cards-grid"></div>
         </div>
-
-        <!-- Selector de edición -->
-        <p class="section-label">Explorar edición</p>
-        <div class="edition-selector" id="editionSelector"></div>
-        <div id="editionCards"></div>
-
-      </div>
-
-      <!-- ══ PANEL: NOTICIAS ══ -->
-      <div id="panel-noticias" class="panel">
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-          <p class="section-label" style="margin: 0;">📰 Noticias del Mundial</p>
-          <select id="filtro-noticias" onchange="window.cargarNoticias(this.value)"
-            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
-            <option value="">🌎 Ver Todo el Mundial</option>
-          </select>
-        </div>
-        <p style="color: var(--text3); font-size: 14px; margin-bottom: 15px;">
-          Mostrando: <span id="label-pais-noticias" style="color: var(--red); font-weight: bold;">Todo el Mundial</span>
-        </p>
-        <div id="grid-noticias" class="cards-grid"></div>
-      </div>
-      <!-- ══ PANEL: TIENDA ══ -->
-      <div id="panel-tienda" class="panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <p class="section-label">🛒 Tienda Oficial · <span id="tienda-pais-nombre">Mundial 2026</span></p>
-          <select id="filtro-tienda" onchange="window.cargarProductos(this.value)"
-            style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border); font-weight: bold; cursor: pointer;">
-            <option value="">🌎 Todo el Mundial</option>
-          </select>
-        </div>
-        <div id="grid-productos" class="cards-grid"></div>
-      </div>
       </section>
 
       <!-- SECCIÓN CHATBOT -->
       <section id="section-chatbot" class="spa-section hidden">
-      <div id="panel-chatbot" class="panel">
+        <div id="panel-chatbot" class="panel">
 
-        <!-- Encabezado del panel -->
-        <div class="chatbot-panel-header">
-          <div class="chatbot-panel-title">
-            <span class="chatbot-panel-icon">🤖</span>
-            <div>
-              <div class="chatbot-panel-name">Mundialito Bot</div>
-              <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
+          <!-- Encabezado del panel -->
+          <div class="chatbot-panel-header">
+            <div class="chatbot-panel-title">
+              <span class="chatbot-panel-icon">🤖</span>
+              <div>
+                <div class="chatbot-panel-name">Mundialito Bot</div>
+                <div class="chatbot-panel-sub">Impulsado por Gemini AI · Especialista en Mundial 2026</div>
+              </div>
+            </div>
+            <div class="chatbot-status-badge">
+              <span class="chatbot-status-dot"></span>
+              En línea
             </div>
           </div>
-          <div class="chatbot-status-badge">
-            <span class="chatbot-status-dot"></span>
-            En línea
-          </div>
-        </div>
 
-        <!-- Layout de dos columnas: chat + sidebar de productos -->
-        <div class="chatbot-layout">
+          <!-- Layout de dos columnas: chat + sidebar de productos -->
+          <div class="chatbot-layout">
 
-          <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
-          <div class="chatbot-main">
+            <!-- COLUMNA IZQUIERDA: Interfaz del chat -->
+            <div class="chatbot-main">
 
-            <!-- Mensajes del chat -->
-            <div class="chatbot-mensajes" id="chatbot-mensajes">
-              <!-- Mensaje inicial del bot -->
-              <div class="chatbot-msg chatbot-msg--bot">
-                <div class="chatbot-msg-avatar">⚽</div>
-                <div class="chatbot-msg-contenido">
-                  <div class="chatbot-msg-texto">
-                    ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
-                    Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial.
-                    También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+              <!-- Mensajes del chat -->
+              <div class="chatbot-mensajes" id="chatbot-mensajes">
+                <!-- Mensaje inicial del bot -->
+                <div class="chatbot-msg chatbot-msg--bot">
+                  <div class="chatbot-msg-avatar">⚽</div>
+                  <div class="chatbot-msg-contenido">
+                    <div class="chatbot-msg-texto">
+                      ¡Hola! Soy <strong>Mundialito Bot</strong>, tu guía del Mundial 2026. 🏆<br><br>
+                      Podés preguntarme sobre partidos, selecciones, fechas, estadios o cualquier dato del Mundial.
+                      También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
+                    </div>
+                    <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
+                    <div class="chatbot-sugerencias">
+                      <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
+                      <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el
+                        Mundial?</button>
+                      <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
+                      <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos
+                        participan?</button>
+                      <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para
+                        ganar?</button>
+                    </div>
                   </div>
-                  <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
-                  <div class="chatbot-sugerencias">
-                    <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el
-                      Mundial?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Dónde juega Argentina?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuántos equipos
-                      participan?</button>
-                    <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Quién es favorito para
-                      ganar?</button>
-                  </div>
+                </div>
+              </div>
+
+              <!-- Input del usuario -->
+              <div class="chatbot-input-area">
+                <div class="chatbot-input-wrap">
+                  <textarea id="chatbot-input" class="chatbot-textarea"
+                    placeholder="Preguntame sobre el Mundial 2026..." rows="1" maxlength="500"
+                    onkeydown="chatbotKeydown(event)" oninput="autoResizeTextarea(this)"></textarea>
+                  <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="chatbot-input-footer">
+                  <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
+                  <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
                 </div>
               </div>
             </div>
 
-            <!-- Input del usuario -->
-            <div class="chatbot-input-area">
-              <div class="chatbot-input-wrap">
-                <textarea id="chatbot-input" class="chatbot-textarea" placeholder="Preguntame sobre el Mundial 2026..."
-                  rows="1" maxlength="500" onkeydown="chatbotKeydown(event)"
-                  oninput="autoResizeTextarea(this)"></textarea>
-                <button id="chatbot-send-btn" class="chatbot-send-btn" onclick="chatbotEnviar()">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
+            <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
+            <div class="chatbot-sidebar">
+              <div class="chatbot-sidebar-titulo">
+                <span>🛒</span> Productos sugeridos
+              </div>
+              <div id="chatbot-productos" class="chatbot-productos-lista">
+                <!-- Estado vacío inicial -->
+                <div class="chatbot-sidebar-empty">
+                  <span>⚽</span>
+                  <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
+                </div>
+              </div>
+
+              <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
+              <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
+                <div class="chatbot-sidebar-titulo" style="margin-top:20px">
+                  <span>📅</span> Agendar en Google Calendar
+                </div>
+                <div id="chatbot-calendario-info" class="chatbot-calendario-info">
+                  <!-- Información del evento se inyecta dinámicamente -->
+                </div>
+                <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
+                  📅 Agregar a mi Google Calendar
                 </button>
               </div>
-              <div class="chatbot-input-footer">
-                <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
-                <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
-              </div>
             </div>
+
           </div>
-
-          <!-- COLUMNA DERECHA: Productos sugeridos por el bot -->
-          <div class="chatbot-sidebar">
-            <div class="chatbot-sidebar-titulo">
-              <span>🛒</span> Productos sugeridos
-            </div>
-            <div id="chatbot-productos" class="chatbot-productos-lista">
-              <!-- Estado vacío inicial -->
-              <div class="chatbot-sidebar-empty">
-                <span>⚽</span>
-                <p>Los productos aparecerán aquí cuando preguntes sobre alguna selección.</p>
-              </div>
-            </div>
-
-            <!-- Sección de calendario (aparece cuando el bot detecta fechas) -->
-            <div id="chatbot-calendario-section" class="chatbot-calendario-section" style="display:none">
-              <div class="chatbot-sidebar-titulo" style="margin-top:20px">
-                <span>📅</span> Agendar en Google Calendar
-              </div>
-              <div id="chatbot-calendario-info" class="chatbot-calendario-info">
-                <!-- Información del evento se inyecta dinámicamente -->
-              </div>
-              <button id="chatbot-calendario-btn" class="chatbot-calendario-btn" onclick="agendarEnCalendario()">
-                📅 Agregar a mi Google Calendar
-              </button>
-            </div>
-          </div>
-
         </div>
-      </div>
       </section>
 
       <!-- SECCIÓN JUEGOS -->
@@ -488,304 +496,308 @@
           <button class="tab-btn" onclick="switchTab('prode', this)">🔮 Prode</button>
           <button class="tab-btn" onclick="switchTab('higherlower', this)">🆚 Higher/Lower</button>
           <button class="tab-btn" onclick="switchTab('idealxi', this)">⚽ 11 Ideal</button>
+          <button class="tab-btn" onclick="switchTab('wordle', this)">🎯 Wordle</button>
         </div>
 
-      <!-- ══ PANEL: PRODE ══ -->
-      <div id="panel-prode" class="panel">
+        <!-- ══ PANEL: PRODE ══ -->
+        <div id="panel-prode" class="panel">
 
-        <!-- Sub-tabs -->
-        <div class="prode-sub-tabs">
-          <button class="prode-sub-tab active" data-tab="predictions" onclick="switchProdeSubTab('predictions')">🔮 Mis
-            Predicciones</button>
-          <button class="prode-sub-tab" data-tab="communities" onclick="switchProdeSubTab('communities')">👥
-            Comunidades</button>
-        </div>
-
-        <!-- Sub-panel: Predicciones -->
-        <div class="prode-subpanel active" id="prode-predictions-panel">
-
-          <!-- Barra de búsqueda -->
-          <div class="prode-search-wrap">
-            <span class="prode-search-icon">🔍</span>
-            <input type="text" id="prode-search" class="prode-search-input"
-              placeholder="Buscá por país (ej: Argentina, Brasil...)" autocomplete="off" />
+          <!-- Sub-tabs -->
+          <div class="prode-sub-tabs">
+            <button class="prode-sub-tab active" data-tab="predictions" onclick="switchProdeSubTab('predictions')">🔮
+              Mis
+              Predicciones</button>
+            <button class="prode-sub-tab" data-tab="communities" onclick="switchProdeSubTab('communities')">👥
+              Comunidades</button>
           </div>
 
-          <!-- Mensaje sin resultados (hidden by default) -->
-          <div id="prode-no-results" style="display:none;" class="prode-empty" style="padding:30px 0">
-            <span class="prode-empty-icon">🔍</span>
-            <div class="prode-empty-title">Sin partidos para esa búsqueda</div>
-            <div class="prode-empty-sub">Probá con otro nombre de selección.</div>
-          </div>
+          <!-- Sub-panel: Predicciones -->
+          <div class="prode-subpanel active" id="prode-predictions-panel">
 
-          <!-- Contenido dinámico de predicciones -->
-          <div id="prode-predictions-content">
-            <!-- Se llena dinámicamente por prode.js -->
-            <div class="prode-empty">
-              <span class="prode-empty-icon">⚽</span>
-              <div class="prode-empty-title">Iniciando Prode...</div>
-              <div class="prode-empty-sub">Por favor iniciá sesión para cargar tus predicciones.</div>
+            <!-- Barra de búsqueda -->
+            <div class="prode-search-wrap">
+              <span class="prode-search-icon">🔍</span>
+              <input type="text" id="prode-search" class="prode-search-input"
+                placeholder="Buscá por país (ej: Argentina, Brasil...)" autocomplete="off" />
+            </div>
+
+            <!-- Mensaje sin resultados (hidden by default) -->
+            <div id="prode-no-results" style="display:none;" class="prode-empty" style="padding:30px 0">
+              <span class="prode-empty-icon">🔍</span>
+              <div class="prode-empty-title">Sin partidos para esa búsqueda</div>
+              <div class="prode-empty-sub">Probá con otro nombre de selección.</div>
+            </div>
+
+            <!-- Contenido dinámico de predicciones -->
+            <div id="prode-predictions-content">
+              <!-- Se llena dinámicamente por prode.js -->
+              <div class="prode-empty">
+                <span class="prode-empty-icon">⚽</span>
+                <div class="prode-empty-title">Iniciando Prode...</div>
+                <div class="prode-empty-sub">Por favor iniciá sesión para cargar tus predicciones.</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Sub-panel: Comunidades -->
-        <div class="prode-subpanel" id="prode-communities-panel">
-          <div class="communities-layout">
+          <!-- Sub-panel: Comunidades -->
+          <div class="prode-subpanel" id="prode-communities-panel">
+            <div class="communities-layout">
 
-            <!-- ── Columna principal: mis grupos + ranking global ── -->
-            <div>
-              <!-- Mis grupos -->
-              <div class="my-groups-header">
-                <p class="section-label" style="margin:0">Mis Grupos</p>
-                <span class="groups-count-badge" id="prode-groups-count">0 grupos</span>
-              </div>
-              <!-- Lista dinámica de tarjetas de grupo -->
-              <div id="prode-my-groups-list">
-                <div class="prode-empty" style="padding:30px 0">
-                  <span class="prode-empty-icon">👥</span>
-                  <div class="prode-empty-title">Cargando grupos...</div>
-                  <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+              <!-- ── Columna principal: mis grupos + ranking global ── -->
+              <div>
+                <!-- Mis grupos -->
+                <div class="my-groups-header">
+                  <p class="section-label" style="margin:0">Mis Grupos</p>
+                  <span class="groups-count-badge" id="prode-groups-count">0 grupos</span>
+                </div>
+                <!-- Lista dinámica de tarjetas de grupo -->
+                <div id="prode-my-groups-list">
+                  <div class="prode-empty" style="padding:30px 0">
+                    <span class="prode-empty-icon">👥</span>
+                    <div class="prode-empty-title">Cargando grupos...</div>
+                    <div class="prode-empty-sub">Iniciá sesión para ver tus grupos de Prode.</div>
+                  </div>
+                </div>
+
+                <!-- Ranking global -->
+                <div class="global-ranking-section">
+                  <p class="section-label">🌎 Ranking Global</p>
+                  <div id="prode-global-ranking-cont">
+                    <div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando ranking...</div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Ranking global -->
-              <div class="global-ranking-section">
-                <p class="section-label">🌎 Ranking Global</p>
-                <div id="prode-global-ranking-cont">
-                  <div style="color:var(--text4);font-size:13px;padding:14px 0">Cargando ranking...</div>
-                </div>
-              </div>
-            </div>
+              <!-- ── Sidebar: Crear / Unirse ── -->
+              <div class="community-sidebar">
 
-            <!-- ── Sidebar: Crear / Unirse ── -->
-            <div class="community-sidebar">
-
-              <!-- Crear grupo -->
-              <div class="community-action-card">
-                <div class="community-action-title">🏆 Crear Grupo</div>
-                <input type="text" id="prode-nuevo-grupo" class="community-input"
-                  placeholder="Nombre del grupo (mín. 2 caracteres)" maxlength="50" />
-                <label class="community-toggle-row" style="cursor:pointer">
-                  <span class="community-toggle-label">🌐 Grupo público</span>
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="new-group-public" />
-                    <span class="toggle-slider"></span>
+                <!-- Crear grupo -->
+                <div class="community-action-card">
+                  <div class="community-action-title">🏆 Crear Grupo</div>
+                  <input type="text" id="prode-nuevo-grupo" class="community-input"
+                    placeholder="Nombre del grupo (mín. 2 caracteres)" maxlength="50" />
+                  <label class="community-toggle-row" style="cursor:pointer">
+                    <span class="community-toggle-label">🌐 Grupo público</span>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="new-group-public" />
+                      <span class="toggle-slider"></span>
+                    </label>
                   </label>
+                  <button class="community-btn" id="btn-create-group" onclick="crearComunidad()">Crear Grupo</button>
+                  <div class="community-msg" id="create-group-msg"></div>
+                </div>
+
+                <!-- Unirse con código -->
+                <div class="community-action-card">
+                  <div class="community-action-title">🔑 Unirse con Código</div>
+                  <input type="text" id="join-group-code" class="community-input" placeholder="Código de 6 letras"
+                    maxlength="6"
+                    style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center" />
+                  <button class="community-btn btn--secondary" id="btn-join-group" onclick="unirseComunidad()">Unirse al
+                    Grupo</button>
+                  <div class="community-msg" id="join-group-msg"></div>
+                </div>
+
+              </div><!-- /community-sidebar -->
+            </div><!-- /communities-layout -->
+          </div>
+
+
+        </div>
+
+        <!-- ══ PANEL: IDEAL XI ══ -->
+        <div id="panel-idealxi" class="panel">
+
+          <div class="xi-wrapper">
+
+            <!-- ── PANEL IZQUIERDO: Controles ── -->
+            <div class="xi-controls">
+
+              <div class="xi-controls-header">
+                <div class="xi-controls-badge">MUNDIAL 2026</div>
+                <h2 class="xi-controls-title">Tu 11<span class="xi-title-accent">Ideal</span></h2>
+                <p class="xi-controls-sub">Armá tu equipo soñado</p>
+              </div>
+
+              <!-- Formación -->
+              <div class="xi-field-group">
+                <label class="xi-label">
+                  <span class="xi-label-icon">📐</span>
+                  FORMACIÓN
                 </label>
-                <button class="community-btn" id="btn-create-group" onclick="crearComunidad()">Crear Grupo</button>
-                <div class="community-msg" id="create-group-msg"></div>
+                <div class="xi-select-wrap">
+                  <select id="xi-select-formation" class="xi-select" onchange="xiChangeFormation(this.value)">
+                    <option value="4-4-2">4-4-2 — Clásico</option>
+                    <option value="4-3-3">4-3-3 — Ofensivo</option>
+                    <option value="3-5-2">3-5-2 — Equilibrado</option>
+                    <option value="3-4-3">3-4-3 — Ultra Ofensivo</option>
+                    <option value="5-3-2">5-3-2 — Defensivo</option>
+                    <option value="4-2-3-1">4-2-3-1 — Moderno</option>
+                    <option value="4-1-4-1">4-1-4-1 — Control</option>
+                    <option value="5-4-1">5-4-1 — Ultra Defensivo</option>
+                  </select>
+                  <span class="xi-select-arrow">▾</span>
+                </div>
               </div>
 
-              <!-- Unirse con código -->
-              <div class="community-action-card">
-                <div class="community-action-title">🔑 Unirse con Código</div>
-                <input type="text" id="join-group-code" class="community-input" placeholder="Código de 6 letras"
-                  maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center" />
-                <button class="community-btn btn--secondary" id="btn-join-group" onclick="unirseComunidad()">Unirse al
-                  Grupo</button>
-                <div class="community-msg" id="join-group-msg"></div>
+              <!-- Cancha -->
+              <div class="xi-field-group">
+                <label class="xi-label">
+                  <span class="xi-label-icon">🏟️</span>
+                  CANCHA
+                </label>
+                <div class="xi-select-wrap">
+                  <select id="xi-select-pitch" class="xi-select" onchange="xiChangePitch(this.value)">
+                    <option value="cesped">🌿 Césped Natural</option>
+                    <option value="sintetico">⚡ Sintético</option>
+                    <option value="noche">🌙 Nocturno</option>
+                    <option value="argentina">🇦🇷 Argentina — Celeste</option>
+                  </select>
+                  <span class="xi-select-arrow">▾</span>
+                </div>
               </div>
 
-            </div><!-- /community-sidebar -->
-          </div><!-- /communities-layout -->
+              <!-- Color camiseta -->
+              <div class="xi-field-group">
+                <label class="xi-label">
+                  <span class="xi-label-icon">👕</span>
+                  CAMISETA
+                </label>
+                <div class="xi-colors-row">
+                  <div class="xi-color-item">
+                    <span class="xi-color-label">Principal</span>
+                    <div class="xi-color-wrap">
+                      <input type="color" id="xi-color-primary" class="xi-color-input" value="#D5001C"
+                        onchange="xiUpdateColors()">
+                      <div class="xi-color-preview" id="xi-preview-primary" style="background:#D5001C"></div>
+                    </div>
+                  </div>
+                  <div class="xi-color-item">
+                    <span class="xi-color-label">Secundario</span>
+                    <div class="xi-color-wrap">
+                      <input type="color" id="xi-color-secondary" class="xi-color-input" value="#FFFFFF"
+                        onchange="xiUpdateColors()">
+                      <div class="xi-color-preview" id="xi-preview-secondary" style="background:#FFFFFF"></div>
+                    </div>
+                  </div>
+                  <div class="xi-color-item">
+                    <span class="xi-color-label">Short</span>
+                    <div class="xi-color-wrap">
+                      <input type="color" id="xi-color-shorts" class="xi-color-input" value="#111111"
+                        onchange="xiUpdateColors()">
+                      <div class="xi-color-preview" id="xi-preview-shorts" style="background:#111111"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nombre del equipo -->
+              <div class="xi-field-group">
+                <label class="xi-label">
+                  <span class="xi-label-icon">🏆</span>
+                  NOMBRE DEL EQUIPO
+                </label>
+                <input type="text" id="xi-team-name-input" class="xi-text-input" placeholder="Mi 11 Ideal"
+                  maxlength="24" oninput="xiUpdateTeamName(this.value)" />
+              </div>
+
+              <!-- Acciones -->
+              <div class="xi-actions">
+                <button class="xi-btn-primary" onclick="xiDownload()">
+                  <span>⬇</span> DESCARGAR
+                </button>
+                <button class="xi-btn-secondary" onclick="xiReset()">
+                  <span>↺</span> RESETEAR
+                </button>
+              </div>
+
+              <!-- Instrucciones -->
+              <div class="xi-instructions">
+                <p class="xi-instr-title">CÓMO USAR</p>
+                <ul class="xi-instr-list">
+                  <li>Hacé clic en el nombre bajo cada camiseta para editarlo</li>
+                  <li>Cambiá los colores con los selectores de arriba</li>
+                  <li>Elegí "🇦🇷 Argentina" para cancha especial</li>
+                </ul>
+              </div>
+
+            </div>
+
+            <!-- ── PANEL DERECHO: Cancha ── -->
+            <div class="xi-pitch-wrapper">
+
+              <!-- Nombre del equipo encima de la cancha -->
+              <div class="xi-pitch-team-name" id="xi-pitch-team-name" contenteditable="true"
+                data-placeholder="NOMBRE EQUIPO" onblur="xiSyncTeamName(this.textContent)"
+                onkeydown="if(event.key==='Enter')this.blur()">
+              </div>
+
+              <!-- SVG del campo -->
+              <div class="xi-pitch-container" id="xi-pitch-container">
+                <svg class="xi-pitch-svg" id="xi-pitch-svg" viewBox="0 0 440 620" xmlns="http://www.w3.org/2000/svg">
+
+                  <!-- Fondo del campo -->
+                  <defs>
+                    <pattern id="xi-stripe-pattern" patternUnits="userSpaceOnUse" width="55" height="620"
+                      patternTransform="rotate(0)">
+                      <rect width="55" height="620" fill="transparent" />
+                      <rect x="0" width="27.5" height="620" fill="rgba(0,0,0,0.06)" />
+                    </pattern>
+                  </defs>
+
+                  <!-- Campo base -->
+                  <rect id="xi-pitch-base" x="0" y="0" width="440" height="620" rx="4" fill="#2d8a4e" />
+                  <!-- Franjas -->
+                  <rect x="0" y="0" width="440" height="620" rx="4" fill="url(#xi-stripe-pattern)" />
+
+                  <!-- Líneas del campo -->
+                  <g id="xi-pitch-lines" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2">
+                    <!-- Borde -->
+                    <rect x="22" y="18" width="396" height="584" rx="2" />
+                    <!-- Línea del medio -->
+                    <line x1="22" y1="310" x2="418" y2="310" />
+                    <!-- Círculo central -->
+                    <circle cx="220" cy="310" r="60" />
+                    <!-- Punto central -->
+                    <circle cx="220" cy="310" r="3" fill="rgba(255,255,255,0.7)" />
+                    <!-- Área grande local (abajo) -->
+                    <rect x="96" y="482" width="248" height="120" />
+                    <!-- Área chica local (abajo) -->
+                    <rect x="155" y="548" width="130" height="54" />
+                    <!-- Área grande visitante (arriba) -->
+                    <rect x="96" y="18" width="248" height="120" />
+                    <!-- Área chica visitante (arriba) -->
+                    <rect x="155" y="18" width="130" height="54" />
+                    <!-- Semicírculo arco local -->
+                    <path d="M 162 482 A 60 60 0 0 0 278 482" stroke-dasharray="4,3" />
+                    <!-- Semicírculo arco visitante -->
+                    <path d="M 162 138 A 60 60 0 0 1 278 138" stroke-dasharray="4,3" />
+                    <!-- Punto penal local -->
+                    <circle cx="220" cy="524" r="3" fill="rgba(255,255,255,0.7)" />
+                    <!-- Punto penal visitante -->
+                    <circle cx="220" cy="96" r="3" fill="rgba(255,255,255,0.7)" />
+                    <!-- Portería local (abajo) -->
+                    <rect x="186" y="602" width="68" height="18" stroke-width="3" />
+                    <!-- Portería visitante (arriba) -->
+                    <rect x="186" y="0" width="68" height="18" stroke-width="3" />
+                  </g>
+
+                  <!-- Jugadores (se renderizan via JS) -->
+                  <g id="xi-players-group"></g>
+
+                </svg>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-
-      </div>
-
-      <!-- ══ PANEL: IDEAL XI ══ -->
-      <div id="panel-idealxi" class="panel">
-       
-        <div class="xi-wrapper">
-       
-          <!-- ── PANEL IZQUIERDO: Controles ── -->
-          <div class="xi-controls">
-       
-            <div class="xi-controls-header">
-              <div class="xi-controls-badge">MUNDIAL 2026</div>
-              <h2 class="xi-controls-title">Tu 11<span class="xi-title-accent">Ideal</span></h2>
-              <p class="xi-controls-sub">Armá tu equipo soñado</p>
-            </div>
-       
-            <!-- Formación -->
-            <div class="xi-field-group">
-              <label class="xi-label">
-                <span class="xi-label-icon">📐</span>
-                FORMACIÓN
-              </label>
-              <div class="xi-select-wrap">
-                <select id="xi-select-formation" class="xi-select" onchange="xiChangeFormation(this.value)">
-                  <option value="4-4-2">4-4-2 — Clásico</option>
-                  <option value="4-3-3">4-3-3 — Ofensivo</option>
-                  <option value="3-5-2">3-5-2 — Equilibrado</option>
-                  <option value="3-4-3">3-4-3 — Ultra Ofensivo</option>
-                  <option value="5-3-2">5-3-2 — Defensivo</option>
-                  <option value="4-2-3-1">4-2-3-1 — Moderno</option>
-                  <option value="4-1-4-1">4-1-4-1 — Control</option>
-                  <option value="5-4-1">5-4-1 — Ultra Defensivo</option>
-                </select>
-                <span class="xi-select-arrow">▾</span>
-              </div>
-            </div>
-       
-            <!-- Cancha -->
-            <div class="xi-field-group">
-              <label class="xi-label">
-                <span class="xi-label-icon">🏟️</span>
-                CANCHA
-              </label>
-              <div class="xi-select-wrap">
-                <select id="xi-select-pitch" class="xi-select" onchange="xiChangePitch(this.value)">
-                  <option value="cesped">🌿 Césped Natural</option>
-                  <option value="sintetico">⚡ Sintético</option>
-                  <option value="noche">🌙 Nocturno</option>
-                  <option value="argentina">🇦🇷 Argentina — Celeste</option>
-                </select>
-                <span class="xi-select-arrow">▾</span>
-              </div>
-            </div>
-       
-            <!-- Color camiseta -->
-            <div class="xi-field-group">
-              <label class="xi-label">
-                <span class="xi-label-icon">👕</span>
-                CAMISETA
-              </label>
-              <div class="xi-colors-row">
-                <div class="xi-color-item">
-                  <span class="xi-color-label">Principal</span>
-                  <div class="xi-color-wrap">
-                    <input type="color" id="xi-color-primary" class="xi-color-input" value="#D5001C" onchange="xiUpdateColors()">
-                    <div class="xi-color-preview" id="xi-preview-primary" style="background:#D5001C"></div>
-                  </div>
-                </div>
-                <div class="xi-color-item">
-                  <span class="xi-color-label">Secundario</span>
-                  <div class="xi-color-wrap">
-                    <input type="color" id="xi-color-secondary" class="xi-color-input" value="#FFFFFF" onchange="xiUpdateColors()">
-                    <div class="xi-color-preview" id="xi-preview-secondary" style="background:#FFFFFF"></div>
-                  </div>
-                </div>
-                <div class="xi-color-item">
-                  <span class="xi-color-label">Short</span>
-                  <div class="xi-color-wrap">
-                    <input type="color" id="xi-color-shorts" class="xi-color-input" value="#111111" onchange="xiUpdateColors()">
-                    <div class="xi-color-preview" id="xi-preview-shorts" style="background:#111111"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-       
-            <!-- Nombre del equipo -->
-            <div class="xi-field-group">
-              <label class="xi-label">
-                <span class="xi-label-icon">🏆</span>
-                NOMBRE DEL EQUIPO
-              </label>
-              <input
-                type="text"
-                id="xi-team-name-input"
-                class="xi-text-input"
-                placeholder="Mi 11 Ideal"
-                maxlength="24"
-                oninput="xiUpdateTeamName(this.value)"
-              />
-            </div>
-       
-            <!-- Acciones -->
-            <div class="xi-actions">
-              <button class="xi-btn-primary" onclick="xiDownload()">
-                <span>⬇</span> DESCARGAR
-              </button>
-              <button class="xi-btn-secondary" onclick="xiReset()">
-                <span>↺</span> RESETEAR
-              </button>
-            </div>
-       
-            <!-- Instrucciones -->
-            <div class="xi-instructions">
-              <p class="xi-instr-title">CÓMO USAR</p>
-              <ul class="xi-instr-list">
-                <li>Hacé clic en el nombre bajo cada camiseta para editarlo</li>
-                <li>Cambiá los colores con los selectores de arriba</li>
-                <li>Elegí "🇦🇷 Argentina" para cancha especial</li>
-              </ul>
-            </div>
-       
-          </div>
-       
-          <!-- ── PANEL DERECHO: Cancha ── -->
-          <div class="xi-pitch-wrapper">
-       
-            <!-- Nombre del equipo encima de la cancha -->
-            <div class="xi-pitch-team-name" id="xi-pitch-team-name"
-                 contenteditable="true"
-                 data-placeholder="NOMBRE EQUIPO"
-                 onblur="xiSyncTeamName(this.textContent)"
-                 onkeydown="if(event.key==='Enter')this.blur()">
-            </div>
-       
-            <!-- SVG del campo -->
-            <div class="xi-pitch-container" id="xi-pitch-container">
-              <svg class="xi-pitch-svg" id="xi-pitch-svg" viewBox="0 0 440 620" xmlns="http://www.w3.org/2000/svg">
-       
-                <!-- Fondo del campo -->
-                <defs>
-                  <pattern id="xi-stripe-pattern" patternUnits="userSpaceOnUse" width="55" height="620" patternTransform="rotate(0)">
-                    <rect width="55" height="620" fill="transparent"/>
-                    <rect x="0" width="27.5" height="620" fill="rgba(0,0,0,0.06)"/>
-                  </pattern>
-                </defs>
-       
-                <!-- Campo base -->
-                <rect id="xi-pitch-base" x="0" y="0" width="440" height="620" rx="4" fill="#2d8a4e"/>
-                <!-- Franjas -->
-                <rect x="0" y="0" width="440" height="620" rx="4" fill="url(#xi-stripe-pattern)"/>
-       
-                <!-- Líneas del campo -->
-                <g id="xi-pitch-lines" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2">
-                  <!-- Borde -->
-                  <rect x="22" y="18" width="396" height="584" rx="2"/>
-                  <!-- Línea del medio -->
-                  <line x1="22" y1="310" x2="418" y2="310"/>
-                  <!-- Círculo central -->
-                  <circle cx="220" cy="310" r="60"/>
-                  <!-- Punto central -->
-                  <circle cx="220" cy="310" r="3" fill="rgba(255,255,255,0.7)"/>
-                  <!-- Área grande local (abajo) -->
-                  <rect x="96" y="482" width="248" height="120"/>
-                  <!-- Área chica local (abajo) -->
-                  <rect x="155" y="548" width="130" height="54"/>
-                  <!-- Área grande visitante (arriba) -->
-                  <rect x="96" y="18" width="248" height="120"/>
-                  <!-- Área chica visitante (arriba) -->
-                  <rect x="155" y="18" width="130" height="54"/>
-                  <!-- Semicírculo arco local -->
-                  <path d="M 162 482 A 60 60 0 0 0 278 482" stroke-dasharray="4,3"/>
-                  <!-- Semicírculo arco visitante -->
-                  <path d="M 162 138 A 60 60 0 0 1 278 138" stroke-dasharray="4,3"/>
-                  <!-- Punto penal local -->
-                  <circle cx="220" cy="524" r="3" fill="rgba(255,255,255,0.7)"/>
-                  <!-- Punto penal visitante -->
-                  <circle cx="220" cy="96" r="3" fill="rgba(255,255,255,0.7)"/>
-                  <!-- Portería local (abajo) -->
-                  <rect x="186" y="602" width="68" height="18" stroke-width="3"/>
-                  <!-- Portería visitante (arriba) -->
-                  <rect x="186" y="0" width="68" height="18" stroke-width="3"/>
-                </g>
-       
-                <!-- Jugadores (se renderizan via JS) -->
-                <g id="xi-players-group"></g>
-       
-              </svg>
-            </div>
-       
-          </div>
-       
+        <!-- ══ PANEL: WORDLE ══ -->
+        <div id="panel-wordle" class="panel">
+          <div id="wordle-wrapper"></div>
         </div>
-       
-      </div>
       </section>
 
       <!-- ══ PANEL: PERFIL ══ -->
@@ -1744,12 +1756,21 @@
     import { initSPANavigation } from './navigation.js';
     document.addEventListener('DOMContentLoaded', () => {
       initSPANavigation();
-      
+
       // Mover panel-higherlower dentro de section-juegos
       const hj = document.getElementById('panel-higherlower');
       const sj = document.getElementById('section-juegos');
       if (hj && sj) {
         sj.appendChild(hj);
+      }
+    });
+  </script>
+  <script src="wordle.js"></script>
+  <script>
+    // Arrancar el juego al cargar el DOM
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof wlInit === "function") {
+        wlInit();
       }
     });
   </script>

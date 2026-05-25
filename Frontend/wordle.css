@@ -1,0 +1,318 @@
+/* ══════════════════════════════════════════
+   wordle.css — Wordle Futbolero
+   Pegar en: Frontend/wordle.css
+   Importar en wordle.html con:
+   <link rel="stylesheet" href="wordle.css">
+══════════════════════════════════════════ */
+
+/* ── Variables propias del juego ── */
+:root {
+  --wl-correct:  #3B6D11;
+  --wl-present:  #BA7517;
+  --wl-absent:   #5F5E5A;
+  --wl-bg:       #0A2A4A;
+  --wl-surface:  #0D3560;
+  --wl-border:   #1A5AAA;
+  --wl-text:     #E8F4FF;
+  --wl-muted:    #4A90C0;
+  --wl-key-bg:   #114080;
+  --wl-key-text: #E8F4FF;
+  --wl-gold:     #FFD700;
+  --wl-red:      #00AA55;
+}
+
+/* ── Reset base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Wrapper principal ── */
+#wordle-wrapper {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* ── Header del juego ── */
+.wl-header {
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--wl-red);
+  padding-bottom: 16px;
+}
+
+.wl-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: var(--wl-text);
+}
+
+.wl-title span { color: var(--wl-red); }
+
+.wl-subtitle {
+  font-size: 13px;
+  color: var(--wl-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── Fila de controles ── */
+.wl-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.wl-controls label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wl-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.wl-controls select {
+  background: var(--wl-surface);
+  border: 1px solid var(--wl-border);
+  border-radius: 4px;
+  color: var(--wl-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.wl-controls select:focus { border-color: var(--wl-red); }
+
+.wl-btn-new {
+  background: var(--wl-red);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 7px 18px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background .2s, transform .1s;
+}
+
+.wl-btn-new:hover  { background: #00CC66; transform: translateY(-1px); }
+.wl-btn-new:active { transform: translateY(0); }
+
+/* ── Contador de partidas ── */
+.wl-counter {
+  text-align: center;
+  font-size: 12px;
+  color: var(--wl-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.wl-counter strong { color: var(--wl-gold); }
+
+/* ── Mensaje de estado ── */
+.wl-msg {
+  min-height: 30px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--wl-muted);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  transition: color .2s;
+}
+
+.wl-msg.win  { color: var(--wl-correct); }
+.wl-msg.lose { color: #E24B4A; }
+.wl-msg.hint { color: var(--wl-gold); }
+
+/* ── Límite diario ── */
+.wl-limit-msg {
+  display: none;
+  background: var(--wl-surface);
+  border: 1px solid var(--wl-border);
+  border-left: 4px solid var(--wl-gold);
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.wl-limit-msg .wl-limit-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.wl-limit-msg strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wl-text);
+  margin-bottom: 6px;
+}
+
+.wl-limit-msg p {
+  font-size: 14px;
+  color: var(--wl-muted);
+  line-height: 1.5;
+}
+
+/* ── Tablero de celdas ── */
+.wl-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto 20px;
+}
+
+.wl-row {
+  display: flex;
+  gap: 6px;
+}
+
+.wl-cell {
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--wl-border);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+  color: var(--wl-text);
+  text-transform: uppercase;
+  background: var(--wl-surface);
+  transition: background .25s, border-color .25s, transform .1s;
+  user-select: none;
+}
+
+/* Celda activa (cursor actual) */
+.wl-cell.cursor {
+  border-color: var(--wl-gold);
+  box-shadow: 0 0 0 1px var(--wl-gold);
+}
+
+/* Pop al tipear */
+.wl-cell.pop {
+  animation: wl-pop .1s ease;
+}
+
+@keyframes wl-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Shake al error */
+.wl-row.shake {
+  animation: wl-shake .4s ease;
+}
+
+@keyframes wl-shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+/* Estados de evaluación */
+.wl-cell.correct { background: var(--wl-correct); border-color: var(--wl-correct); color: #fff; }
+.wl-cell.present { background: var(--wl-present); border-color: var(--wl-present); color: #fff; }
+.wl-cell.absent  { background: var(--wl-absent);  border-color: var(--wl-absent);  color: #fff; }
+
+/* ── Teclado virtual ── */
+.wl-kbd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.wl-krow {
+  display: flex;
+  gap: 5px;
+}
+
+.wl-key {
+  min-width: 36px;
+  height: 44px;
+  padding: 0 6px;
+  border: 1px solid var(--wl-border);
+  border-radius: 4px;
+  background: var(--wl-key-bg);
+  color: var(--wl-key-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  transition: background .15s, transform .1s;
+  user-select: none;
+}
+
+.wl-key:hover  { background: var(--wl-border); }
+.wl-key:active { transform: scale(.95); }
+
+.wl-key.wide { min-width: 56px; font-size: 11px; letter-spacing: 1px; }
+
+/* Colores de retroalimentación en teclado */
+.wl-key.correct { background: var(--wl-correct); border-color: var(--wl-correct); color: #fff; }
+.wl-key.present { background: var(--wl-present); border-color: var(--wl-present); color: #fff; }
+.wl-key.absent  { background: var(--wl-absent);  border-color: var(--wl-absent);  color: #fff; }
+
+/* ── Leyenda ── */
+.wl-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.wl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--wl-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.wl-legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.wl-legend-dot.correct { background: var(--wl-correct); }
+.wl-legend-dot.present { background: var(--wl-present); }
+.wl-legend-dot.absent  { background: var(--wl-absent);  }
+
+/* ── Responsive ── */
+@media (max-width: 400px) {
+  .wl-cell { width: 44px; height: 44px; font-size: 22px; }
+  .wl-key  { min-width: 30px; height: 40px; font-size: 12px; }
+  .wl-key.wide { min-width: 46px; font-size: 10px; }
+}
