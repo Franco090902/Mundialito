@@ -161,6 +161,51 @@ async function llamarGemini(historial, mensajeNuevo) {
 
 
 // ──────────────────────────────────────────────────────────────────
+// FUNCIÓN AUXILIAR: llamar a la API de Groq (FALLBACK)
+// ──────────────────────────────────────────────────────────────────
+async function llamarGroq(historial, mensajeNuevo) {
+  const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+  // Formateamos el historial de Gemini al formato de OpenAI (que usa Groq)
+  const messages = [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "assistant", content: "Entendido. Soy Mundialito Bot, listo para responder preguntas sobre el Mundial 2026. ¡Dale, preguntame lo que quieras!" }
+  ];
+
+  for (const msg of historial.slice(-10)) {
+    messages.push({
+      role: msg.role === 'model' ? 'assistant' : 'user',
+      content: msg.parts[0].text
+    });
+  }
+
+  messages.push({ role: "user", content: mensajeNuevo });
+
+  const response = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages,
+      temperature: 0.8,
+      max_tokens: 600
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Groq API error: ${errorData.error?.message || response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content || '';
+}
+
+
+// ──────────────────────────────────────────────────────────────────
 // FUNCIÓN AUXILIAR: buscar productos relevantes en Supabase
 //
 // Cuando Gemini menciona una selección, buscamos productos
@@ -262,8 +307,15 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    // 1. Llamar a Gemini con el historial y el nuevo mensaje
-    const respuestaCompleta = await llamarGemini(historial, mensaje.trim());
+    let respuestaCompleta;
+    try {
+      // 1. Llamar a Gemini con el historial y el nuevo mensaje
+      respuestaCompleta = await llamarGemini(historial, mensaje.trim());
+    } catch (geminiErr) {
+      console.error('⚠️ Error con Gemini, intentando fallback con Groq:', geminiErr.message);
+      // Fallback a Groq
+      respuestaCompleta = await llamarGroq(historial, mensaje.trim());
+    }
 
     // 2. Separar el texto de respuesta del posible bloque de calendario
     const { texto, calendario } = parsearCalendario(respuestaCompleta);
