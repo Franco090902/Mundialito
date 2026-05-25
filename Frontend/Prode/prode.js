@@ -568,29 +568,76 @@ async function guardarPredicciones() {
   _saveBtn.innerHTML = `<span class="fab-icon">⏳</span> Guardando...`;
 
   const upsertData = [];
+  const incompletos = [];
   const container = document.getElementById('prode-predictions-content');
 
   for (const partidoId of _pendingChanges) {
-    const inputLocal  = document.getElementById(`input-local-${partidoId}`);
-    const inputVisit  = document.getElementById(`input-visit-${partidoId}`);
+    // Capturar los valores EN ESTE MOMENTO (dentro del click handler)
+    const inputLocal = document.getElementById(`input-local-${partidoId}`);
+    const inputVisit = document.getElementById(`input-visit-${partidoId}`);
 
-    if (!inputLocal || !inputVisit) continue;
+    if (!inputLocal || !inputVisit) {
+      // Los inputs no existen en el DOM — ignorar silenciosamente
+      continue;
+    }
 
-    const vLocal  = parseInt(inputLocal.value, 10);
-    const vVisit  = parseInt(inputVisit.value, 10);
+    // ✅ Verificación estricta: cadena vacía (NO truthy/falsy)
+    // Esto evita que el 0 sea tratado como "sin valor"
+    const rawLocal = inputLocal.value.trim();
+    const rawVisit = inputVisit.value.trim();
 
-    if (isNaN(vLocal) || isNaN(vVisit)) continue;
+    if (rawLocal === '' || rawVisit === '') {
+      // Marcar visualmente como incompleto
+      const card = container?.querySelector(`.prode-match-card[data-id="${partidoId}"]`);
+      if (card) {
+        if (rawLocal === '') inputLocal.style.outline = '2px solid #ef4444';
+        if (rawVisit === '') inputVisit.style.outline = '2px solid #ef4444';
+        // Limpiar el outline tras 2 segundos
+        setTimeout(() => {
+          inputLocal.style.outline = '';
+          inputVisit.style.outline = '';
+        }, 2000);
+      }
+      incompletos.push(partidoId);
+      continue;
+    }
+
+    const vLocal = parseInt(rawLocal, 10);
+    const vVisit = parseInt(rawVisit, 10);
+
+    // Salvaguarda extra por si parseInt falla (ej: texto pegado)
+    if (isNaN(vLocal) || isNaN(vVisit)) {
+      incompletos.push(partidoId);
+      continue;
+    }
 
     upsertData.push({
-      partido_id:          partidoId,
-      user_id:             _userId,
-      pred_goles_local:    vLocal,
+      partido_id:           partidoId,
+      user_id:              _userId,
+      pred_goles_local:     vLocal,
       pred_goles_visitante: vVisit,
-      updated_at:          new Date().toISOString(),
+      updated_at:           new Date().toISOString(),
     });
   }
 
+  // Avisar si quedaron partidos incompletos
+  if (incompletos.length > 0) {
+    const total = incompletos.length;
+    showToast(
+      `⚠️ ${total} partido${total !== 1 ? 's' : ''} incompleto${total !== 1 ? 's' : ''}. Completá los dos goles antes de guardar.`,
+      'error'
+    );
+    if (upsertData.length === 0) {
+      // No hay nada válido para guardar: abortar
+      _saveBtn.disabled = false;
+      resetFabButton();
+      return;
+    }
+    // Si hay otros válidos, continuar guardando solo los completos
+  }
+
   if (upsertData.length === 0) {
+    // No debería llegar acá, pero por seguridad
     showToast('Completá los dos goles de cada partido antes de guardar.', 'error');
     _saveBtn.disabled = false;
     resetFabButton();
@@ -607,29 +654,43 @@ async function guardarPredicciones() {
     // Actualizar cache local
     upsertData.forEach(p => {
       _predictions[p.partido_id] = {
-        local:    p.pred_goles_local,
+        local:     p.pred_goles_local,
         visitante: p.pred_goles_visitante,
-        puntos:   null,
-        bonus:    0,
+        puntos:    null,
+        bonus:     0,
         bonusAplicado: false,
       };
+
+      // Sacar del set de pendientes solo los guardados
+      _pendingChanges.delete(p.partido_id);
 
       // Actualizar apariencia de la card
       if (container) {
         const card = container.querySelector(`.prode-match-card[data-id="${p.partido_id}"]`);
         if (card) {
           card.classList.add('card--saved');
+          card.classList.remove('card--pending-save');
           card.style.borderColor = '';
-          const inputL = card.querySelector(`#input-local-${p.partido_id}`);
-          const inputV = card.querySelector(`#input-visit-${p.partido_id}`);
+          const inputL = document.getElementById(`input-local-${p.partido_id}`);
+          const inputV = document.getElementById(`input-visit-${p.partido_id}`);
           if (inputL) inputL.classList.add('input--saved');
           if (inputV) inputV.classList.add('input--saved');
         }
       }
     });
 
-    _pendingChanges.clear();
-    showToast(`✅ ${upsertData.length} predicción${upsertData.length !== 1 ? 'es' : ''} guardada${upsertData.length !== 1 ? 's' : ''}`, 'success');
+    if (incompletos.length === 0) {
+      // Todo guardado: limpiar completamente
+      showToast(
+        `✅ ${upsertData.length} predicción${upsertData.length !== 1 ? 'es' : ''} guardada${upsertData.length !== 1 ? 's' : ''}`,
+        'success'
+      );
+    } else {
+      showToast(
+        `✅ ${upsertData.length} guardada${upsertData.length !== 1 ? 's' : ''} · ${incompletos.length} pendiente${incompletos.length !== 1 ? 's' : ''} de completar`,
+        'success'
+      );
+    }
 
   } catch (err) {
     console.error('[Prode] Error al guardar:', err);
@@ -643,11 +704,13 @@ async function guardarPredicciones() {
 
 function resetFabButton() {
   if (!_saveBtn) return;
-  _saveBtn.innerHTML = `
-    <span class="fab-icon">💾</span>
-    Guardar Predicciones
-    <span class="prode-fab-count" id="prode-fab-count">${_pendingChanges.size}</span>
-  `;
+  // ⚠️ Reconstruir el HTML preservando el ID del contador
+  // para que updateFabCounter() lo encuentre en futuras llamadas
+  _saveBtn.innerHTML = [
+    '<span class="fab-icon">💾</span>',
+    'Guardar Predicciones',
+    `<span class="prode-fab-count" id="prode-fab-count">${_pendingChanges.size}</span>`,
+  ].join(' ');
 }
 
 // ══════════════════════════════════════════════════════════════════
