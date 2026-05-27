@@ -1,0 +1,358 @@
+/* ════════════════════════════════════════════════════════════════
+   encuestas.css — Encuestas Rápidas en Sección En Vivo
+   Mundialito 2026 · Fiel al design system existente
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Animaciones ─────────────────────────────────────────────── */
+@keyframes slideBar {
+  from { width: 0; }
+  to   { width: var(--target-w); }
+}
+
+@keyframes fadeInEncuesta {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Panel contenedor (debajo de cada match-live) ────────────── */
+.encuestas-panel {
+  border-top: 1px solid var(--border);
+  background: var(--navy);
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease;
+}
+
+.encuestas-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.encuestas-panel.expanded {
+  opacity: 1;
+  /* max-height se gestiona via JS para que no corte contenido */
+}
+
+/* ── Header del panel (toggle) ───────────────────────────────── */
+.encuestas-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  background: var(--navy2);
+  border-top: 1px solid var(--border2);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.encuestas-toggle:hover {
+  background: var(--navy3);
+  color: var(--text2);
+}
+
+.encuestas-toggle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulseLive 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.encuestas-toggle-label {
+  flex: 1;
+}
+
+.encuestas-toggle-count {
+  font-size: 10px;
+  color: var(--text4);
+  font-weight: 600;
+}
+
+.encuestas-toggle-chevron {
+  font-size: 10px;
+  color: var(--text4);
+  transition: transform 0.25s ease;
+  display: inline-block;
+}
+
+.encuestas-toggle-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Contenido interno del panel ─────────────────────────────── */
+.encuestas-inner {
+  padding: 14px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Card individual de encuesta ─────────────────────────────── */
+.encuesta-card {
+  background: var(--navy2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 14px 16px;
+  max-height: 200px;
+  overflow: hidden;
+  animation: fadeInEncuesta 0.35s ease forwards;
+  position: relative;
+}
+
+.encuesta-card:hover {
+  border-color: var(--border);
+}
+
+/* ── Header de la encuesta (ícono + pregunta) ────────────────── */
+.encuesta-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.encuesta-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.encuesta-pregunta {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.encuesta-votos-total {
+  font-size: 10px;
+  color: var(--text4);
+  font-weight: 600;
+  flex-shrink: 0;
+  align-self: flex-end;
+  letter-spacing: 0.5px;
+}
+
+/* ── Opciones de votación ────────────────────────────────────── */
+.encuesta-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Opción individual ───────────────────────────────────────── */
+.encuesta-opcion {
+  position: relative;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s;
+  background: var(--navy3);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.encuesta-opcion:hover:not(.voted):not(.disabled) {
+  border-color: var(--border);
+  transform: translateX(2px);
+}
+
+.encuesta-opcion:active:not(.disabled) {
+  transform: translateX(0) scale(0.99);
+}
+
+/* Estado: usuario ya votó esta opción */
+.encuesta-opcion.voted {
+  border-color: var(--red);
+  cursor: default;
+}
+
+/* Estado: encuesta cerrada o partido terminado */
+.encuesta-opcion.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ── Barra de progreso (fondo) ───────────────────────────────── */
+.encuesta-barra {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #00AA5520, #00CC6615);
+  border-radius: 0;
+  transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+  width: 0%;
+}
+
+.encuesta-opcion.voted .encuesta-barra {
+  background: linear-gradient(90deg, #00AA5535, #00CC6625);
+}
+
+/* ── Contenido de la opción (sobre la barra) ─────────────────── */
+.encuesta-opcion-contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  width: 100%;
+  gap: 8px;
+}
+
+.encuesta-opcion-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.encuesta-opcion.voted .encuesta-opcion-label {
+  color: var(--white);
+}
+
+.encuesta-opcion-pct {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text4);
+  min-width: 36px;
+  text-align: right;
+  line-height: 1;
+}
+
+.encuesta-opcion.voted .encuesta-opcion-pct {
+  color: var(--red);
+}
+
+/* Checkmark para opción votada */
+.encuesta-check {
+  font-size: 11px;
+  color: var(--red);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.encuesta-opcion.voted .encuesta-check {
+  opacity: 1;
+}
+
+/* ── Footer con "Votos en vivo" ──────────────────────────────── */
+.encuesta-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.encuesta-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulseLive 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.encuesta-live-label {
+  font-size: 10px;
+  color: var(--text4);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* ── Encuesta cerrada overlay ────────────────────────────────── */
+.encuesta-closed-badge {
+  font-size: 10px;
+  color: var(--text4);
+  background: var(--navy3);
+  border: 1px solid var(--border2);
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-left: auto;
+  letter-spacing: 1px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ── Estado: sin encuestas ───────────────────────────────────── */
+.encuestas-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text4);
+  font-size: 12px;
+  font-family: var(--font-ui);
+}
+
+/* ── Estado: cargando (shimmer) ──────────────────────────────── */
+.encuesta-skeleton {
+  background: linear-gradient(90deg, var(--navy3) 25%, var(--navy2) 50%, var(--navy3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  height: 32px;
+  margin-bottom: 6px;
+}
+
+/* ── Notificación de cooldown ────────────────────────────────── */
+.encuesta-cooldown-msg {
+  font-size: 11px;
+  color: var(--gold);
+  background: #FFD70015;
+  border: 1px solid #FFD70030;
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-top: 6px;
+  text-align: center;
+  animation: fadeInEncuesta 0.2s ease;
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .encuestas-inner {
+    padding: 10px 12px 12px;
+  }
+
+  .encuesta-card {
+    padding: 11px 12px;
+    max-height: none; /* sin límite en móvil para que se vea completo */
+  }
+
+  .encuesta-pregunta {
+    font-size: 12px;
+  }
+
+  .encuesta-opcion-label {
+    font-size: 11px;
+  }
+}

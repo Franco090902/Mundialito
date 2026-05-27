@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="Prode/prode.css">
   <link rel="stylesheet" href="wordle.css">
+  <link rel="stylesheet" href="encuestas.css">
   <script>
     window.PLACEHOLDER_IMG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0a2a4a"/><text x="200" y="90" text-anchor="middle" fill="#334466" font-size="48">⚽</text><text x="200" y="130" text-anchor="middle" fill="#445577" font-size="14" font-family="sans-serif">Mundialito 2026</text></svg>')}`;
     window.imgFallback = function (img) {
@@ -1775,6 +1776,15 @@
     });
   </script>
   <script src="app.js"></script>
+  <!-- Módulo de Encuestas Rápidas En Vivo -->
+  <script type="module">
+    import { inicializarEncuestasEnVivo, limpiarTodasEncuestas } from './encuestas.js';
+    // Exponer al scope global para que app.js (no-module) pueda llamarlo
+    window._encuestasModule = { inicializarEncuestasEnVivo, limpiarTodasEncuestas };
+    // Notificar a app.js que el módulo ya está listo
+    // (los ES modules son siempre diferidos, pueden llegar después del DOMContentLoaded de app.js)
+    window.dispatchEvent(new CustomEvent('encuestasReady'));
+  </script>
 </body>
 
 </html>

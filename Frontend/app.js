@@ -753,6 +753,10 @@ async function cargarPartidosEnVivo() {
   try {
     const res = await fetch(`${API_URL}/live`);
     const partidos = await res.json();
+
+    // Cachear los partidos en vivo para cuando el módulo de encuestas se cargue después
+    window._ultimosPartidosVivos = partidos;
+
     renderLivePanel(partidos);
 
     if (partidos && partidos.length > 0) {
@@ -792,6 +796,15 @@ async function cargarPartidosEnVivo() {
 }
 window.cargarPartidosEnVivo = cargarPartidosEnVivo;
 
+// El módulo de encuestas (ES module) puede cargarse DESPUÉS del DOMContentLoaded de app.js.
+// Cuando esté listo, re-inicializa las encuestas con el último lote de partidos en vivo.
+window.addEventListener('encuestasReady', () => {
+  console.log('[Encuestas] ✅ Módulo listo. Inicializando con partidos cacheados...');
+  if (window._ultimosPartidosVivos && window._ultimosPartidosVivos.length > 0) {
+    window._encuestasModule.inicializarEncuestasEnVivo(window._ultimosPartidosVivos);
+  }
+});
+
 window.updateTickerWithUpcoming = function () {
   if (!window.GROUPS) return;
   const allMatches = [];
@@ -828,24 +841,37 @@ function renderLivePanel(partidos) {
         <div style="font-size:14px">No hay partidos en vivo en este momento</div>
         <div style="font-size:12px;margin-top:5px;color:var(--text4)">El Mundial comienza el 11 de junio de 2026</div>
       </div>`;
+    // Limpiar encuestas si no hay partidos
+    if (window._encuestasModule) window._encuestasModule.limpiarTodasEncuestas();
     return;
   }
 
+  // Renderizar tarjetas de partidos.
+  // Cada partido se envuelve en .match-live-wrapper para que encuestas.js
+  // pueda insertar el panel de encuestas inmediatamente después del .match-live.
   container.innerHTML = partidos.map(p => `
-    <div class="match-live" onclick="abrirDetallePartido('${p.id}')" style="cursor:pointer">
-      <div class="team-block home">
-        ${p.escudo_local ? `<img src="${p.escudo_local}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
-        <div class="team-name">${p.equipo_local}</div>
-      </div>
-      <div class="score-block">
-        <div class="score-main">${p.goles_local}<span class="score-sep">–</span>${p.goles_visitante}</div>
-        <div class="min-badge"><span class="min-dot"></span><span class="min-text">${p.minuto}'</span></div>
-      </div>
-      <div class="team-block away">
-        ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
-        <div class="team-name">${p.equipo_visitante}</div>
+    <div class="match-live-wrapper" style="margin-bottom:12px;">
+      <div class="match-live" data-partido-id="${p.id}"
+           onclick="abrirDetallePartido('${p.id}')" style="cursor:pointer;margin-bottom:0;">
+        <div class="team-block home">
+          ${p.escudo_local ? `<img src="${p.escudo_local}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
+          <div class="team-name">${p.equipo_local}</div>
+        </div>
+        <div class="score-block">
+          <div class="score-main">${p.goles_local}<span class="score-sep">–</span>${p.goles_visitante}</div>
+          <div class="min-badge"><span class="min-dot"></span><span class="min-text">${p.minuto}'</span></div>
+        </div>
+        <div class="team-block away">
+          ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
+          <div class="team-name">${p.equipo_visitante}</div>
+        </div>
       </div>
     </div>`).join('');
+
+  // Inicializar encuestas para cada partido en vivo (async, no bloquea el UI)
+  if (window._encuestasModule) {
+    window._encuestasModule.inicializarEncuestasEnVivo(partidos);
+  }
 }
 
 // ══════════════════════════════════════
