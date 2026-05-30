@@ -46,7 +46,7 @@ const apiFootball = axios.create({
 // TEST_MODE=true  → usa Copa Libertadores (para probar en vivo)
 // TEST_MODE=false → usa FIFA World Cup 2026
 // ──────────────────────────────────────────────────────────────────
-const TEST_MODE = String(process.env.TEST_MODE).trim().toLowerCase() === 'true';
+const TEST_MODE = String(process.env.TEST_MODE).trim().toLowerCase() === 'false';
 
 // Football-Data.org IDs
 const WC_2026_ID = 2000;           // FIFA World Cup 2026
@@ -88,6 +88,64 @@ console.log('📡 ENV PROXIES:', {
   ALL_PROXY: process.env.ALL_PROXY,
   all_proxy: process.env.all_proxy
 });
+
+// ──────────────────────────────────────────────────────────────────
+// TRADUCCIONES DE EQUIPOS AL CASTELLANO (Promiedos Style)
+// ──────────────────────────────────────────────────────────────────
+const TRADUCCION_EQUIPOS = {
+  // Europa (UEFA)
+  'Germany': 'Alemania', 'France': 'Francia', 'Spain': 'España', 'England': 'Inglaterra',
+  'Italy': 'Italia', 'Netherlands': 'Países Bajos', 'Croatia': 'Croacia', 'Belgium': 'Bélgica',
+  'Portugal': 'Portugal', 'Switzerland': 'Suiza', 'Denmark': 'Dinamarca', 'Poland': 'Polonia',
+  'Serbia': 'Serbia', 'Ukraine': 'Ucrania', 'Turkey': 'Turquía', 'Scotland': 'Escocia',
+  'Wales': 'Gales', 'Sweden': 'Suecia', 'Austria': 'Austria', 'Czechia': 'Chequia', 
+  'Czech Republic': 'República Checa', 'Norway': 'Noruega', 'Greece': 'Grecia', 
+  'Finland': 'Finlandia', 'Slovakia': 'Eslovaquia', 'Slovenia': 'Eslovenia', 
+  'Hungary': 'Hungría', 'Romania': 'Rumania', 'Bulgaria': 'Bulgaria', 
+  'Iceland': 'Islandia', 'Albania': 'Albania', 'Georgia': 'Georgia', 
+  'Republic of Ireland': 'Irlanda', 'Ireland': 'Irlanda', 'Northern Ireland': 'Irlanda del Norte',
+  
+  // Sudamérica (CONMEBOL)
+  'Argentina': 'Argentina', 'Brazil': 'Brasil', 'Uruguay': 'Uruguay', 'Colombia': 'Colombia',
+  'Ecuador': 'Ecuador', 'Paraguay': 'Paraguay', 'Chile': 'Chile', 'Peru': 'Perú', 'Venezuela': 'Venezuela',
+  'Bolivia': 'Bolivia',
+  
+  // Norte, Centroamérica y Caribe (CONCACAF)
+  'United States': 'Estados Unidos', 'USA': 'Estados Unidos', 'Mexico': 'México', 'Canada': 'Canadá',
+  'Costa Rica': 'Costa Rica', 'Panama': 'Panamá', 'Jamaica': 'Jamaica', 'Honduras': 'Honduras',
+  'El Salvador': 'El Salvador', 'Curaçao': 'Curazao', 'Curacao': 'Curazao', 'Haiti': 'Haití',
+  'Trinidad and Tobago': 'Trinidad y Tobago', 'Guatemala': 'Guatemala', 'Nicaragua': 'Nicaragua', 'Cuba': 'Cuba',
+  
+  // África (CAF)
+  'Morocco': 'Marruecos', 'Senegal': 'Senegal', 'Cameroon': 'Camerún', 'Ivory Coast': 'Costa de Marfil',
+  'Nigeria': 'Nigeria', 'Egypt': 'Egipto', 'Tunisia': 'Túnez', 'Algeria': 'Argelia', 'Ghana': 'Ghana',
+  'South Africa': 'Sudáfrica', 'Mali': 'Malí', 'DR Congo': 'República Democrática del Congo',
+  'Democratic Republic of the Congo': 'República Democrática del Congo', 'Congo': 'Congo',
+  'Angola': 'Angola', 'Zambia': 'Zambia', 'Uganda': 'Uganda', 'Togo': 'Togo', 'Benin': 'Benín',
+  'Guinea': 'Guinea', 'Gabon': 'Gabón', 'Libya': 'Libia', 'Sudan': 'Sudán', 'Cape Verde': 'Cabo Verde',
+  'Mauritania': 'Mauritania', 'Madagascar': 'Madagascar', 'Kenya': 'Kenia', 'Zimbabwe': 'Zimbabue',
+  
+  // Asia (AFC)
+  'Japan': 'Japón', 'South Korea': 'Corea del Sur', 'Korea Republic': 'Corea del Sur', 'Iran': 'Irán', 
+  'Saudi Arabia': 'Arabia Saudita', 'Australia': 'Australia', 'Qatar': 'Catar', 'Iraq': 'Irak', 
+  'United Arab Emirates': 'Emiratos Árabes Unidos', 'Jordan': 'Jordania', 'Uzbekistan': 'Uzbekistán',
+  'China': 'China', 'China PR': 'China', 'North Korea': 'Corea del Norte', 'Syria': 'Siria', 
+  'Bahrain': 'Bahréin', 'Oman': 'Omán', 'Vietnam': 'Vietnam', 'Thailand': 'Tailandia', 
+  'Indonesia': 'Indonesia', 'Lebanon': 'Líbano', 'Palestine': 'Palestina', 'Kuwait': 'Kuwait',
+  'Kyrgyzstan': 'Kirguistán', 'Tajikistan': 'Tayikistán',
+  
+  // Oceanía (OFC)
+  'New Zealand': 'Nueva Zelanda', 'Fiji': 'Fiyi', 'Solomon Islands': 'Islas Salomón', 
+  'Vanuatu': 'Vanuatu', 'New Caledonia': 'Nueva Caledonia', 'Tahiti': 'Tahití', 
+  'Papua New Guinea': 'Papúa Nueva Guinea', 'Samoa': 'Samoa'
+};
+
+
+function translateTeam(name) {
+  if (!name) return name;
+  const trimmed = name.trim();
+  return TRADUCCION_EQUIPOS[trimmed] || trimmed;
+}
 
 // ──────────────────────────────────────────────────────────────────
 // HELPER: mapear estado de Football-Data a nuestro formato
@@ -785,6 +843,9 @@ async function actualizarTarjetas() {
         const playersYellow = resStatsYellow.data?.results || [];
         const playersRed = resStatsRed.data?.results || [];
 
+        // Si llegamos hasta aquí, consideramos que la consulta de Sofascore es exitosa (incluso si da 0 resultados porque no empezó el torneo)
+        sofascoreSuccess = true;
+
         // Combinar ambas listas de forma única por ID de jugador
         const playersMap = new Map();
         playersYellow.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
@@ -980,7 +1041,7 @@ async function safeSofascoreGet(url, customTimeout = 8000) {
   let attempts = 3;
   let lastError = null;
   const https = require('https');
-  const agent = new https.Agent({ keepAlive: false });
+  const agent = new https.Agent({ rejectUnauthorized: false, keepAlive: false });
 
   for (let i = 0; i < attempts; i++) {
     ultimoSofascoreReqTime = Date.now();
@@ -1005,6 +1066,36 @@ async function safeSofascoreGet(url, customTimeout = 8000) {
       const status = err.response?.status;
       console.warn(`      ⚠️ [SOFASCORE ERROR] Status ${status || 'desconocido'} en intento ${i + 1} para: ${url}. Detalle: ${err.message}`);
       
+      // Fallback a curl si hay error de conexión/TLS o bloqueo (403, 400, etc.)
+      console.log(`      📡 [CURL FALLBACK] Intentando obtener datos con curl...`);
+      try {
+        const data = await new Promise((resolve, reject) => {
+          const { exec } = require('child_process');
+          let headerArgs = '';
+          Object.entries(headers).forEach(([k, v]) => {
+            headerArgs += ` -H "${k}: ${v}"`;
+          });
+          
+          // Adaptar el comando según la plataforma (Windows usa curl.exe --ssl-no-revoke, Linux/Render usa curl estándar)
+          const curlBin = process.platform === 'win32' ? 'curl.exe --ssl-no-revoke' : 'curl';
+          const cmd = `${curlBin} -s ${headerArgs} "${url}"`;
+          
+          exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+            if (error) return reject(error);
+            try {
+              const json = JSON.parse(stdout);
+              resolve(json);
+            } catch (e) {
+              reject(new Error(`Failed to parse curl response: ${stdout.substring(0, 100)}`));
+            }
+          });
+        });
+        console.log(`      ✅ [CURL FALLBACK SUCCESS] Datos obtenidos con éxito mediante curl para: ${url}`);
+        return { data, status: 200 };
+      } catch (curlErr) {
+        console.warn(`      ⚠️ [CURL FALLBACK ERROR] Falló curl: ${curlErr.message}`);
+      }
+
       if (status === 403 || status === 429) {
         const backoff = (i + 1) * 2000;
         await delay(backoff);
@@ -1359,23 +1450,51 @@ app.get('/api/escudo/:id', async (req, res) => {
   const teamId = req.params.id;
   const url = `https://api.sofascore.com/api/v1/team/${teamId}/image`;
   
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Referer': 'https://www.sofascore.com/',
+    'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+  };
+
   try {
+    const https = require('https');
+    const agent = new https.Agent({ rejectUnauthorized: false, keepAlive: false });
     const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Referer': 'https://www.sofascore.com/',
-        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
-      },
+      headers,
       responseType: 'arraybuffer',
-      timeout: 6000
+      timeout: 6000,
+      httpsAgent: agent
     });
     
     res.setHeader('Content-Type', response.headers['content-type'] || 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=86400'); // Cachear por 1 día
     res.send(response.data);
   } catch (err) {
-    console.error(`Error proxying team image for ID ${teamId}:`, err.message);
-    res.status(404).send('Not Found');
+    console.warn(`⚠️ [IMAGE PROXY] Axios falló para ID ${teamId}: ${err.message}. Intentando fallback de curl...`);
+    
+    try {
+      const { exec } = require('child_process');
+      let headerArgs = '';
+      Object.entries(headers).forEach(([k, v]) => {
+        headerArgs += ` -H "${k}: ${v}"`;
+      });
+      
+      const curlBin = process.platform === 'win32' ? 'curl.exe --ssl-no-revoke' : 'curl';
+      const cmd = `${curlBin} -s ${headerArgs} "${url}"`;
+      
+      exec(cmd, { encoding: 'buffer', maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+        if (error || !stdout || stdout.length === 0) {
+          console.error(`❌ [IMAGE PROXY CURL ERROR] Falló curl para ID ${teamId}:`, error?.message || 'Empty buffer');
+          return res.status(404).send('Not Found');
+        }
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(stdout);
+      });
+    } catch (curlErr) {
+      console.error(`❌ [IMAGE PROXY CRITICAL ERROR] Falló fallback para ID ${teamId}:`, curlErr.message);
+      res.status(404).send('Not Found');
+    }
   }
 });
 
@@ -1399,8 +1518,8 @@ app.get('/api/fixture', async (req, res) => {
       fase: p.fase || '',
       jornada: p.jornada || 1,
       fecha_utc: p.fecha_utc,
-      equipo_local: p.equipo_local,
-      equipo_visitante: p.equipo_visitante,
+      equipo_local: translateTeam(p.equipo_local),
+      equipo_visitante: translateTeam(p.equipo_visitante),
       escudo_local: p.escudo_local,
       escudo_visitante: p.escudo_visitante,
       goles_local: p.goles_local,
@@ -1643,8 +1762,8 @@ app.get('/api/fixture/:id', async (req, res) => {
       grupo: dbMatch.fase,
       fase: dbMatch.fase,
       fecha_utc: dbMatch.fecha_utc,
-      equipo_local: dbMatch.equipo_local,
-      equipo_visitante: dbMatch.equipo_visitante,
+      equipo_local: translateTeam(dbMatch.equipo_local),
+      equipo_visitante: translateTeam(dbMatch.equipo_visitante),
       escudo_local: dbMatch.escudo_local,
       escudo_visitante: dbMatch.escudo_visitante,
       goles_local: dbMatch.goles_local,
@@ -1655,7 +1774,10 @@ app.get('/api/fixture/:id', async (req, res) => {
       estadio: footballDataMatch?.venue || null,
       arbitro: footballDataMatch?.referees?.map(r => r.name).join(', ') || null,
       competicion: footballDataMatch?.competition?.name || 'Mundial 2026',
-      goles_detalle: (footballDataMatch?.goals?.length > 0) ? footballDataMatch.goals : (dbMatch.estadisticas?.goles_detalle || []),
+      goles_detalle: ((footballDataMatch?.goals?.length > 0) ? footballDataMatch.goals : (dbMatch.estadisticas?.goles_detalle || [])).map(g => ({
+        ...g,
+        team: g.team ? { ...g.team, name: translateTeam(g.team.name) } : null
+      })),
     });
   } catch (err) {
     console.error('Error /api/fixture/:id:', err.message);
@@ -1689,8 +1811,8 @@ app.get('/api/standings', async (req, res) => {
       }
       gruposMap[g].tabla.push({
         posicion: row.posicion,
-        equipo: row.equipo,
-        equipo_short: row.equipo_short,
+        equipo: translateTeam(row.equipo),
+        equipo_short: translateTeam(row.equipo_short),
         escudo: row.escudo,
         pj: row.pj || 0,
         g: row.g || 0,
@@ -1725,8 +1847,8 @@ app.get('/api/scorers', async (req, res) => {
 
     const scorers = (data || []).map(s => ({
       nombre: s.nombre,
-      equipo: s.equipo,
-      equipo_short: s.equipo_short,
+      equipo: translateTeam(s.equipo),
+      equipo_short: translateTeam(s.equipo_short),
       escudo: s.escudo,
       goles: s.goles || 0,
       asistencias: s.asistencias || 0,
@@ -1763,7 +1885,12 @@ app.get('/api/tarjetas', async (req, res) => {
           escudo = `http://localhost:3000/api/escudo/${teamId}`;
         }
       }
-      return { ...c, escudo };
+      return { 
+        ...c, 
+        equipo: translateTeam(c.equipo),
+        equipo_short: translateTeam(c.equipo_short),
+        escudo 
+      };
     });
     
     res.json(mapped);
@@ -1789,8 +1916,8 @@ app.get('/api/live', async (req, res) => {
 
     const partidos = (data || []).map(p => ({
       id: p.id,
-      equipo_local: p.equipo_local,
-      equipo_visitante: p.equipo_visitante,
+      equipo_local: translateTeam(p.equipo_local),
+      equipo_visitante: translateTeam(p.equipo_visitante),
       escudo_local: p.escudo_local,
       escudo_visitante: p.escudo_visitante,
       goles_local: p.goles_local,
@@ -2116,12 +2243,69 @@ app.get('/api/equipo/:nombre', async (req, res) => {
           apiFootball.get('/players/squads', { params: { team: teamId } }).catch(() => ({ data: { response: [] } }))
         ]);
 
+        let squad = squadRes.data.response[0]?.players || [];
+
+        // Si es el Mundial y se ha publicado la lista definitiva en Sofascore (exactamente 26 jugadores)
+        if (!TEST_MODE) {
+          try {
+            console.log(`      🔍 [SQUAD DEFINITIVO] Buscando lista oficial de 26 para ${teamInfo.team.name} en Sofascore...`);
+            const searchRes = await safeSofascoreGet(`https://api.sofascore.com/api/v1/search/all?q=${encodeURIComponent(teamInfo.team.name)}`);
+            const teams = searchRes.data?.results?.filter(r => r.type === 'team') || [];
+            const nationalTeam = teams.find(t => t.entity?.national) || teams[0];
+            if (nationalTeam) {
+              const sofascoreTeamId = nationalTeam.entity.id;
+              const playersRes = await safeSofascoreGet(`https://api.sofascore.com/api/v1/team/${sofascoreTeamId}/players`);
+              const sofascoreSquad = playersRes.data?.players || [];
+              
+              if (sofascoreSquad.length === 26) {
+                console.log(`      ✅ [SQUAD DEFINITIVO DETECTADO] Sofascore tiene la lista oficial de 26 para ${teamInfo.team.name}. Mapeando convocados...`);
+                
+                const mapPosition = (pos) => {
+                  const posMap = { 'G': 'Goalkeeper', 'D': 'Defender', 'M': 'Midfielder', 'F': 'Attacker' };
+                  return posMap[pos] || 'Midfielder';
+                };
+                
+                squad = sofascoreSquad.map(item => {
+                  const p = item.player;
+                  let age = null;
+                  if (p.dateOfBirthTimestamp) {
+                    const dob = new Date(p.dateOfBirthTimestamp * 1000);
+                    const ageDiff = Date.now() - dob.getTime();
+                    age = Math.floor(ageDiff / (1000 * 60 * 60 * 24 * 365.25));
+                  } else if (p.dateOfBirth) {
+                    const dob = new Date(p.dateOfBirth);
+                    const ageDiff = Date.now() - dob.getTime();
+                    age = Math.floor(ageDiff / (1000 * 60 * 60 * 24 * 365.25));
+                  }
+                  return {
+                    id: p.id,
+                    name: p.name,
+                    age: age,
+                    number: p.shirtNumber || parseInt(p.jerseyNumber) || null,
+                    position: mapPosition(p.position),
+                    photo: `https://api.sofascore.com/api/v1/player/${p.id}/image`
+                  };
+                });
+              } else {
+                console.log(`      ⚠️ [SQUAD PRELISTA] Sofascore tiene ${sofascoreSquad.length} jugadores para ${teamInfo.team.name}. Manteniendo prelista actual.`);
+              }
+            }
+          } catch (sofaSquadErr) {
+            console.warn(`      ⚠️ Error al obtener squad de Sofascore para ${teamInfo.team.name}:`, sofaSquadErr.message);
+          }
+        }
+
+        // Asegurar que el nombre de la selección se muestre en español
+        if (teamInfo.team) {
+          teamInfo.team.name = correctName;
+        }
+
         responseData = {
           info: teamInfo.team,
           venue: teamInfo.venue,
           next_matches: nextRes.data.response || [],
           last_matches: lastRes.data.response || [],
-          squad: squadRes.data.response[0]?.players || []
+          squad: squad
         };
       }
     } catch (apiErr) {
@@ -2240,6 +2424,21 @@ app.get('/api/equipo/:nombre', async (req, res) => {
         last_matches: lastDb.map(mapMatch),
         squad: sofascoreSquad
       };
+    }
+
+    // Aplicar traducción de selecciones en la respuesta del perfil del equipo
+    if (responseData) {
+      if (responseData.info) {
+        responseData.info.name = translateTeam(responseData.info.name);
+        responseData.info.country = translateTeam(responseData.info.country);
+      }
+      const translateMatchTeams = (m) => {
+        if (m.teams?.home) m.teams.home.name = translateTeam(m.teams.home.name);
+        if (m.teams?.away) m.teams.away.name = translateTeam(m.teams.away.name);
+        return m;
+      };
+      responseData.next_matches = (responseData.next_matches || []).map(translateMatchTeams);
+      responseData.last_matches = (responseData.last_matches || []).map(translateMatchTeams);
     }
 
     // Guardar en caché con TTL dinámico (10 segundos si es fallback/lista vacía, de lo contrario 1 hora)
