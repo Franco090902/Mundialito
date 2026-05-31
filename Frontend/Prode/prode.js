@@ -10,7 +10,7 @@
  * (o importado desde auth.js).
  */
 
-import { supabase } from '../../backend/auth.js';
+import { supabase } from '../auth.js';
 
 // ══════════════════════════════════════════════════════════════════
 // ESTADO INTERNO DEL MÓDULO

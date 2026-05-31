@@ -13,7 +13,7 @@
 // Browser → Supabase directo, sin pasar por server.js.
 // ══════════════════════════════════════════════════════════════════
 
-import { supabase, currentUser } from '../backend/auth.js';
+import { supabase, currentUser } from './auth.js';
 
 // ── Estado global ──────────────────────────────────────────────
 const pollingIntervals = new Map(); // partidoId → intervalId
