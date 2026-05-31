@@ -495,8 +495,11 @@ setInterval(() => {
 
 
 
-// Funciones Globales para Noticias y Tienda
-const API_URL = 'http://localhost:3000/api';
+// Define tu URL base de Render (la que te dará Render cuando crees el Web Service)
+const BACKEND_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
+const API_URL = `${BACKEND_BASE_URL}/api`;
 
 /* ── Utilidad: debounce ── */
 function debounce(fn, delay) {
@@ -1238,7 +1241,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 */
 
 // ── Variables de estado del chatbot ────────────────────────────────
-const CHATBOT_BACKEND_URL = 'http://localhost:3000'; // Cambiar en producción
+// Detecta automáticamente si usa local o Render
+const CHATBOT_BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
 
 // Historial de conversación para el panel principal
 let chatbotHistorial = [];

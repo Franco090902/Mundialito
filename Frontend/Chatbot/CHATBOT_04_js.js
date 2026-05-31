@@ -28,7 +28,9 @@
 */
 
 // ── Variables de estado del chatbot ────────────────────────────────
-const CHATBOT_BACKEND_URL = 'http://localhost:3000'; // Cambiar en producción
+const CHATBOT_BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
 
 // Historial de conversación para el panel principal
 let chatbotHistorial = [];

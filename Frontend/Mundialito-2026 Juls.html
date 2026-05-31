@@ -1618,7 +1618,11 @@
     async function cargarFixtureBD() {
       console.log("⏳ Cargando partidos desde la API de Mundialito...");
       try {
-        const res = await fetch('http://localhost:3000/api/fixture');
+        const BACKEND = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
+const res = await fetch(`${BACKEND}/api/fixture`);
+
         if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
         const data = await res.json();
 
@@ -1672,7 +1676,10 @@
       const cards = document.getElementById('editionCards');
       if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
 
-      const res = await fetch('http://localhost:3000/api/historia');
+      const BACKEND = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
+const res = await fetch(`${BACKEND}/api/historia`);
 
       if (!res.ok) {
         if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;
