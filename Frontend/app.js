@@ -203,19 +203,66 @@ function renderGroups(key) {
 /* ─────────────────────────────────────
    FIXTURE
 ───────────────────────────────────── */
+function populateFixtureFilters() {
+  const selGroup = document.getElementById('filtro-fixture-grupo');
+  const selDate = document.getElementById('filtro-fixture-fecha');
+  if (!selGroup || !selDate) return;
+
+  const currentGroup = selGroup.value;
+  const currentDate = selDate.value;
+
+  const groups = new Set();
+  const dates = new Set();
+
+  Object.entries(GROUPS).forEach(([key, g]) => {
+    groups.add(key);
+    g.matches.forEach(m => {
+      if (m.date) dates.add(m.date);
+    });
+  });
+
+  selGroup.innerHTML = '<option value="">Todos los grupos</option>';
+  Array.from(groups).sort(sortFases).forEach(g => {
+    const isGroup = g.length <= 2;
+    const label = isGroup ? `Grupo ${g}` : g;
+    selGroup.innerHTML += `<option value="${g}">${label}</option>`;
+  });
+  
+  selDate.innerHTML = '<option value="">Todas las fechas</option>';
+  Array.from(dates).forEach(d => {
+    selDate.innerHTML += `<option value="${d}">${d}</option>`;
+  });
+
+  if (Array.from(groups).includes(currentGroup)) selGroup.value = currentGroup;
+  if (Array.from(dates).includes(currentDate)) selDate.value = currentDate;
+}
+
 function renderFixtures() {
+  populateFixtureFilters();
+
+  const groupFilter = document.getElementById('filtro-fixture-grupo')?.value || '';
+  const dateFilter = document.getElementById('filtro-fixture-fecha')?.value || '';
+
   const sortedEntries = Object.entries(GROUPS).sort((a, b) => sortFases(a[0], b[0]));
-  document.getElementById('fixtureContent').innerHTML = sortedEntries.map(([key, g]) => {
-    // Si es una sola letra, es un grupo. Si no, es una fase eliminatoria.
+  
+  let html = '';
+  
+  sortedEntries.forEach(([key, g]) => {
+    if (groupFilter && key !== groupFilter) return;
+    
+    const matchesToShow = g.matches.filter(m => !dateFilter || m.date === dateFilter);
+    if (matchesToShow.length === 0) return;
+
     const isGroup = key.length <= 2;
     const headerName = isGroup ? `GRUPO ${key}` : key.toUpperCase();
-    return `
+    
+    html += `
     <div class="fix-card">
       <div class="fix-hdr">
         <span class="fix-grp-name">${headerName}</span>
         <span class="fix-grp-teams">${g.teams.join(' · ')}</span>
       </div>
-      ${g.matches.map(m => `
+      ${matchesToShow.map(m => `
         <div class="fix-match" ${m.id ? `onclick="abrirDetallePartido('${m.id}')" style="cursor:pointer"` : ''}>
           <span class="fix-date">${m.date}</span>
           <div class="fix-teams">
@@ -226,7 +273,13 @@ function renderFixtures() {
           <span class="fix-ft">${m.estado === 'finalizado' ? 'FT' : m.estado === 'en_curso' ? `🔴 ${m.minuto || ''}'` : '—'}</span>
         </div>`).join('')}
     </div>`;
-  }).join('');
+  });
+
+  if (!html) {
+    html = '<div style="text-align:center;padding:30px;color:var(--text4);width:100%">No hay partidos para los filtros seleccionados.</div>';
+  }
+  
+  document.getElementById('fixtureContent').innerHTML = html;
 }
 
 /* ─────────────────────────────────────

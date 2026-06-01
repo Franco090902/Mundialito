@@ -280,7 +280,19 @@
 
         <!-- ══ PANEL: FIXTURE ══ -->
         <div id="panel-fixtures" class="panel">
-          <p class="section-label">Fixture completo — Todos los grupos</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <p class="section-label" style="margin: 0;">Fixture completo</p>
+            <div style="display: flex; gap: 10px;">
+              <select id="filtro-fixture-grupo" onchange="renderFixtures()"
+                style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+                <option value="">Todos los grupos</option>
+              </select>
+              <select id="filtro-fixture-fecha" onchange="renderFixtures()"
+                style="padding: 8px; border-radius: 6px; background: var(--navy2); color: white; border: 1px solid var(--border4); font-weight: bold; cursor: pointer;">
+                <option value="">Todas las fechas</option>
+              </select>
+            </div>
+          </div>
           <div class="fixture-grid" id="fixtureContent"></div>
         </div>
 
