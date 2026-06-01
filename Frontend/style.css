@@ -4689,3 +4689,62 @@
         max-width: 280px;
       }
     }
+
+/* ──────────────────────────────────────────────────────────────────
+   RESPONSIVE BASE PARA MÓVILES (@media max-width: 768px)
+   ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Contenedores principales al 100% y apilados verticalmente */
+  .header-inner, 
+  .main, 
+  .footer {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    height: auto;
+  }
+  
+  /* Ajuste para el cartel de EN VIVO */
+  .live-pill {
+    position: relative !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 5px auto;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: center;
+    margin-top: 5px;
+  }
+
+  /* Ajustes en los padding para no desperdiciar espacio en el celular */
+  .main {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* El menú de navegación se adapta para scroll horizontal táctil si hay muchos items */
+  .spa-nav ul,
+  .main-spa-nav .spa-nav-list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .spa-nav ul::-webkit-scrollbar,
+  .main-spa-nav .spa-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+}

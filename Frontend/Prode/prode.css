@@ -786,3 +786,50 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
   .grt-header, .grt-row { grid-template-columns: 36px 32px 1fr 60px; }
   .grt-exactos, .grt-signo { display: none; }
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   AJUSTES RESPONSIVOS PARA PRODE (Móviles)
+   ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Apilar los equipos y los inputs verticalmente para que quepan bien */
+  .pmc-body {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 10px;
+  }
+
+  .pmc-team {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pmc-center {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .pmc-inputs {
+    justify-content: center;
+    gap: 20px;
+  }
+
+  /* Accesibilidad táctil: inputs y botones más grandes (mínimo 44x44px) */
+  .pmc-input {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+  
+  .pmc-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: 10px;
+  }
+
+  .pmc-footer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+  }
+}
