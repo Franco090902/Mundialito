@@ -46,7 +46,7 @@ const apiFootball = axios.create({
 // TEST_MODE=true  → usa Copa Libertadores (para probar en vivo)
 // TEST_MODE=false → usa FIFA World Cup 2026
 // ──────────────────────────────────────────────────────────────────
-const TEST_MODE = String(process.env.TEST_MODE).trim().toLowerCase() === 'true';
+const TEST_MODE = String(process.env.TEST_MODE).trim().toLowerCase() === 'false';
 
 // Football-Data.org IDs
 const WC_2026_ID = 2000;           // FIFA World Cup 2026
