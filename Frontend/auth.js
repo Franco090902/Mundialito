@@ -423,6 +423,7 @@ function initAuthEvents() {
     const btnEl    = document.getElementById('btn-register');
 
     if (!username || !email || !password) return mostrarError('Completá todos los campos.');
+    if (username.length > 20) return mostrarError('El nombre de usuario no puede tener más de 20 caracteres.');
     if (password.length < 6) return mostrarError('La contraseña debe tener al menos 6 caracteres.');
 
     btnEl.disabled    = true;
