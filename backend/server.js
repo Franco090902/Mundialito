@@ -2168,8 +2168,26 @@ app.get('/api/equipo/:nombre', async (req, res) => {
     }
   }
 
+  // Mapeo a inglés si es necesario para api-football y consultas de Supabase
+  const mapNombresEn = {
+    'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
+    'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
+    'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
+    'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
+    'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
+    'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
+    'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
+    'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
+    'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
+    'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
+    'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
+    'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
+    'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
+  };
+  const nombreEn = mapNombresEn[nombre.toLowerCase()] || nombre;
+
   try {
-    console.log(`\n🔍 [EQUIPO] Buscando información para: ${nombre}`);
+    console.log(`\n🔍 [EQUIPO] Buscando información para: ${nombre} (${nombreEn})`);
 
     // Query our Supabase partidos table first for the team, to ensure we have its local matches and logo as fallback
     const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
@@ -2179,7 +2197,7 @@ app.get('/api/equipo/:nombre', async (req, res) => {
         .from('partidos')
         .select('*')
         .eq('edicion_mundial', activeEdicion)
-        .or(`equipo_local.ilike."${nombre}",equipo_visitante.ilike."${nombre}"`)
+        .or(`equipo_local.ilike."${nombreEn}",equipo_visitante.ilike."${nombreEn}"`)
         .order('fecha_utc', { ascending: true });
       dbMatches = data || [];
     } catch (dbErr) {
@@ -2190,10 +2208,10 @@ app.get('/api/equipo/:nombre', async (req, res) => {
     let foundLogo = null;
     let correctName = nombre;
     dbMatches.forEach(m => {
-      if (m.equipo_local.toLowerCase() === nombre.toLowerCase()) {
+      if (m.equipo_local.toLowerCase() === nombreEn.toLowerCase() || m.equipo_local.toLowerCase() === nombre.toLowerCase()) {
         if (m.escudo_local) foundLogo = m.escudo_local;
         correctName = m.equipo_local;
-      } else if (m.equipo_visitante.toLowerCase() === nombre.toLowerCase()) {
+      } else if (m.equipo_visitante.toLowerCase() === nombreEn.toLowerCase() || m.equipo_visitante.toLowerCase() === nombre.toLowerCase()) {
         if (m.escudo_visitante) foundLogo = m.escudo_visitante;
         correctName = m.equipo_visitante;
       }
@@ -2203,23 +2221,7 @@ app.get('/api/equipo/:nombre', async (req, res) => {
 
     // We will attempt to fetch from API-Football. If it fails (due to rate-limit/error/not found), we catch and gracefully fall back.
     try {
-      // 1. Mapeo a inglés si es necesario para api-football
-      const mapNombresEn = {
-        'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
-        'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
-        'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
-        'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
-        'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
-        'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
-        'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
-        'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
-        'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
-        'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
-        'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
-        'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
-        'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
-      };
-      const searchName = mapNombresEn[nombre.toLowerCase()] || nombre;
+      const searchName = nombreEn;
 
       // 2. Buscar ID del equipo
       const { data: teamData } = await apiFootball.get('/teams', { params: { search: searchName } });
@@ -2287,7 +2289,7 @@ app.get('/api/equipo/:nombre', async (req, res) => {
                   };
                 });
               } else {
-                console.log(`      ⚠️ [SQUAD PRELISTA] Sofascore tiene ${sofascoreSquad.length} jugadores para ${teamInfo.team.name}. Manteniendo prelista actual.`);
+                console.log(`      ⚠️ [SQUAD NO DEFINITIVO] Sofascore tiene ${sofascoreSquad.length} jugadores para ${teamInfo.team.name}. Manteniendo prelista actual.`);
               }
             }
           } catch (sofaSquadErr) {
@@ -2357,8 +2359,8 @@ app.get('/api/equipo/:nombre', async (req, res) => {
 
       let sofascoreSquad = [];
       try {
-        console.log(`   📡 [FALLBACK] Intentando obtener plantel desde Sofascore para ${nombre}...`);
-        const searchUrl = `https://api.sofascore.com/api/v1/search/all?q=${encodeURIComponent(nombre)}`;
+        console.log(`   📡 [FALLBACK] Intentando obtener plantel desde Sofascore para ${nombre} (usando ${nombreEn})...`);
+        const searchUrl = `https://api.sofascore.com/api/v1/search/all?q=${encodeURIComponent(nombreEn)}`;
         const { data: searchData } = await safeSofascoreGet(searchUrl, 8000);
         const results = searchData.results || [];
         const teams = results.filter(r => r.type === 'team' && r.entity?.sport?.slug === 'football');
@@ -2366,10 +2368,10 @@ app.get('/api/equipo/:nombre', async (req, res) => {
         let targetTeam = null;
         if (teams.length > 0) {
           targetTeam = teams.find(t => 
-            sofascoreTeamMatch(t.entity.name, nombre) && 
+            sofascoreTeamMatch(t.entity.name, nombreEn) && 
             !t.entity.name.includes('Women') && 
             !t.entity.name.endsWith(' W')
-          ) || teams.find(t => sofascoreTeamMatch(t.entity.name, nombre)) || teams[0];
+          ) || teams.find(t => sofascoreTeamMatch(t.entity.name, nombreEn)) || teams[0];
         }
 
         if (targetTeam) {
@@ -2379,26 +2381,31 @@ app.get('/api/equipo/:nombre', async (req, res) => {
           const { data: squadData } = await safeSofascoreGet(playersUrl, 8000);
           const players = squadData.players || [];
           
-          sofascoreSquad = players.map(p => {
-            let posStr = 'Midfielder';
-            if (p.player.position === 'G') posStr = 'Goalkeeper';
-            else if (p.player.position === 'D') posStr = 'Defender';
-            else if (p.player.position === 'M') posStr = 'Midfielder';
-            else if (p.player.position === 'F') posStr = 'Attacker';
+          if (players.length === 26) {
+            sofascoreSquad = players.map(p => {
+              let posStr = 'Midfielder';
+              if (p.player.position === 'G') posStr = 'Goalkeeper';
+              else if (p.player.position === 'D') posStr = 'Defender';
+              else if (p.player.position === 'M') posStr = 'Midfielder';
+              else if (p.player.position === 'F') posStr = 'Attacker';
 
-            let age = null;
-            if (p.player.dateOfBirthTimestamp) {
-              age = Math.floor((Date.now() / 1000 - p.player.dateOfBirthTimestamp) / (365.25 * 24 * 60 * 60));
-            }
+              let age = null;
+              if (p.player.dateOfBirthTimestamp) {
+                age = Math.floor((Date.now() / 1000 - p.player.dateOfBirthTimestamp) / (365.25 * 24 * 60 * 60));
+              }
 
-            return {
-              name: p.player.name,
-              position: posStr,
-              photo: `https://api.sofascore.com/api/v1/player/${p.player.id}/image`,
-              age: age
-            };
-          });
-          console.log(`   ✅ Plantel de ${sofascoreSquad.length} jugadores cargado exitosamente desde Sofascore`);
+              return {
+                name: p.player.name,
+                position: posStr,
+                photo: `https://api.sofascore.com/api/v1/player/${p.player.id}/image`,
+                age: age
+              };
+            });
+            console.log(`   ✅ Plantel de ${sofascoreSquad.length} jugadores cargado exitosamente desde Sofascore`);
+          } else {
+            console.log(`   ⚠️ [SQUAD NO DEFINITIVO] Sofascore tiene ${players.length} jugadores para ${nombreEn}. Se requiere lista oficial de 26.`);
+            sofascoreSquad = [];
+          }
         } else {
           console.warn(`   ⚠️ No se encontró el equipo en Sofascore.`);
         }
@@ -2415,7 +2422,7 @@ app.get('/api/equipo/:nombre', async (req, res) => {
         info: {
           id: fallbackTeamId,
           name: correctName,
-          logo: foundLogo || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%230a2a4a"/><text x="50" y="55" font-size="30" text-anchor="middle" fill="white">⚽</text></svg>',
+          logo: foundLogo || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#0a2a4a"/><text x="50" y="55" font-size="30" text-anchor="middle" fill="white">⚽</text></svg>'),
           national: true,
           country: correctName
         },

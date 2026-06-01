@@ -1145,7 +1145,7 @@ window.abrirPerfilEquipo = async function (teamName) {
 
     content.innerHTML = `
       <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid var(--border);">
-        <img src="${team.logo}" style="width:60px; height:60px; object-fit:contain;">
+        <img src="${team.logo || PLACEHOLDER_IMG}" style="width:60px; height:60px; object-fit:contain;" onerror="this.src='${PLACEHOLDER_IMG}'">
         <div>
           <h2 style="margin:0; font-size:24px; color:var(--white);">${team.name}</h2>
           <div style="font-size:13px; color:var(--text3);">${team.country || ''}</div>
