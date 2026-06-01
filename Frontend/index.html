@@ -30,8 +30,9 @@
   <!-- ══════════════════════════════════════
      AUTH OVERLAY — se oculta al loguearse
 ══════════════════════════════════════ -->
-  <div id="auth-overlay">
-    <div class="auth-card">
+  <div id="auth-overlay" class="hidden">
+    <div class="auth-card" style="position: relative;">
+      <button id="auth-close-btn" data-close-modal="true" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer;">✕</button>
 
       <!-- Logo -->
       <div class="auth-logo">
@@ -114,7 +115,7 @@
   <!-- ══════════════════════════════════════
      APP — se muestra solo si está autenticado
 ══════════════════════════════════════ -->
-  <div id="app-wrapper">
+  <div id="app-wrapper" class="visible">
 
     <!-- ══════════════════════════════════════
      HEADER
@@ -137,6 +138,9 @@
 
         <!-- Derecha: Menú del Perfil de Usuario -->
         <div class="header-right">
+          <!-- Botón de Login para invitados -->
+          <button class="btn-token" style="padding: 8px 16px; margin: 0; font-size: 14px; background: var(--gold); color: black;" data-auth="guest" data-open-auth="true">Iniciar Sesión</button>
+
           <!-- Menú de Usuario premium -->
           <div class="user-menu" id="header-user-menu" data-auth="user"
             style="display: flex; align-items: center; cursor: pointer; position: relative;">
@@ -218,11 +222,11 @@
               <div class="sidebar-card" style="text-align:center; padding: 10px;">
                 <script>
                   atOptions = {
-                    'key' : 'b769b87026c84b9d8b846895de99fb20',
-                    'format' : 'iframe',
-                    'height' : 600,
-                    'width' : 160,
-                    'params' : {}
+                    'key': 'b769b87026c84b9d8b846895de99fb20',
+                    'format': 'iframe',
+                    'height': 600,
+                    'width': 160,
+                    'params': {}
                   };
                 </script>
                 <script src="https://www.highperformanceformat.com/b769b87026c84b9d8b846895de99fb20/invoke.js"></script>
@@ -384,11 +388,11 @@
           <div style="text-align:center; padding-bottom: 15px; overflow-x: auto;">
             <script>
               atOptions = {
-                'key' : 'e1220a39abe7668dac4971f976aed7d1',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
+                'key': 'e1220a39abe7668dac4971f976aed7d1',
+                'format': 'iframe',
+                'height': 90,
+                'width': 728,
+                'params': {}
               };
             </script>
             <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=4"></script>
@@ -412,11 +416,11 @@
         <div id="panel-ad-mid" style="text-align:center; padding: 15px 0; overflow-x: auto;">
           <script>
             atOptions = {
-              'key' : 'e1220a39abe7668dac4971f976aed7d1',
-              'format' : 'iframe',
-              'height' : 90,
-              'width' : 728,
-              'params' : {}
+              'key': 'e1220a39abe7668dac4971f976aed7d1',
+              'format': 'iframe',
+              'height': 90,
+              'width': 728,
+              'params': {}
             };
           </script>
           <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=2"></script>
@@ -432,16 +436,16 @@
             </select>
           </div>
           <div id="grid-productos" class="cards-grid"></div>
-          
+
           <!-- ══ ANUNCIO: Tienda Bottom ══ -->
           <div style="text-align:center; padding-top: 15px; overflow-x: auto;">
             <script>
               atOptions = {
-                'key' : 'e1220a39abe7668dac4971f976aed7d1',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
+                'key': 'e1220a39abe7668dac4971f976aed7d1',
+                'format': 'iframe',
+                'height': 90,
+                'width': 728,
+                'params': {}
               };
             </script>
             <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=5"></script>
@@ -550,14 +554,15 @@
               <div style="text-align:center; padding-top: 20px; overflow-x: auto;">
                 <script>
                   atOptions = {
-                    'key' : 'b769b87026c84b9d8b846895de99fb20',
-                    'format' : 'iframe',
-                    'height' : 600,
-                    'width' : 160,
-                    'params' : {}
+                    'key': 'b769b87026c84b9d8b846895de99fb20',
+                    'format': 'iframe',
+                    'height': 600,
+                    'width': 160,
+                    'params': {}
                   };
                 </script>
-                <script src="https://www.highperformanceformat.com/b769b87026c84b9d8b846895de99fb20/invoke.js?p=6"></script>
+                <script
+                  src="https://www.highperformanceformat.com/b769b87026c84b9d8b846895de99fb20/invoke.js?p=6"></script>
               </div>
             </div>
 
@@ -582,11 +587,11 @@
           <div style="text-align:center; padding-bottom: 15px; overflow-x: auto;">
             <script>
               atOptions = {
-                'key' : 'e1220a39abe7668dac4971f976aed7d1',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
+                'key': 'e1220a39abe7668dac4971f976aed7d1',
+                'format': 'iframe',
+                'height': 90,
+                'width': 728,
+                'params': {}
               };
             </script>
             <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=7"></script>
@@ -890,11 +895,11 @@
           <div style="text-align:center; padding-bottom: 15px; overflow-x: auto;">
             <script>
               atOptions = {
-                'key' : 'e1220a39abe7668dac4971f976aed7d1',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
+                'key': 'e1220a39abe7668dac4971f976aed7d1',
+                'format': 'iframe',
+                'height': 90,
+                'width': 728,
+                'params': {}
               };
             </script>
             <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=8"></script>
@@ -1040,11 +1045,11 @@
       <div style="text-align:center; padding-bottom: 15px; overflow-x: auto;">
         <script>
           atOptions = {
-            'key' : 'e1220a39abe7668dac4971f976aed7d1',
-            'format' : 'iframe',
-            'height' : 90,
-            'width' : 728,
-            'params' : {}
+            'key': 'e1220a39abe7668dac4971f976aed7d1',
+            'format': 'iframe',
+            'height': 90,
+            'width': 728,
+            'params': {}
           };
         </script>
         <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=9"></script>
@@ -1175,11 +1180,11 @@
   <div style="text-align:center; padding: 20px 0; background: var(--navy); overflow-x: auto;">
     <script>
       atOptions = {
-        'key' : 'e1220a39abe7668dac4971f976aed7d1',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
+        'key': 'e1220a39abe7668dac4971f976aed7d1',
+        'format': 'iframe',
+        'height': 90,
+        'width': 728,
+        'params': {}
       };
     </script>
     <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=3"></script>
@@ -1463,8 +1468,8 @@
 
         const overlayEl = document.getElementById('auth-overlay');
         const appWrapperEl = document.getElementById('app-wrapper');
-        if (overlayEl) overlayEl.classList.remove('hidden');
-        if (appWrapperEl) appWrapperEl.classList.remove('visible');
+        if (overlayEl) overlayEl.classList.add('hidden');
+        if (appWrapperEl) appWrapperEl.classList.add('visible');
 
         const headerUserMenu = document.getElementById('header-user-menu');
         if (headerUserMenu) headerUserMenu.style.display = 'none';
@@ -1749,9 +1754,9 @@
       console.log("⏳ Cargando partidos desde la API de Mundialito...");
       try {
         const BACKEND = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
-const res = await fetch(`${BACKEND}/api/fixture`);
+          ? 'http://localhost:3000'
+          : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
+        const res = await fetch(`${BACKEND}/api/fixture`);
 
         if (!res.ok) throw new Error(`Error en respuesta de API: ${res.statusText}`);
         const data = await res.json();
@@ -1807,9 +1812,9 @@ const res = await fetch(`${BACKEND}/api/fixture`);
       if (cards) cards.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text4)">Conectando con Supabase para traer historial...</div>';
 
       const BACKEND = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
-const res = await fetch(`${BACKEND}/api/historia`);
+        ? 'http://localhost:3000'
+        : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
+      const res = await fetch(`${BACKEND}/api/historia`);
 
       if (!res.ok) {
         if (cards) cards.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error del servidor: ${res.statusText}</div>`;

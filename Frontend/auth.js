@@ -321,8 +321,8 @@ function actualizarUILogueado(profile) {
   });
 
   // ── Cerrar el modal de login si estaba abierto ───────────────────
-  const modalAuth = document.getElementById('modal-auth');
-  if (modalAuth) modalAuth.classList.remove('active');
+  const modalAuth = document.getElementById('auth-overlay');
+  if (modalAuth) modalAuth.classList.add('hidden');
 
   // Callback global para sincronizar con HTML principal de forma síncrona
   if (window.onMundialitoAuth) {
@@ -446,14 +446,14 @@ function initAuthEvents() {
   // Cualquier elemento con data-open-auth="true" abre el modal de login
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-open-auth]')) {
-      document.getElementById('modal-auth')?.classList.add('active');
+      document.getElementById('auth-overlay')?.classList.remove('hidden');
     }
   });
 
   // ── Cerrar modal con click fuera o en la X ───────────────────────
-  document.getElementById('modal-auth')?.addEventListener('click', (e) => {
-    if (e.target.id === 'modal-auth' || e.target.closest('[data-close-modal]')) {
-      document.getElementById('modal-auth')?.classList.remove('active');
+  document.getElementById('auth-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'auth-overlay' || e.target.closest('[data-close-modal]')) {
+      document.getElementById('auth-overlay')?.classList.add('hidden');
     }
   });
 
