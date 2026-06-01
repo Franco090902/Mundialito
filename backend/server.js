@@ -2707,6 +2707,51 @@ function parsearCalendario(textoRespuesta) {
   } catch {
     // Si el JSON está malformado, ignoramos el bloque
     return { texto, calendario: null };
+}
+}
+
+
+// ──────────────────────────────────────────────────────────────────
+// FUNCIÓN AUXILIAR: buscar información en internet usando Tavily
+// ──────────────────────────────────────────────────────────────────
+async function buscarEnInternet(query) {
+  // Recargar .env por si el archivo se guardó mientras el servidor estaba corriendo
+  require('dotenv').config({ override: true });
+  
+  if (!process.env.TAVILY_API_KEY) {
+    console.warn("⚠️ Falta TAVILY_API_KEY en el .env, omitiendo búsqueda en internet.");
+    return "";
+  }
+  
+  console.log("🌐 Buscando en internet con Tavily la consulta:", query);
+  
+  try {
+    const response = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: process.env.TAVILY_API_KEY,
+        query: query,
+        search_depth: "basic",
+        max_results: 3
+      })
+    });
+    
+    if (!response.ok) {
+      console.warn("⚠️ Error en respuesta de Tavily:", response.status);
+      return "";
+    }
+    
+    const data = await response.json();
+    if (data && data.results && data.results.length > 0) {
+      console.log(`   ✅ Tavily encontró ${data.results.length} resultados.`);
+      return data.results.map(r => r.content).join('\n\n');
+    }
+    console.log("   ℹ️ Tavily no encontró resultados.");
+    return "";
+  } catch (err) {
+    console.error("❌ Error conectando con Tavily:", err.message);
+    return "";
   }
 }
 
@@ -2791,8 +2836,15 @@ Si querés recomendar algo, hacelo de forma genérica sin inventar precios ni li
 `;
     }
 
-    // ── PASO 3: Llamar a Gemini con el contexto de productos ── 
-    const mensajeConContexto = `${contextoProductos}\n\nPREGUNTA DEL USUARIO: 
+    // ── PASO 3: Buscar en internet con Tavily (RAG) ── 
+    const contextoWeb = await buscarEnInternet(mensaje.trim());
+    let textoContextoWeb = '';
+    if (contextoWeb) {
+      textoContextoWeb = `\nINFORMACIÓN RECIENTE DE INTERNET:\n${contextoWeb}\nUtiliza esta información para responder la pregunta del usuario si es necesario.\n`;
+    }
+
+    // ── PASO 4: Llamar a Gemini con el contexto de productos y web ── 
+    const mensajeConContexto = `${contextoProductos}${textoContextoWeb}\n\nPREGUNTA DEL USUARIO: 
 ${mensaje.trim()}`;
     
     let respuestaCompleta;
@@ -2803,7 +2855,7 @@ ${mensaje.trim()}`;
       respuestaCompleta = await llamarGroq(historial, mensajeConContexto);
     }
 
-    // ── PASO 4: Parsear calendario y devolver respuesta ── 
+    // ── PASO 5: Parsear calendario y devolver respuesta ── 
     const { texto, calendario } = parsearCalendario(respuestaCompleta);
 
     res.json({
