@@ -1834,6 +1834,7 @@ function widgetKeydown(e) {
       const { data, error } = await sb()
         .from('partidos')
         .select('id, fase, equipo_local, equipo_visitante, escudo_local, escudo_visitante, fecha_utc, goles_local, goles_visitante, estado')
+        .neq('edicion_mundial', 'libertadores_2026')
         .order('fecha_utc', { ascending: true });
       if (error) throw error;
       _partidos = data || [];
