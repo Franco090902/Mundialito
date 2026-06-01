@@ -792,13 +792,17 @@ export function switchSubTab(tab) {
 // ══════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════
 
+let currentRankingOffset = 0;
+const RANKING_LIMIT = 15;
+
 async function loadCommunities() {
   if (!_userId) return;
 
   try {
+    currentRankingOffset = 0;
     const [groups, globalRanking] = await Promise.all([
       fetchMyGroups(_userId),
-      fetchGlobalRanking(),
+      fetchGlobalRanking(currentRankingOffset, RANKING_LIMIT),
     ]);
 
     _myGroups = groups;
@@ -851,12 +855,12 @@ async function fetchGroupMembers(groupId) {
 // ──────────────────────────────────────────────────────────────────
 // FETCH: Ranking global
 // ──────────────────────────────────────────────────────────────────
-async function fetchGlobalRanking() {
+async function fetchGlobalRanking(start = 0, limit = RANKING_LIMIT) {
   const { data, error } = await supabase
     .from('profiles')
     .select('id, username, avatar_url, puntos_prode, aciertos_exactos, aciertos_signo')
     .order('puntos_prode', { ascending: false })
-    .limit(50);
+    .range(start, start + limit - 1);
 
   if (error) throw error;
   return data || [];
@@ -1018,8 +1022,33 @@ function renderGlobalRanking(profiles) {
     return '<div class="prode-empty" style="padding:30px"><div class="prode-empty-sub">Sin datos de ranking aún.</div></div>';
   }
 
-  const rows = profiles.map((p, i) => {
-    const pos = i + 1;
+  const rowsHtml = renderRankingRows(profiles, 0);
+
+  const btnLoadMore = profiles.length === RANKING_LIMIT 
+    ? `<button id="btn-load-more-ranking" class="community-btn btn--secondary" style="margin-top: 15px; width: 100%;">Ver más</button>`
+    : '';
+
+  return `
+    <div class="global-ranking-table">
+      <div class="grt-header">
+        <span>#</span>
+        <span></span>
+        <span>Usuario</span>
+        <span style="text-align:center">Puntos</span>
+        <span style="text-align:center">Exactos</span>
+        <span style="text-align:center">Signo</span>
+      </div>
+      <div id="global-ranking-rows">
+        ${rowsHtml}
+      </div>
+    </div>
+    ${btnLoadMore}
+  `;
+}
+
+function renderRankingRows(profiles, startIndex = 0) {
+  return profiles.map((p, i) => {
+    const pos = startIndex + i + 1;
     const posClass = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
     const isMe = p.id === _userId;
     const avatarHtml = p.avatar_url
@@ -1037,19 +1066,65 @@ function renderGlobalRanking(profiles) {
         <span class="grt-signo">⚖️ ${p.aciertos_signo || 0}</span>
       </div>`;
   }).join('');
+}
 
-  return `
-    <div class="global-ranking-table">
-      <div class="grt-header">
-        <span>#</span>
-        <span></span>
-        <span>Usuario</span>
-        <span style="text-align:center">Puntos</span>
-        <span style="text-align:center">Exactos</span>
-        <span style="text-align:center">Signo</span>
-      </div>
-      ${rows}
-    </div>`;
+async function loadMoreRanking() {
+  const btn = document.getElementById('btn-load-more-ranking');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Cargando...';
+  }
+
+  try {
+    currentRankingOffset += RANKING_LIMIT;
+    const newProfiles = await fetchGlobalRanking(currentRankingOffset, RANKING_LIMIT);
+
+    if (newProfiles.length > 0) {
+      const rowsContainer = document.getElementById('global-ranking-rows');
+      if (rowsContainer) {
+        rowsContainer.insertAdjacentHTML('beforeend', renderRankingRows(newProfiles, currentRankingOffset));
+      }
+    }
+
+    if (newProfiles.length < RANKING_LIMIT) {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Ver menos';
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', async () => {
+          try {
+            newBtn.disabled = true;
+            newBtn.textContent = 'Cargando...';
+            currentRankingOffset = 0;
+            const resetProfiles = await fetchGlobalRanking(0, RANKING_LIMIT);
+            const rowsContainer = document.getElementById('global-ranking-rows');
+            if (rowsContainer) {
+              rowsContainer.innerHTML = renderRankingRows(resetProfiles, 0);
+            }
+            newBtn.textContent = 'Ver más';
+            newBtn.disabled = false;
+            const freshBtn = newBtn.cloneNode(true);
+            newBtn.parentNode.replaceChild(freshBtn, newBtn);
+            freshBtn.addEventListener('click', loadMoreRanking);
+          } catch (e) {
+            console.error(e);
+          }
+        });
+      }
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Ver más';
+      }
+    }
+  } catch (error) {
+    console.error('[Prode] Error cargando más ranking:', error);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Error, reintentar';
+    }
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────
