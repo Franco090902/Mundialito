@@ -521,7 +521,7 @@
     ════════════════════════════════════════════════ */
     .live-grid {
       display: grid;
-      grid-template-columns: 1fr 330px;
+      grid-template-columns: 170px 1fr 330px;
       gap: 26px;
     }
 
