@@ -2637,27 +2637,53 @@ function widgetKeydown(e) {
   };
 
   // ──────────────────────────────────────────────────────────────
-  // RANKING GLOBAL (top 50)
+  // RANKING GLOBAL (top 50 -> Paginado)
   // ──────────────────────────────────────────────────────────────
-  async function _cargarRankingGlobal() {
+  let _rankingOffset = 0;
+  const _RANKING_LIMIT = 15;
+
+  async function _cargarRankingGlobal(append = false) {
     const cont = document.getElementById('prode-global-ranking-cont');
     if (!cont) return;
 
+    if (!append) {
+      _rankingOffset = 0;
+    }
+
     try {
+      const btn = document.getElementById('btn-load-more-ranking-app');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Cargando...';
+      }
+
       const { data, error } = await sb()
         .from('profiles')
         .select('id, username, avatar_url, puntos_prode, aciertos_exactos, aciertos_signo')
         .order('puntos_prode', { ascending: false })
-        .limit(50);
+        .range(_rankingOffset, _rankingOffset + _RANKING_LIMIT - 1);
+      
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        cont.innerHTML = `<div style="color:var(--text4);font-size:13px;padding:14px 0">Sin datos de ranking aún.</div>`;
+        if (!append) {
+          cont.innerHTML = `<div style="color:var(--text4);font-size:13px;padding:14px 0">Sin datos de ranking aún.</div>`;
+        } else {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Ver menos';
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => {
+              _cargarRankingGlobal(false);
+            });
+          }
+        }
         return;
       }
 
       const rows = data.map((p, i) => {
-        const pos = i + 1;
+        const pos = _rankingOffset + i + 1;
         const posCls = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
         const isMe = p.id === _uid;
         const avatar = p.avatar_url
@@ -2674,20 +2700,63 @@ function widgetKeydown(e) {
         </div>`;
       }).join('');
 
-      cont.innerHTML = `
-        <div class="global-ranking-table">
-          <div class="grt-header">
-            <span>#</span><span></span>
-            <span>Usuario</span>
-            <span style="text-align:center">Pts</span>
-            <span style="text-align:center">Exactos</span>
-            <span style="text-align:center">Signo</span>
+      const hasMore = data.length === _RANKING_LIMIT;
+      const btnHtml = hasMore
+        ? `<button id="btn-load-more-ranking-app" class="community-btn btn--secondary" style="margin-top: 15px; width: 100%;">Ver más</button>`
+        : '';
+
+      if (!append) {
+        cont.innerHTML = `
+          <div class="global-ranking-table">
+            <div class="grt-header">
+              <span>#</span><span></span>
+              <span>Usuario</span>
+              <span style="text-align:center">Pts</span>
+              <span style="text-align:center">Exactos</span>
+              <span style="text-align:center">Signo</span>
+            </div>
+            <div id="global-ranking-rows-app">
+              ${rows}
+            </div>
           </div>
-          ${rows}
-        </div>`;
+          ${btnHtml}`;
+      } else {
+        const rowsCont = document.getElementById('global-ranking-rows-app');
+        if (rowsCont) rowsCont.insertAdjacentHTML('beforeend', rows);
+        
+        if (btn) {
+          if (!hasMore) {
+             btn.disabled = false;
+             btn.textContent = 'Ver menos';
+             const newBtn = btn.cloneNode(true);
+             btn.parentNode.replaceChild(newBtn, btn);
+             newBtn.addEventListener('click', () => {
+               _cargarRankingGlobal(false);
+             });
+          } else {
+             btn.disabled = false;
+             btn.textContent = 'Ver más';
+          }
+        }
+      }
+
+      if (!append && hasMore) {
+        const newBtn = document.getElementById('btn-load-more-ranking-app');
+        if (newBtn) {
+          newBtn.addEventListener('click', () => {
+            _rankingOffset += _RANKING_LIMIT;
+            _cargarRankingGlobal(true);
+          });
+        }
+      }
 
     } catch (err) {
       console.error('[Prode] Error cargando ranking global:', err);
+      const btn = document.getElementById('btn-load-more-ranking-app');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Error, reintentar';
+      }
     }
   }
 
