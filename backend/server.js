@@ -2985,6 +2985,20 @@ app.post('/api/prode_groups/join', async (req, res) => {
       return res.status(400).json({ error: `Ya sos miembro de "${group.nombre}".` });
     }
 
+    // 2.5 Verificar límite de miembros (máx 25)
+    const { count, error: errCount } = await supabase
+      .from('prode_group_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('group_id', group.id);
+    
+    if (errCount) {
+      return res.status(500).json({ error: 'Error verificando la capacidad del grupo.' });
+    }
+    
+    if (count >= 25) {
+      return res.status(400).json({ error: 'El grupo ya alcanzó el límite máximo de 25 participantes.' });
+    }
+
     // 3. Unirse al grupo
     const { error: joinErr } = await supabase
       .from('prode_group_members')

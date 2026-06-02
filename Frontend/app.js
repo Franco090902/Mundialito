@@ -2437,6 +2437,24 @@ function widgetKeydown(e) {
         return;
       }
 
+      // 2.5 Verificar límite de miembros (máx 25)
+      const { count, error: errCount } = await sb()
+        .from('prode_group_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('group_id', grupo.id);
+
+      if (errCount) {
+        prodeSetMsg(msgId, 'Error al verificar la capacidad del grupo.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Unirse al Grupo'; }
+        return;
+      }
+
+      if (count >= 25) {
+        prodeSetMsg(msgId, 'El grupo ya alcanzó el límite máximo de 25 participantes.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Unirse al Grupo'; }
+        return;
+      }
+
       const joinData = { group_id: grupo.id, user_id: window.__mundialitoUserId };
       console.log(`[Prode] Insertando nuevo miembro en prode_group_members. Data:`, joinData);
 
@@ -2587,7 +2605,7 @@ function widgetKeydown(e) {
             <span class="invite-code-copy">📋</span>
           </div>
           <div style="font-size:11px;color:var(--text4);margin-bottom:12px">
-            Compartí este código · ${members.length} miembro${members.length !== 1 ? 's' : ''}
+            Compartí este código · ${members.length}/25 miembros
           </div>
           <div class="group-ranking-table">
             ${membersHTML || '<div style="color:var(--text4);font-size:13px;padding:8px 0">Sin miembros.</div>'}

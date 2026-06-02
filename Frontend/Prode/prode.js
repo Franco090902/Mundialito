@@ -1009,7 +1009,7 @@ function renderGroupCard(group) {
           <span class="invite-code-copy">📋</span>
         </div>
         <div style="font-size:11px;color:var(--text4);margin-bottom:14px;">
-          Compartí este código para invitar amigos · ${members.length} miembro${members.length !== 1 ? 's' : ''}
+          Compartí este código para invitar amigos · ${members.length}/25 miembros
         </div>
 
         <!-- Ranking interno -->
