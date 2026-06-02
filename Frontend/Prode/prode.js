@@ -987,6 +987,9 @@ function renderGroupCard(group) {
       <button class="group-admin-btn" onclick="prodeTogglePublic('${group.id}', ${group.es_publico})" id="btn-toggle-public-${group.id}">
         ${group.es_publico ? '🔒 Hacer privado' : '🌐 Hacer público'}
       </button>
+      <button class="group-admin-btn btn--danger" onclick="prodeDeleteGroup('${group.id}', '${escapeAttr(group.nombre)}')">
+        🗑️ Borrar grupo
+      </button>
     </div>
   ` : '';
 
@@ -1151,6 +1154,14 @@ function bindCommunityEvents() {
       btnCreate.disabled = true; btnCreate.textContent = 'Creando...';
 
       try {
+        // Validar límite de 2 grupos administrados
+        const myAdminGroupsCount = _myGroups.filter(g => g.admin_id === _userId).length;
+        if (myAdminGroupsCount >= 2) {
+          setCommunityMsg(msgEl, 'No podés administrar más de 2 grupos.', 'error');
+          btnCreate.disabled = false; btnCreate.textContent = 'Crear Grupo';
+          return;
+        }
+
         // 1. Crear el grupo
         const { data: group, error: groupErr } = await supabase
           .from('prode_groups')
@@ -1339,6 +1350,31 @@ window.prodeTogglePublic = async function(groupId, currentlyPublic) {
   } catch (err) {
     console.error('[Prode] Error toggling visibilidad:', err);
     showToast('Error al cambiar la visibilidad.', 'error');
+  }
+};
+
+/** Elimina un grupo entero (solo admin) */
+window.prodeDeleteGroup = async function(groupId, groupName) {
+  if (!confirm(`¿Estás seguro de que querés borrar el grupo "${groupName}"? Esta acción no se puede deshacer y eliminará a todos los miembros.`)) return;
+
+  try {
+    const res = await fetch(`${API_URL}/prode_groups/${groupId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ admin_id: _userId })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error en el servidor');
+    }
+
+    showToast(`Grupo "${groupName}" eliminado.`, 'success');
+    setTimeout(() => loadCommunities(), 800);
+
+  } catch (err) {
+    console.error('[Prode] Error borrando grupo:', err);
+    showToast(err.message || 'Error al borrar el grupo.', 'error');
   }
 };
 

@@ -3000,6 +3000,45 @@ app.post('/api/prode_groups/join', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
+// ENDPOINT: DELETE /api/prode_groups/:id
+// Elimina un grupo y todos sus miembros (solo admin)
+// ══════════════════════════════════════════════════════════════════
+app.delete('/api/prode_groups/:id', async (req, res) => {
+  const { id } = req.params;
+  const { admin_id } = req.body;
+
+  if (!admin_id) return res.status(400).json({ error: 'Falta admin_id' });
+
+  try {
+    // 1. Verificar permisos
+    const { data: group, error: findErr } = await supabase
+      .from('prode_groups')
+      .select('admin_id')
+      .eq('id', id)
+      .single();
+
+    if (findErr || !group) {
+      return res.status(404).json({ error: 'Grupo no encontrado.' });
+    }
+    if (group.admin_id !== admin_id) {
+      return res.status(403).json({ error: 'No autorizado para borrar este grupo.' });
+    }
+
+    // 2. Borrar miembros
+    await supabase.from('prode_group_members').delete().eq('group_id', id);
+
+    // 3. Borrar grupo
+    const { error: delErr } = await supabase.from('prode_groups').delete().eq('id', id);
+    if (delErr) throw delErr;
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error borrando grupo:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
 // ARRANQUE DEL SERVIDOR
 // ══════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
