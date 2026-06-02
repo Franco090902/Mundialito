@@ -2522,16 +2522,38 @@ REGLAS DE COMPORTAMIENTO:
 la 'Camiseta Argentina 2026' por $45.000." - NUNCA inventes productos, precios o links que no estén en el contexto. - Si no hay productos disponibles, decilo honestamente. - Hacelo de forma natural, no forzada, en aprox el 60% de las respuestas
 
 5. DETECCIÓN DE FECHAS Y PARTIDOS:
-   Si el usuario pregunta por un partido, fecha, o quiere saber cuándo
-   juega una selección, DESPUÉS de responder agregá este bloque
-   EXACTAMENTE así (con el separador):
+   Si el usuario pregunta por un partido específico entre dos selecciones,
+   o por cuándo juega un equipo, DESPUÉS de responder agregá este bloque
+   EXACTAMENTE así (con el separador ---CALENDARIO---).
+   
+   CASO A — Partido específico entre dos equipos (prioritario):
+   Cuando el usuario pregunta por un enfrentamiento concreto (ej: "cuándo
+   juega Argentina vs Austria"), usá SIEMPRE este formato:
    
    ---CALENDARIO---
-   {"equipo":"[nombre del equipo]","descripcion":"[descripción del evento]","fecha_aprox":"[fecha aproximada 2026]"}
+   {"equipo1":"[equipo local]","equipo2":"[equipo visitante]","fecha":"YYYY-MM-DD","hora_arg":"HH:MM","descripcion":"[fase del torneo]"}
+   
+   - "fecha" debe estar en formato YYYY-MM-DD (ej: "2026-06-15")
+   - "hora_arg" debe estar en formato HH:MM en hora de Argentina UTC-3 (ej: "21:00").
+     Si no sabés la hora exacta, usá "18:00" como valor por defecto.
+   - Si no sabés la fecha exacta, estimá la más probable dentro de junio-julio 2026.
+   
+   Ejemplo para Argentina vs Austria:
+   ---CALENDARIO---
+   {"equipo1":"Argentina","equipo2":"Austria","fecha":"2026-06-15","hora_arg":"21:00","descripcion":"Fase de grupos — Mundial FIFA 2026"}
+   
+   CASO B — Solo un equipo (sin rival específico):
+   Cuando el usuario pregunta por los partidos de un equipo en general,
+   sin mencionar rival, usá este formato reducido:
+   
+   ---CALENDARIO---
+   {"equipo":"[nombre del equipo]","descripcion":"[descripción]","fecha_aprox":"[mes/fecha aproximada]"}
    
    Ejemplo:
    ---CALENDARIO---
-   {"equipo":"Argentina","descripcion":"Partido de Argentina en el Mundial 2026","fecha_aprox":"Junio 2026"}
+   {"equipo":"Argentina","descripcion":"Partidos de Argentina en el Mundial 2026","fecha_aprox":"Junio 2026"}
+   
+   IMPORTANTE: Nunca mezcles los dos formatos. Elegí el que corresponde.
 
 6. LÍMITES: Solo respondés sobre fútbol. Si te preguntan sobre otro
    tema, decís amablemente que sos un especialista en fútbol y
@@ -2705,16 +2727,33 @@ function parsearCalendario(textoRespuesta) {
     return { texto: textoRespuesta, calendario: null };
   }
 
-  const texto = textoRespuesta.substring(0, idx).trim();
+  const texto     = textoRespuesta.substring(0, idx).trim();
   const jsonParte = textoRespuesta.substring(idx + separador.length).trim();
 
+  // Gemini a veces agrega texto o saltos de línea después del JSON.
+  // Extraemos solo el primer objeto JSON válido con una regex.
+  const matchJSON = jsonParte.match(/\{[\s\S]*?\}/);
+  if (!matchJSON) {
+    return { texto, calendario: null };
+  }
+
   try {
-    const calendario = JSON.parse(jsonParte);
+    const calendario = JSON.parse(matchJSON[0]);
+
+    // Normalizar Caso A: asegurar que fecha y hora_arg tengan formato válido.
+    if (calendario.equipo1 && calendario.equipo2) {
+      if (!calendario.hora_arg || !/^\d{2}:\d{2}$/.test(calendario.hora_arg)) {
+        calendario.hora_arg = '18:00';
+      }
+      if (!calendario.fecha || !/^\d{4}-\d{2}-\d{2}$/.test(calendario.fecha)) {
+        calendario.fecha = '2026-06-15';
+      }
+    }
+
     return { texto, calendario };
   } catch {
-    // Si el JSON está malformado, ignoramos el bloque
     return { texto, calendario: null };
-}
+  }
 }
 
 

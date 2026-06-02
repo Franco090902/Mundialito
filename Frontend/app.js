@@ -1402,8 +1402,15 @@ async function chatbotEnviar() {
       renderizarProductosChatbot(datos.productos);
     }
 
-    // 8. Si Gemini detectó un evento de calendario, mostrar el botón
-    if (datos.calendario) {
+    // 8. Calendario: solo mostrar cuando Gemini devuelve datos exactos del partido
+    //    (equipo1 + equipo2 + fecha + hora_arg). Caso B (solo equipo/fecha_aprox) = ignorar.
+    if (
+      datos.calendario &&
+      datos.calendario.equipo1 &&
+      datos.calendario.equipo2 &&
+      datos.calendario.fecha &&
+      datos.calendario.hora_arg
+    ) {
       ultimoEventoCalendario = datos.calendario;
       mostrarSeccionCalendario(datos.calendario);
     }
@@ -1561,19 +1568,22 @@ function renderizarProductosChatbot(productos) {
 // ══════════════════════════════════════════════════════════════════
 function mostrarSeccionCalendario(evento) {
   const section = document.getElementById('chatbot-calendario-section');
-  const info = document.getElementById('chatbot-calendario-info');
+  const info    = document.getElementById('chatbot-calendario-info');
   if (!section || !info) return;
 
+  // Caso A: datos exactos del partido
+  const tituloPartido = `${evento.equipo1} vs ${evento.equipo2}`;
+  const [anio, mes, dia] = evento.fecha.split('-');
+  const fechaLegible     = `${dia}/${mes}/${anio}`;
+
   info.innerHTML = `
-    <div style="margin-bottom:6px;font-weight:700;color:var(--gold)">📅 Evento detectado</div>
-    <div style="margin-bottom:4px"><strong>🏳️ Equipo:</strong> ${evento.equipo}</div>
-    <div style="margin-bottom:4px"><strong>📅 Fecha:</strong> ${evento.fecha_aprox}</div>
-    <div><strong>📝 Descripción:</strong> ${evento.descripcion}</div>
+    <div style="margin-bottom:6px;font-weight:700;color:var(--gold)">📅 Partido detectado</div>
+    <div style="margin-bottom:4px"><strong>⚽ Partido:</strong> ${tituloPartido}</div>
+    <div style="margin-bottom:4px"><strong>📅 Fecha:</strong> ${fechaLegible} · ${evento.hora_arg} hs (Argentina)</div>
+    <div><strong>📝</strong> ${evento.descripcion || 'Mundial FIFA 2026'}</div>
   `;
 
   section.style.display = 'block';
-
-  // Scroll suave al botón de calendario
   section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1597,33 +1607,41 @@ function agendarEnCalendario() {
 
   const evento = ultimoEventoCalendario;
 
-  // Para el Mundial 2026 sabemos que es en junio/julio 2026
-  // Usamos fechas genéricas de junio 2026 porque no tenemos el fixture exacto
-  // En una versión futura, esto podría conectarse con la tabla `partidos`
-  const fechaInicio = '20260611';  // 11 junio 2026 (inicio del Mundial)
-  const fechaFin = '20260719';  // fecha de fin: próximo día
+  // SOLO crear el evento si tenemos datos exactos del partido.
+  // Sin equipo1, equipo2, fecha y hora_arg exactos → no hacer nada.
+  if (!evento.equipo1 || !evento.equipo2 || !evento.fecha || !evento.hora_arg) {
+    console.warn('[agendarEnCalendario] Faltan datos exactos del partido. No se abre Google Calendar.');
+    return;
+  }
 
-  // Parámetros de la URL de Google Calendar
+  // Parsear fecha y hora de Argentina (UTC-3) → UTC
+  const [anio, mes, dia]  = evento.fecha.split('-').map(Number);
+  const [hora, minuto]    = evento.hora_arg.split(':').map(Number);
+  const OFFSET_ARG_MS     = 3 * 60 * 60 * 1000;  // UTC-3 → sumar 3h para obtener UTC
+  const inicioUTC         = new Date(Date.UTC(anio, mes - 1, dia, hora, minuto, 0) + OFFSET_ARG_MS);
+  const finUTC            = new Date(inicioUTC.getTime() + 2 * 60 * 60 * 1000); // +2 horas
+
+  // Formatear a YYYYMMDDTHHMMSSZ
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+
   const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: `⚽ ${evento.equipo} — Mundial FIFA 2026`,
-    details: `${evento.descripcion}\n\nAgendado desde Mundialito.app`,
-    dates: `${fechaInicio}/${fechaFin}`,
-    location: 'Estados Unidos / México / Canadá — Mundial 2026',
+    action:   'TEMPLATE',
+    text:     `${evento.equipo1} vs ${evento.equipo2}`,
+    details:  `⚽ Partido del Mundial FIFA 2026\n🕐 ${evento.hora_arg} hs (Argentina) · Duración: 2 horas\n\nAgendado desde Mundialito.app`,
+    dates:    `${fmt(inicioUTC)}/${fmt(finUTC)}`,
+    location: 'Mundial FIFA 2026 — USA / México / Canadá',
   });
 
-  const url = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank');
 
-  // Abrir en nueva pestaña — el usuario ve el evento pre-llenado
-  window.open(url, '_blank');
-
-  // Feedback visual: cambiar texto del botón temporalmente
+  // Feedback visual en el botón del sidebar
   const btn = document.getElementById('chatbot-calendario-btn');
   if (btn) {
-    btn.textContent = '✅ ¡Abriendo Google Calendar!';
+    btn.textContent      = '✅ ¡Abriendo Google Calendar!';
     btn.style.background = '#34A853';
     setTimeout(() => {
-      btn.textContent = '📅 Agregar a mi Google Calendar';
+      btn.textContent      = '📅 Agregar a mi Google Calendar';
       btn.style.background = '';
     }, 3000);
   }

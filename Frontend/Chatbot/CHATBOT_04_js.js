@@ -135,10 +135,19 @@ async function chatbotEnviar() {
       renderizarProductosChatbot(datos.productos);
     }
 
-    // 8. Si Gemini detectó un evento de calendario, mostrar el botón
-    if (datos.calendario) {
+    // 8. Calendario: solo mostrar botón cuando Gemini devuelve datos exactos
+    //    del partido (equipo1 + equipo2 + fecha + hora_arg).
+    //    Si solo devuelve info aproximada, no mostramos nada.
+    if (
+      datos.calendario &&
+      datos.calendario.equipo1 &&
+      datos.calendario.equipo2 &&
+      datos.calendario.fecha &&
+      datos.calendario.hora_arg
+    ) {
       ultimoEventoCalendario = datos.calendario;
       mostrarSeccionCalendario(datos.calendario);
+      inyectarBotonCalendario(datos.calendario);
     }
 
   } catch (err) {
@@ -282,60 +291,166 @@ function mostrarSeccionCalendario(evento) {
   const info    = document.getElementById('chatbot-calendario-info');
   if (!section || !info) return;
 
+  // Determinar si es un partido exacto (tiene fecha+hora) o aproximado
+  const tieneHoraExacta = evento.fecha && evento.hora_arg && evento.equipo1 && evento.equipo2;
+  const tituloPartido   = tieneHoraExacta
+    ? `${evento.equipo1} vs ${evento.equipo2}`
+    : (evento.equipo || 'Selección');
+  const fechaTexto      = tieneHoraExacta
+    ? `${evento.fecha} · ${evento.hora_arg} hs (Argentina)`
+    : (evento.fecha_aprox || 'Junio–Julio 2026');
+
   info.innerHTML = `
     <div style="margin-bottom:6px;font-weight:700;color:var(--gold)">📅 Evento detectado</div>
-    <div style="margin-bottom:4px"><strong>🏳️ Equipo:</strong> ${evento.equipo}</div>
-    <div style="margin-bottom:4px"><strong>📅 Fecha:</strong> ${evento.fecha_aprox}</div>
-    <div><strong>📝 Descripción:</strong> ${evento.descripcion}</div>
+    <div style="margin-bottom:4px"><strong>⚽ Partido:</strong> ${tituloPartido}</div>
+    <div style="margin-bottom:4px"><strong>📅 Fecha:</strong> ${fechaTexto}</div>
+    <div><strong>📝 Descripción:</strong> ${evento.descripcion || 'Mundial FIFA 2026'}</div>
   `;
 
   section.style.display = 'block';
-
-  // Scroll suave al botón de calendario
   section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 
 // ══════════════════════════════════════════════════════════════════
-// FUNCIÓN: agendarEnCalendario
-// Construye la URL de Google Calendar con los datos del evento
-// y la abre en una nueva pestaña.
-//
-// CONCEPTO — Google Calendar URL API (sin OAuth):
-//   Google acepta eventos pre-llenados por URL usando estos parámetros:
-//   - text:    título del evento
-//   - details: descripción
-//   - dates:   YYYYMMDDTHHMMSSZ/YYYYMMDDTHHMMSSZ (inicio/fin)
-//   - location: lugar
-//   El usuario ve un formulario pre-llenado y decide si confirma.
-//   NO necesitamos acceso a la cuenta, el usuario lo confirma él mismo.
+// FUNCIÓN: inyectarBotonCalendario
+// Inyecta el botón SOLO cuando tenemos datos exactos del partido
+// (equipo1, equipo2, fecha, hora_arg). Si los datos son aproximados,
+// no se muestra nada para no crear eventos genéricos sin valor.
 // ══════════════════════════════════════════════════════════════════
+function inyectarBotonCalendario(evento) {
+  // Guardia: solo proceder si tenemos los 4 campos exactos
+  if (!evento?.equipo1 || !evento?.equipo2 || !evento?.fecha || !evento?.hora_arg) return;
+
+  const contenedor = document.getElementById('chatbot-mensajes');
+  if (!contenedor) return;
+
+  // Obtener el último mensaje del bot
+  const mensajesBot = contenedor.querySelectorAll('.chatbot-msg--bot');
+  if (!mensajesBot.length) return;
+  const ultimoMensaje = mensajesBot[mensajesBot.length - 1];
+  const contenidoMsg  = ultimoMensaje.querySelector('.chatbot-msg-contenido');
+  if (!contenidoMsg) return;
+
+  // Evitar duplicar el botón si ya existe en este mensaje
+  if (contenidoMsg.querySelector('.cal-inline-widget')) return;
+
+  // Formatear la fecha para mostrar al usuario (DD/MM/YYYY)
+  const [anio, mes, dia] = evento.fecha.split('-');
+  const fechaLegible     = `${dia}/${mes}/${anio}`;
+  const subTexto         = `${evento.equipo1} vs ${evento.equipo2} · ${fechaLegible} ${evento.hora_arg} hs (ARG)`;
+
+  // Crear el widget
+  const widget     = document.createElement('div');
+  widget.className = 'cal-inline-widget';
+
+  const btn        = document.createElement('button');
+  btn.className    = 'cal-inline-btn';
+  btn.type         = 'button';
+  btn.innerHTML    = `
+    <span class="cal-inline-icon">📅</span>
+    <span class="cal-inline-textos">
+      <span class="cal-inline-label">Agendar partido en mi Google Calendar</span>
+      <span class="cal-inline-sub">${subTexto}</span>
+    </span>
+    <span class="cal-inline-arrow">›</span>
+  `;
+
+  btn.addEventListener('click', () => {
+    agendarEnCalendario();
+    _feedbackBotonCal(btn, '✅ Abriendo Google Calendar...');
+  });
+
+  widget.appendChild(btn);
+  contenidoMsg.appendChild(widget);
+  contenedor.scrollTop = contenedor.scrollHeight;
+}
+
+
+// ── Helper privado: feedback visual temporal en el botón inline ──
+function _feedbackBotonCal(btn, mensajeTemporal) {
+  const labelEl = btn.querySelector('.cal-inline-label');
+  if (!labelEl) return;
+  const textoOriginal  = labelEl.textContent;
+  labelEl.textContent  = mensajeTemporal;
+  btn.disabled         = true;
+  btn.style.opacity    = '0.7';
+  setTimeout(() => {
+    labelEl.textContent = textoOriginal;
+    btn.disabled        = false;
+    btn.style.opacity   = '';
+  }, 3000);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN: generarURLCalendario
+// Recibe los datos de un partido y genera la URL de Google Calendar.
+//
+// PARÁMETROS:
+//   equipo1   — nombre de la selección local   (ej: "Argentina")
+//   equipo2   — nombre de la selección visitante (ej: "Austria")
+//   fecha     — fecha en formato "YYYY-MM-DD"  (ej: "2026-06-15")
+//   horaARG   — hora en formato "HH:MM"        (ej: "21:00")
+//               ⚠️ SIEMPRE en Hora Argentina (UTC-3)
+//
+// LÓGICA DE CONVERSIÓN UTC:
+//   Argentina es UTC-3, o sea que está 3 horas atrasada respecto a UTC.
+//   Para convertir de ARG → UTC hay que SUMAR 3 horas.
+//   Ejemplo: 21:00 ARG = 00:00 UTC del día siguiente
+//
+// FORMATO REQUERIDO POR GOOGLE CALENDAR:
+//   YYYYMMDDTHHMMSSZ  (la Z indica que es UTC)
+//   El separador "/" entre inicio y fin es obligatorio.
+// ══════════════════════════════════════════════════════════════════
+function generarURLCalendario(equipo1, equipo2, fecha, horaARG) {
+  const [year, month, day] = fecha.split('-');
+  const [hour, minute] = horaARG.split(':');
+  
+  const inicioDate = new Date(Date.UTC(year, month - 1, day, parseInt(hour) + 3, minute));
+  const finDate = new Date(Date.UTC(year, month - 1, day, parseInt(hour) + 3 + 2, minute));
+
+  const formatUTC = (date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const inicioStr = formatUTC(inicioDate);
+  const finStr = formatUTC(finDate);
+
+  const titulo = `⚽ ${equipo1} vs ${equipo2} - Mundial 2026`;
+  const detalle = `Partido del Mundial 2026 entre ${equipo1} y ${equipo2}.\n\nAgendado desde Mundialito.app`;
+  const ubicacion = 'Mundial FIFA 2026 - USA / Mexico / Canada';
+
+  const params = new URLSearchParams({
+    action:   'TEMPLATE',
+    text:     titulo,
+    details:  detalle,
+    dates:    `${inicioStr}/${finStr}`,
+    location: ubicacion,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 function agendarEnCalendario() {
   if (!ultimoEventoCalendario) return;
 
-  const evento    = ultimoEventoCalendario;
+  const evento = ultimoEventoCalendario;
+  
+  if (!evento.fecha || !evento.hora_arg || !evento.equipo1 || !evento.equipo2) {
+    console.warn('[agendarEnCalendario] Datos insuficientes para crear evento exacto:', evento);
+    return;
+  }
 
-  // Para el Mundial 2026 sabemos que es en junio/julio 2026
-  // Usamos fechas genéricas de junio 2026 porque no tenemos el fixture exacto
-  // En una versión futura, esto podría conectarse con la tabla `partidos`
-  const fechaInicio = '20260611';  // 11 junio 2026 (inicio del Mundial)
-  const fechaFin    = '20260719';  // fecha de fin: próximo día
+  const url = generarURLCalendario(
+    evento.equipo1,
+    evento.equipo2,
+    evento.fecha,
+    evento.hora_arg
+  );
 
-  // Parámetros de la URL de Google Calendar
-  const params = new URLSearchParams({
-    action:   'TEMPLATE',
-    text:     `⚽ ${evento.equipo} — Mundial FIFA 2026`,
-    details:  `${evento.descripcion}\n\nAgendado desde Mundialito.app`,
-    dates:    `${fechaInicio}/${fechaFin}`,
-    location: 'Estados Unidos / México / Canadá — Mundial 2026',
-  });
-
-  const url = `https://calendar.google.com/calendar/render?${params.toString()}`;
-
-  // Abrir en nueva pestaña — el usuario ve el evento pre-llenado
   window.open(url, '_blank');
 
-  // Feedback visual: cambiar texto del botón temporalmente
   const btn = document.getElementById('chatbot-calendario-btn');
   if (btn) {
     btn.textContent = '✅ ¡Abriendo Google Calendar!';
@@ -347,12 +462,9 @@ function agendarEnCalendario() {
   }
 }
 
-
-// ══════════════════════════════════════════════════════════════════
+// -----------------------------------------------------------------------------
 // FUNCIÓN: usarSugerencia
-// Se llama cuando el usuario hace click en uno de los botones
-// de sugerencias rápidas.
-// ══════════════════════════════════════════════════════════════════
+// -----------------------------------------------------------------------------
 function usarSugerencia(btn) {
   const texto  = btn.textContent.trim();
   const input  = document.getElementById('chatbot-input');
@@ -493,5 +605,190 @@ function widgetKeydown(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
     widgetEnviar();
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN: descargarCalendarioSeleccion
+// Genera y descarga un archivo .ics con TODOS los partidos
+// de una selección, compatible con Google Calendar, Apple Calendar,
+// Outlook y cualquier app que soporte el estándar iCalendar (RFC 5545).
+//
+// PARÁMETRO — partidos: Array de objetos con esta estructura:
+//   [
+//     {
+//       equipoLocal:     "Argentina",   // nombre selección local
+//       equipoVisitante: "Austria",     // nombre selección visitante
+//       fecha:           "2026-06-15",  // YYYY-MM-DD (hora Argentina)
+//       hora:            "21:00"        // HH:MM      (hora Argentina, UTC-3)
+//     },
+//     { ... }
+//   ]
+//
+// PARÁMETRO — nombreSeleccion: string para nombrar el archivo
+//   Ej: "Argentina" → descarga "partidos_argentina_2026.ics"
+//
+// CONCEPTO — Estructura de un archivo .ics (RFC 5545):
+//   El formato iCalendar es texto plano con bloques VCALENDAR → VEVENT.
+//   Cada VEVENT representa un evento con propiedades clave:
+//     DTSTART: fecha/hora de inicio en UTC  (YYYYMMDDTHHMMSSZ)
+//     DTEND:   fecha/hora de fin en UTC     (YYYYMMDDTHHMMSSZ)
+//     SUMMARY: título del evento
+//     UID:     identificador único (obligatorio por el estándar)
+//   Los saltos de línea DEBEN ser CRLF (\r\n) según el RFC 5545.
+//
+// CONCEPTO — Blob + descarga automática:
+//   1. Creamos un Blob con el contenido del .ics (tipo "text/calendar")
+//   2. Generamos una URL temporal con URL.createObjectURL()
+//   3. Creamos un <a> invisible con el atributo "download" y hacemos click
+//   4. Revocamos la URL temporal para liberar memoria
+// ══════════════════════════════════════════════════════════════════
+function descargarCalendarioSeleccion(partidos, nombreSeleccion = 'seleccion') {
+
+  // Validación: necesitamos al menos un partido
+  if (!Array.isArray(partidos) || partidos.length === 0) {
+    console.warn('[descargarCalendarioSeleccion] No hay partidos para exportar.');
+    return;
+  }
+
+  // ── 1. Armado del encabezado del archivo .ics ───────────────────
+  // BEGIN:VCALENDAR es el contenedor raíz obligatorio.
+  // PRODID identifica a la aplicación que generó el archivo.
+  // VERSION:2.0 es la versión actual del estándar iCalendar.
+  // CALSCALE:GREGORIAN indica el calendario gregoriano.
+  // METHOD:PUBLISH indica que es un calendario publicado (no invitación).
+  const lineas = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Mundialito App//Mundial FIFA 2026//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:⚽ ${nombreSeleccion} — Mundial 2026`,
+    'X-WR-TIMEZONE:America/Argentina/Buenos_Aires',
+  ];
+
+  // ── 2. Generar un VEVENT por cada partido ───────────────────────
+  partidos.forEach((partido, index) => {
+    const bloque = _partidoAEventoICS(partido, index);
+    if (bloque) lineas.push(...bloque);
+  });
+
+  // ── 3. Cierre del VCALENDAR ─────────────────────────────────────
+  lineas.push('END:VCALENDAR');
+
+  // ── 4. Unir con CRLF (obligatorio por RFC 5545) ─────────────────
+  // El estándar exige \r\n como separador de línea, NO solo \n.
+  const contenidoICS = lineas.join('\r\n');
+
+  // ── 5. Crear el Blob y forzar la descarga ───────────────────────
+  // Blob: objeto de datos binarios en memoria. El tipo MIME
+  // "text/calendar" le dice al navegador que es un archivo .ics.
+  const blob = new Blob([contenidoICS], { type: 'text/calendar;charset=utf-8' });
+
+  // URL.createObjectURL crea una URL temporal que apunta al Blob en memoria.
+  // Es como una URL de archivo temporal que solo existe mientras la página está abierta.
+  const urlTemporal = URL.createObjectURL(blob);
+
+  // Creamos un <a> invisible, le asignamos la URL y el nombre del archivo,
+  // y simulamos un click para forzar la descarga.
+  const enlace      = document.createElement('a');
+  enlace.href       = urlTemporal;
+  enlace.download   = `partidos_${nombreSeleccion.toLowerCase().replace(/\s+/g, '_')}_2026.ics`;
+  document.body.appendChild(enlace);
+  enlace.click();
+
+  // Limpieza: removemos el <a> del DOM y revocamos la URL temporal
+  // para liberar la memoria del Blob.
+  document.body.removeChild(enlace);
+  URL.revokeObjectURL(urlTemporal);
+
+  console.log(`[descargarCalendarioSeleccion] Descargados ${partidos.length} partido(s) para ${nombreSeleccion}.`);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN PRIVADA: _partidoAEventoICS
+// Convierte un objeto partido en un array de líneas que forman
+// un bloque VEVENT del estándar iCalendar.
+//
+// RETORNA: Array de strings (líneas del VEVENT) o null si hay error.
+//
+// CONVERSIÓN UTC:
+//   Argentina = UTC-3. Para convertir a UTC se suman 3 horas.
+//   Usamos Date.UTC() para construir la fecha directamente en UTC,
+//   luego sumamos el offset de Argentina (3h en ms).
+//   Esto evita ambigüedades por la zona horaria del navegador.
+//
+// UID ÚNICO:
+//   El RFC 5545 exige un UID único por evento. Usamos una combinación
+//   de timestamp + índice + dominio para garantizar unicidad.
+// ══════════════════════════════════════════════════════════════════
+function _partidoAEventoICS(partido, index = 0) {
+  try {
+    const { equipoLocal, equipoVisitante, fecha, hora } = partido;
+
+    // Validar campos mínimos necesarios
+    if (!equipoLocal || !equipoVisitante || !fecha || !hora) {
+      console.warn('[_partidoAEventoICS] Partido incompleto, se omite:', partido);
+      return null;
+    }
+
+    // ── Parsear fecha y hora de Argentina ────────────────────────
+    const [anio, mes, dia]  = fecha.split('-').map(Number);
+    const [horaNum, minuto] = hora.split(':').map(Number);
+
+    // ── Convertir Argentina (UTC-3) → UTC ────────────────────────
+    // Date.UTC() crea un timestamp en UTC puro a partir de componentes.
+    // Luego sumamos 3 horas en milisegundos (el offset de Argentina).
+    const OFFSET_ARG_MS = 3 * 60 * 60 * 1000; // 3 horas en ms
+    const inicioUTC     = new Date(Date.UTC(anio, mes - 1, dia, horaNum, minuto, 0) + OFFSET_ARG_MS);
+    const finUTC        = new Date(inicioUTC.getTime() + 2 * 60 * 60 * 1000); // +2 horas
+
+    // ── Formatear a YYYYMMDDTHHMMSSZ (formato iCalendar) ─────────
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatICS = (d) => [
+      d.getUTCFullYear(),
+      pad(d.getUTCMonth() + 1),
+      pad(d.getUTCDate()),
+      'T',
+      pad(d.getUTCHours()),
+      pad(d.getUTCMinutes()),
+      pad(d.getUTCSeconds()),
+      'Z'
+    ].join('');
+
+    const dtStart = formatICS(inicioUTC); // ej: "20260615T000000Z"
+    const dtEnd   = formatICS(finUTC);   // ej: "20260615T020000Z"
+
+    // ── UID único por evento (obligatorio RFC 5545) ───────────────
+    // Formato recomendado: timestamp-indice@dominio
+    const uid = `mundialito-${Date.now()}-${index}@mundialito.app`;
+
+    // ── Timestamp de creación del evento (DTSTAMP) ────────────────
+    // DTSTAMP es obligatorio en el RFC 5545 y debe ser el momento
+    // en que se generó el archivo, en UTC.
+    const ahora   = new Date();
+    const dtstamp = formatICS(ahora);
+
+    // ── Armar el bloque VEVENT ────────────────────────────────────
+    return [
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${equipoLocal} vs ${equipoVisitante}`,
+      `DESCRIPTION:⚽ Partido del Mundial FIFA 2026\\n🕐 ${hora} hs (Argentina)\\nDuración: 2 horas\\n\\nAgendado desde Mundialito.app`,
+      `LOCATION:Mundial FIFA 2026 — USA / México / Canadá`,
+      `CATEGORIES:Deportes,Fútbol,Mundial 2026`,
+      'STATUS:CONFIRMED',
+      'TRANSP:OPAQUE',  // El evento marca el tiempo como "ocupado"
+      'END:VEVENT',
+    ];
+
+  } catch (err) {
+    console.error('[_partidoAEventoICS] Error procesando partido:', partido, err);
+    return null;
   }
 }

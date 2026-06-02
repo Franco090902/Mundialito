@@ -547,3 +547,132 @@
     height: 52px;
   }
 }
+
+
+/* ──────────────────────────────────────────────────────────────────
+   BOTÓN INLINE DE CALENDARIO
+   Aparece debajo del texto del bot cuando detecta un partido.
+   Diseñado para integrarse naturalmente en el flujo del chat,
+   sin distraer pero siendo claramente accionable.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Contenedor del widget — respeta el max-width del mensaje */
+.cal-inline-widget {
+  margin-top: 10px;
+  max-width: 100%;
+  animation: fadeUp 0.25s ease;
+}
+
+/* Botón principal */
+.cal-inline-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: linear-gradient(135deg, #0d2a4a 0%, #0a1e38 100%);
+  border: 1px solid #4285F440;
+  border-left: 3px solid #4285F4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  font-family: var(--font-body, sans-serif);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brillo sutil al hover */
+.cal-inline-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #4285F408, #34A85308);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.cal-inline-btn:hover {
+  border-color: #4285F4aa;
+  border-left-color: #34A853;
+  box-shadow: 0 4px 16px #4285F422;
+  transform: translateY(-1px);
+}
+.cal-inline-btn:hover::before { opacity: 1; }
+
+.cal-inline-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.cal-inline-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ícono del calendario */
+.cal-inline-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 4px #4285F444);
+  line-height: 1;
+}
+
+/* Bloque de textos: label + subtexto */
+.cal-inline-textos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* permite text-overflow en hijos */
+}
+
+/* Texto principal del botón */
+.cal-inline-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8f0fe;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Subtexto descriptivo (partido · fecha · hora) */
+.cal-inline-sub {
+  font-size: 11px;
+  color: #8ab4f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* Flecha decorativa al final */
+.cal-inline-arrow {
+  font-size: 18px;
+  color: #4285F4;
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
+  line-height: 1;
+}
+.cal-inline-btn:hover .cal-inline-arrow {
+  transform: translateX(3px);
+  color: #34A853;
+}
+
+/* Variante para el modo .ics (múltiples partidos):
+   cambia el acento de azul Google a verde */
+.cal-inline-btn--multiple {
+  border-left-color: #34A853;
+  border-color: #34A85340;
+}
+.cal-inline-btn--multiple:hover {
+  border-color: #34A853aa;
+  border-left-color: #4285F4;
+  box-shadow: 0 4px 16px #34A85322;
+}
+.cal-inline-btn--multiple .cal-inline-arrow { color: #34A853; }
+.cal-inline-btn--multiple:hover .cal-inline-arrow { color: #4285F4; }
