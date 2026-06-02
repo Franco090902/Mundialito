@@ -502,7 +502,7 @@
                       También puedo ayudarte a <strong>agendar partidos</strong> en tu Google Calendar.
                     </div>
                     <!-- Preguntas sugeridas para que el usuario tenga ejemplos -->
-                    <div class="chatbot-sugerencias">
+                    <div class="chatbot-sugerencias" data-auth="user" style="display:none">
                       <div class="chatbot-sugerencias-titulo">Preguntas frecuentes:</div>
                       <button class="chatbot-sugerencia" onclick="usarSugerencia(this)">¿Cuándo empieza el
                         Mundial?</button>
@@ -517,7 +517,7 @@
               </div>
 
               <!-- Input del usuario -->
-              <div class="chatbot-input-area">
+              <div class="chatbot-input-area" data-auth="user" style="display:none">
                 <div class="chatbot-input-wrap">
                   <textarea id="chatbot-input" class="chatbot-textarea"
                     placeholder="Preguntame sobre el Mundial 2026..." rows="1" maxlength="500"
@@ -533,6 +533,11 @@
                   <span id="chatbot-char-count" class="chatbot-char-count">0/500</span>
                   <span class="chatbot-powered">Impulsado por Gemini 2.0 Flash</span>
                 </div>
+              </div>
+              
+              <!-- Mensaje para invitados -->
+              <div class="chatbot-input-area" data-auth="guest" style="justify-content: center; align-items: center; padding: 20px; color: #888;">
+                Tenés que iniciar sesión para usar el asistente virtual.
               </div>
             </div>
 
@@ -1905,10 +1910,13 @@
         </div>
       </div>
     </div>
-    <div class="chatbot-widget-input">
+    <div class="chatbot-widget-input" data-auth="user" style="display:none">
       <input type="text" id="chatbot-widget-input" placeholder="Preguntá sobre el Mundial..." maxlength="300"
         onkeydown="widgetKeydown(event)" />
       <button onclick="widgetEnviar()">↑</button>
+    </div>
+    <div class="chatbot-widget-input" data-auth="guest" style="justify-content: center; padding: 12px; font-size: 12px; color: #888;">
+      Iniciá sesión para usar el asistente.
     </div>
   </div>
   <script type="module" src="navigation.js"></script>
