@@ -6,31 +6,27 @@
 
 /* ── Diccionario de palabras futboleras ── */
 const WL_DICT = {
-  3: ["GOL", "VAR", "TIR", "RED", "PAS", "REM", "LUZ", "ROL"],
-  4: ["ARCO", "BOCA", "PENA", "TACO", "BOCA", "GAFE", "ROJA", "TIRO", "PASE", "FOUL"],
-  5: ["MESSI", "BALON", "FALTA", "TIROS", "FUERA", "CAMPO", "COMER", "TECHO", "FUERA", "LIBRE",
-      "JUGAD", "BOMBA", "LINEA", "MEDIA", "BANCO", "QUITE", "CLARO", "LARGO", "GOLES", "LANZA"],
-  6: ["FUTBOL", "CORNER", "HINCHA", "PORTEO", "CESPED", "CANCHA", "TROFEO", "EMPATE",
-      "GANCHO", "REBOTE", "CARRIL", "TACKLE", "PELOTA", "BARRER"],
-  7: ["ESTADIO", "MUNDIAL", "TRIBUNA", "DEFENSA", "DELANTE", "TARJETA", "LATERAL", "PORTERO",
-      "MINUTOS", "SANCION", "CAMISET", "GOLEADA", "ASISTIR", "ARBITRO"],
-  8: ["SUPLENTE", "DELANTERO", "PENALTIN", "CAPITANES", "ARBITRAJE", "MARCADOR",
-      "CONTROLE", "CENTROCAMP"].map(w => w.slice(0, 8))
+  3: ["GOL", "VAR", "RED", "ROL", "PIE", "IDA", "OLA"],
+  4: ["ARCO", "BOCA", "PENA", "TACO", "BOCA", "ROJA", "TIRO", "PASE", "FOUL", "LIGA", "COPA", "CLUB", "JUEZ", "MANO", "META"],
+  5: ["MESSI", "BALON", "FALTA", "TIROS", "FUERA", "CAMPO", "LIBRE", "BOMBA", "LINEA", "MEDIO", "BANCO", "LARGO", "GOLES", "JUEGO", "FINAL", "SAQUE", "RIVAL", "MARCA", "TOQUE"],
+  6: ["FUTBOL", "CORNER", "HINCHA", "CESPED", "CANCHA", "TROFEO", "EMPATE", "GANCHO", "REBOTE", "PELOTA", "BARRER", "EQUIPO", "JUGADA", "ATAQUE", "CAMBIO", "REMATE", "TORNEO", "CENTRO", "PIFIAR"],
+  7: ["ESTADIO", "MUNDIAL", "TRIBUNA", "DEFENSA", "TARJETA", "LATERAL", "PORTERO", "MINUTOS", "SANCION", "GOLEADA", "ASISTIR", "ARBITRO", "PARTIDO", "JUGADOR", "TECNICO", "VOLANTE", "PENALTI", "OFFSIDE", "DERROTA", "VENTAJA"],
+  8: ["SUPLENTE", "DELANTERO", "CAPITANES", "ARBITRAJE", "MARCADOR", "DESCENSO", "DEFENSOR", "ATACANTE", "CONTRATO", "TRASPASO", "AMARILLA", "REVANCHA", "CLASICOS"].map(w => w.slice(0, 8))
 };
 
 /* ── Constantes ── */
-const WL_MAX_TRIES   = 6;
-const WL_MAX_DAILY   = 5;
+const WL_MAX_TRIES = 6;
+const WL_MAX_DAILY = 5;
 const WL_STORAGE_KEY = "wf_daily_v2";
 
 /* ── Estado del juego ── */
-let wlWord      = "";
-let wlWordLen   = 5;
-let wlRow       = 0;
-let wlCol       = 0;
-let wlGameOver  = false;
-let wlGrid      = [];    // referencias a celdas DOM
-let wlKeyState  = {};    // 'correct' | 'present' | 'absent' por tecla
+let wlWord = "";
+let wlWordLen = 5;
+let wlRow = 0;
+let wlCol = 0;
+let wlGameOver = false;
+let wlGrid = [];    // referencias a celdas DOM
+let wlKeyState = {};    // 'correct' | 'present' | 'absent' por tecla
 
 /* ════════════════════════════════════════
    CONTROL DE LÍMITE DIARIO (localStorage)
@@ -56,7 +52,7 @@ function wlGetGamesPlayed() {
 
 function wlAddGamePlayed() {
   const today = wlGetToday();
-  const s     = wlLoadDaily();
+  const s = wlLoadDaily();
   const count = s.date === today ? (s.count || 0) + 1 : 1;
   localStorage.setItem(WL_STORAGE_KEY, JSON.stringify({ date: today, count }));
 }
@@ -123,10 +119,10 @@ function wlStartGame() {
 
   if (wlCheckLimit()) return;
 
-  wlWordLen  = parseInt(document.getElementById("wl-len-sel").value);
-  wlWord     = wlPickWord(wlWordLen);
-  wlRow      = 0;
-  wlCol      = 0;
+  wlWordLen = parseInt(document.getElementById("wl-len-sel").value);
+  wlWord = wlPickWord(wlWordLen);
+  wlRow = 0;
+  wlCol = 0;
   wlGameOver = false;
   wlKeyState = {};
 
@@ -145,27 +141,27 @@ function wlPickWord(len) {
 ════════════════════════════════════════ */
 
 function wlCheckLimit() {
-  const played  = wlGetGamesPlayed();
+  const played = wlGetGamesPlayed();
   const limitEl = document.getElementById("wl-limit-msg");
   const boardEl = document.getElementById("wl-board");
-  const kbdEl   = document.getElementById("wl-kbd");
+  const kbdEl = document.getElementById("wl-kbd");
 
   if (played >= WL_MAX_DAILY) {
     if (limitEl) limitEl.style.display = "block";
     if (boardEl) boardEl.style.display = "none";
-    if (kbdEl)   kbdEl.style.display   = "none";
+    if (kbdEl) kbdEl.style.display = "none";
     wlSetMsg("", "");
     return true;
   }
 
   if (limitEl) limitEl.style.display = "none";
   if (boardEl) boardEl.style.display = "flex";
-  if (kbdEl)   kbdEl.style.display   = "flex";
+  if (kbdEl) kbdEl.style.display = "flex";
   return false;
 }
 
 function wlUpdateCounter() {
-  const n  = wlGetGamesPlayed();
+  const n = wlGetGamesPlayed();
   const el = document.getElementById("wl-counter");
   if (el) el.innerHTML = `Partidas hoy: <strong>${n} / ${WL_MAX_DAILY}</strong>`;
 }
@@ -181,7 +177,7 @@ function wlBuildBoard() {
   wlGrid = [];
 
   for (let r = 0; r < WL_MAX_TRIES; r++) {
-    const rowEl  = document.createElement("div");
+    const rowEl = document.createElement("div");
     rowEl.className = "wl-row";
     const rowArr = [];
 
@@ -209,9 +205,9 @@ function wlBuildKeyboard() {
   kbd.innerHTML = "";
 
   const rows = [
-    ["Q","W","E","R","T","Y","U","I","O","P"],
-    ["A","S","D","F","G","H","J","K","L","Ñ"],
-    ["BORRAR","Z","X","C","V","B","N","M","ENTER"]
+    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ñ"],
+    ["BORRAR", "Z", "X", "C", "V", "B", "N", "M", "ENTER"]
   ];
 
   rows.forEach(rowKeys => {
@@ -220,8 +216,8 @@ function wlBuildKeyboard() {
 
     rowKeys.forEach(key => {
       const btn = document.createElement("button");
-      btn.className     = "wl-key" + (key.length > 1 ? " wide" : "");
-      btn.textContent   = key;
+      btn.className = "wl-key" + (key.length > 1 ? " wide" : "");
+      btn.textContent = key;
       btn.dataset.wlKey = key;
       btn.addEventListener("click", () => wlHandleKey(key));
       rowEl.appendChild(btn);
@@ -239,8 +235,8 @@ function wlHandleKeyboard(e) {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const key = e.key.toUpperCase();
 
-  if (key === "BACKSPACE")   wlHandleKey("BORRAR");
-  else if (key === "ENTER")  wlHandleKey("ENTER");
+  if (key === "BACKSPACE") wlHandleKey("BORRAR");
+  else if (key === "ENTER") wlHandleKey("ENTER");
   else if (/^[A-ZÁÉÍÓÚÜÑ]$/.test(key)) wlHandleKey(key);
 }
 
@@ -279,7 +275,7 @@ function wlSubmitGuess() {
     return;
   }
 
-  const guess  = wlGrid[wlRow].map(c => c.textContent).join("");
+  const guess = wlGrid[wlRow].map(c => c.textContent).join("");
   const result = wlEvaluate(guess, wlWord);
 
   /* Aplicar colores con pequeño delay escalonado */
@@ -328,13 +324,13 @@ function wlSubmitGuess() {
 /* Algoritmo de evaluación tipo Wordle */
 function wlEvaluate(guess, target) {
   const result = Array(guess.length).fill("absent");
-  const pool   = target.split("");
+  const pool = target.split("");
 
   /* Primero: exactos */
   for (let i = 0; i < guess.length; i++) {
     if (guess[i] === pool[i]) {
       result[i] = "correct";
-      pool[i]   = null;
+      pool[i] = null;
     }
   }
 
@@ -378,12 +374,12 @@ function wlSetMsg(text, cls = "") {
   const el = document.getElementById("wl-msg");
   if (!el) return;
   el.textContent = text;
-  el.className   = "wl-msg" + (cls ? ` ${cls}` : "");
+  el.className = "wl-msg" + (cls ? ` ${cls}` : "");
 }
 
 function wlUpdateKeyColors() {
   document.querySelectorAll(".wl-key[data-wl-key]").forEach(btn => {
-    const key   = btn.dataset.wlKey;
+    const key = btn.dataset.wlKey;
     const state = wlKeyState[key];
     if (state) {
       btn.className = "wl-key" + (key.length > 1 ? " wide" : "") + " " + state;
