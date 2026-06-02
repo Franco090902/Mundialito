@@ -227,7 +227,7 @@ function populateFixtureFilters() {
     const label = isGroup ? `Grupo ${g}` : g;
     selGroup.innerHTML += `<option value="${g}">${label}</option>`;
   });
-  
+
   selDate.innerHTML = '<option value="">Todas las fechas</option>';
   Array.from(dates).forEach(d => {
     selDate.innerHTML += `<option value="${d}">${d}</option>`;
@@ -244,18 +244,18 @@ function renderFixtures() {
   const dateFilter = document.getElementById('filtro-fixture-fecha')?.value || '';
 
   const sortedEntries = Object.entries(GROUPS).sort((a, b) => sortFases(a[0], b[0]));
-  
+
   let html = '';
-  
+
   sortedEntries.forEach(([key, g]) => {
     if (groupFilter && key !== groupFilter) return;
-    
+
     const matchesToShow = g.matches.filter(m => !dateFilter || m.date === dateFilter);
     if (matchesToShow.length === 0) return;
 
     const isGroup = key.length <= 2;
     const headerName = isGroup ? `GRUPO ${key}` : key.toUpperCase();
-    
+
     html += `
     <div class="fix-card">
       <div class="fix-hdr">
@@ -278,7 +278,7 @@ function renderFixtures() {
   if (!html) {
     html = '<div style="text-align:center;padding:30px;color:var(--text4);width:100%">No hay partidos para los filtros seleccionados.</div>';
   }
-  
+
   document.getElementById('fixtureContent').innerHTML = html;
 }
 
@@ -1568,13 +1568,13 @@ function renderizarProductosChatbot(productos) {
 // ══════════════════════════════════════════════════════════════════
 function mostrarSeccionCalendario(evento) {
   const section = document.getElementById('chatbot-calendario-section');
-  const info    = document.getElementById('chatbot-calendario-info');
+  const info = document.getElementById('chatbot-calendario-info');
   if (!section || !info) return;
 
   // Caso A: datos exactos del partido
   const tituloPartido = `${evento.equipo1} vs ${evento.equipo2}`;
   const [anio, mes, dia] = evento.fecha.split('-');
-  const fechaLegible     = `${dia}/${mes}/${anio}`;
+  const fechaLegible = `${dia}/${mes}/${anio}`;
 
   info.innerHTML = `
     <div style="margin-bottom:6px;font-weight:700;color:var(--gold)">📅 Partido detectado</div>
@@ -1615,21 +1615,21 @@ function agendarEnCalendario() {
   }
 
   // Parsear fecha y hora de Argentina (UTC-3) → UTC
-  const [anio, mes, dia]  = evento.fecha.split('-').map(Number);
-  const [hora, minuto]    = evento.hora_arg.split(':').map(Number);
-  const OFFSET_ARG_MS     = 3 * 60 * 60 * 1000;  // UTC-3 → sumar 3h para obtener UTC
-  const inicioUTC         = new Date(Date.UTC(anio, mes - 1, dia, hora, minuto, 0) + OFFSET_ARG_MS);
-  const finUTC            = new Date(inicioUTC.getTime() + 2 * 60 * 60 * 1000); // +2 horas
+  const [anio, mes, dia] = evento.fecha.split('-').map(Number);
+  const [hora, minuto] = evento.hora_arg.split(':').map(Number);
+  const OFFSET_ARG_MS = 3 * 60 * 60 * 1000;  // UTC-3 → sumar 3h para obtener UTC
+  const inicioUTC = new Date(Date.UTC(anio, mes - 1, dia, hora, minuto, 0) + OFFSET_ARG_MS);
+  const finUTC = new Date(inicioUTC.getTime() + 2 * 60 * 60 * 1000); // +2 horas
 
   // Formatear a YYYYMMDDTHHMMSSZ
   const pad = (n) => String(n).padStart(2, '0');
-  const fmt = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+  const fmt = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
 
   const params = new URLSearchParams({
-    action:   'TEMPLATE',
-    text:     `${evento.equipo1} vs ${evento.equipo2}`,
-    details:  `⚽ Partido del Mundial FIFA 2026\n🕐 ${evento.hora_arg} hs (Argentina) · Duración: 2 horas\n\nAgendado desde Mundialito.app`,
-    dates:    `${fmt(inicioUTC)}/${fmt(finUTC)}`,
+    action: 'TEMPLATE',
+    text: `${evento.equipo1} vs ${evento.equipo2}`,
+    details: `⚽ Partido del Mundial FIFA 2026\n🕐 ${evento.hora_arg} hs (Argentina) · Duración: 2 horas\n\nAgendado desde Mundialito.app`,
+    dates: `${fmt(inicioUTC)}/${fmt(finUTC)}`,
     location: 'Mundial FIFA 2026 — USA / México / Canadá',
   });
 
@@ -1638,10 +1638,10 @@ function agendarEnCalendario() {
   // Feedback visual en el botón del sidebar
   const btn = document.getElementById('chatbot-calendario-btn');
   if (btn) {
-    btn.textContent      = '✅ ¡Abriendo Google Calendar!';
+    btn.textContent = '✅ ¡Abriendo Google Calendar!';
     btn.style.background = '#34A853';
     setTimeout(() => {
-      btn.textContent      = '📅 Agregar a mi Google Calendar';
+      btn.textContent = '📅 Agregar a mi Google Calendar';
       btn.style.background = '';
     }, 3000);
   }
@@ -2733,7 +2733,7 @@ function widgetKeydown(e) {
         .select('id, username, avatar_url, puntos_prode, aciertos_exactos, aciertos_signo')
         .order('puntos_prode', { ascending: false })
         .range(_rankingOffset, _rankingOffset + _RANKING_LIMIT - 1);
-      
+
       if (error) throw error;
 
       if (!data || data.length === 0) {
@@ -2794,19 +2794,19 @@ function widgetKeydown(e) {
       } else {
         const rowsCont = document.getElementById('global-ranking-rows-app');
         if (rowsCont) rowsCont.insertAdjacentHTML('beforeend', rows);
-        
+
         if (btn) {
           if (!hasMore) {
-             btn.disabled = false;
-             btn.textContent = 'Ver menos';
-             const newBtn = btn.cloneNode(true);
-             btn.parentNode.replaceChild(newBtn, btn);
-             newBtn.addEventListener('click', () => {
-               _cargarRankingGlobal(false);
-             });
+            btn.disabled = false;
+            btn.textContent = 'Ver menos';
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => {
+              _cargarRankingGlobal(false);
+            });
           } else {
-             btn.disabled = false;
-             btn.textContent = 'Ver más';
+            btn.disabled = false;
+            btn.textContent = 'Ver más';
           }
         }
       }
@@ -2865,46 +2865,46 @@ const HL_DATA = {
     { name: 'Italia', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/16.svg', stats: { mundiales_ganados: 4, goles_mundiales: 128, participaciones: 18, copas_jugadas: 18 } },
     { name: 'España', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/9.svg', stats: { mundiales_ganados: 1, goles_mundiales: 98, participaciones: 16, copas_jugadas: 16 } },
     { name: 'Uruguay', type: 'SELECCIÓN', image_url: 'https://cdn.sportmonks.com/images/countries/svg/6.svg', stats: { mundiales_ganados: 2, goles_mundiales: 88, participaciones: 14, copas_jugadas: 14 } },
-    { name: 'Países Bajos', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 82, participaciones: 11, copas_jugadas: 11 } },
-    { name: 'Portugal', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 45, participaciones: 8, copas_jugadas: 8 } },
-    { name: 'Inglaterra', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 1, goles_mundiales: 79, participaciones: 16, copas_jugadas: 16 } },
-    { name: 'México', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 63, participaciones: 17, copas_jugadas: 17 } },
-    { name: 'Colombia', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 7, copas_jugadas: 7 } },
-    { name: 'Croacia', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 6, copas_jugadas: 6 } },
-    { name: 'Marruecos', type: 'SELECCIÓN', image_url: '', stats: { mundiales_ganados: 0, goles_mundiales: 14, participaciones: 7, copas_jugadas: 7 } },
+    { name: 'Países Bajos', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Flag_of_the_Netherlands.svg', stats: { mundiales_ganados: 0, goles_mundiales: 82, participaciones: 11, copas_jugadas: 11 } },
+    { name: 'Portugal', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_Portugal.svg', stats: { mundiales_ganados: 0, goles_mundiales: 45, participaciones: 8, copas_jugadas: 8 } },
+    { name: 'Inglaterra', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/en/b/be/Flag_of_England.svg', stats: { mundiales_ganados: 1, goles_mundiales: 79, participaciones: 16, copas_jugadas: 16 } },
+    { name: 'México', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/f/fc/Flag_of_Mexico.svg', stats: { mundiales_ganados: 0, goles_mundiales: 63, participaciones: 17, copas_jugadas: 17 } },
+    { name: 'Colombia', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Colombia.svg', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 7, copas_jugadas: 7 } },
+    { name: 'Croacia', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Flag_of_Croatia.svg', stats: { mundiales_ganados: 0, goles_mundiales: 28, participaciones: 6, copas_jugadas: 6 } },
+    { name: 'Marruecos', type: 'SELECCIÓN', image_url: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Flag_of_Morocco.svg', stats: { mundiales_ganados: 0, goles_mundiales: 14, participaciones: 7, copas_jugadas: 7 } },
   ],
 
   /* ── ESTADIOS ── */
   estadios: [
-    { name: 'MetLife Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 82500, año_inauguracion: 2010, costo_millones_usd: 1600 } },
-    { name: 'SoFi Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 70240, año_inauguracion: 2020, costo_millones_usd: 5500 } },
-    { name: 'AT&T Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 80000, año_inauguracion: 2009, costo_millones_usd: 1150 } },
-    { name: 'Estadio Azteca', type: 'ESTADIO', image_url: '', stats: { capacidad: 87523, año_inauguracion: 1966, costo_millones_usd: 400 } },
-    { name: 'Hard Rock Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 65326, año_inauguracion: 1987, costo_millones_usd: 600 } },
-    { name: 'NRG Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 72220, año_inauguracion: 2002, costo_millones_usd: 352 } },
-    { name: "Levi's Stadium", type: 'ESTADIO', image_url: '', stats: { capacidad: 68500, año_inauguracion: 2014, costo_millones_usd: 1300 } },
-    { name: 'BC Place', type: 'ESTADIO', image_url: '', stats: { capacidad: 54500, año_inauguracion: 1983, costo_millones_usd: 514 } },
-    { name: 'BMO Field', type: 'ESTADIO', image_url: '', stats: { capacidad: 45736, año_inauguracion: 2007, costo_millones_usd: 62 } },
-    { name: 'Estadio Akron', type: 'ESTADIO', image_url: '', stats: { capacidad: 45000, año_inauguracion: 2010, costo_millones_usd: 160 } },
-    { name: 'Estadio BBVA', type: 'ESTADIO', image_url: '', stats: { capacidad: 53500, año_inauguracion: 2015, costo_millones_usd: 200 } },
-    { name: 'Lincoln Financial', type: 'ESTADIO', image_url: '', stats: { capacidad: 69796, año_inauguracion: 2003, costo_millones_usd: 512 } },
-    { name: 'Arrowhead Stadium', type: 'ESTADIO', image_url: '', stats: { capacidad: 76416, año_inauguracion: 1972, costo_millones_usd: 375 } },
+    { name: 'MetLife Stadium', type: 'ESTADIO', image_url: 'https://prodebardo.com/news/77f44be2-7056-4683-9437-ec558a82e53c.png', stats: { capacidad: 82500, año_inauguracion: 2010, costo_millones_usd: 1600 } },
+    { name: 'SoFi Stadium', type: 'ESTADIO', image_url: 'https://ca-times.brightspotcdn.com/dims4/default/1d18285/2147483647/strip/true/crop/4000x2667+0+0/resize/1200x800!/quality/75/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.amazonaws.com%2F67%2Fbb%2F2630f7f57255b508f7e20825dba2%2Fdcaab2b011a442dd86b5c5c3ada7b471', stats: { capacidad: 70240, año_inauguracion: 2020, costo_millones_usd: 5500 } },
+    { name: 'AT&T Stadium', type: 'ESTADIO', image_url: 'https://images.copaamerica.com/editions/copa-america-2024/stadiums/att-stadium-photo.webp', stats: { capacidad: 80000, año_inauguracion: 2009, costo_millones_usd: 1150 } },
+    { name: 'Estadio Azteca', type: 'ESTADIO', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Vista_a%C3%A9rea_del_Estadio_Azteca_-_2026_-_02.jpg/1280px-Vista_a%C3%A9rea_del_Estadio_Azteca_-_2026_-_02.jpg', stats: { capacidad: 87523, año_inauguracion: 1966, costo_millones_usd: 400 } },
+    { name: 'Hard Rock Stadium', type: 'ESTADIO', image_url: 'https://archello.s3.eu-central-1.amazonaws.com/images/2020/06/19/hok-hard-rock-stadium-florida-usa-archello--8-.1592571084.9599.jpg', stats: { capacidad: 65326, año_inauguracion: 1987, costo_millones_usd: 600 } },
+    { name: 'NRG Stadium', type: 'ESTADIO', image_url: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Nrg_stadium.jpg', stats: { capacidad: 72220, año_inauguracion: 2002, costo_millones_usd: 352 } },
+    { name: "Levi's Stadium", type: 'ESTADIO', image_url: 'https://media.admagazine.com/photos/69829971dea91f04e6ae7326/16:9/w_5472,h_3078,c_limit/GettyImages-2255009698.jpg', stats: { capacidad: 68500, año_inauguracion: 2014, costo_millones_usd: 1300 } },
+    { name: 'BC Place', type: 'ESTADIO', image_url: 'https://images.spaicelabs.com/images/flus6j8v/production/37d069f71f67b4591905dfab4aa98bb4c9703e07-2048x1360.jpg?rect=0,143,2048,1075&w=1200&h=630', stats: { capacidad: 54500, año_inauguracion: 1983, costo_millones_usd: 514 } },
+    { name: 'BMO Field', type: 'ESTADIO', image_url: 'https://static2.gensler.com/uploads/image/65575/project_BMO_large_01_1475515240.jpg', stats: { capacidad: 45736, año_inauguracion: 2007, costo_millones_usd: 62 } },
+    { name: 'Estadio Akron', type: 'ESTADIO', image_url: 'https://www.infobae.com/new-resizer/6YWG0GaylQ-Y2tFBUg0sOS7c51s=/arc-anglerfish-arc2-prod-infobae/public/JCE3S3ZT55CD3BRYQDJ6QVDNBE.jpg', stats: { capacidad: 45000, año_inauguracion: 2010, costo_millones_usd: 160 } },
+    { name: 'Estadio BBVA', type: 'ESTADIO', image_url: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Estadio_BBVA_Bancomer_%281%29.jpg', stats: { capacidad: 53500, año_inauguracion: 2015, costo_millones_usd: 200 } },
+    { name: 'Lincoln Financial', type: 'ESTADIO', image_url: 'https://s3.amazonaws.com/cdn.chatsports.com/wp-content/uploads/2014/07/stads/lincoln-feeld.jpg', stats: { capacidad: 69796, año_inauguracion: 2003, costo_millones_usd: 512 } },
+    { name: 'Arrowhead Stadium', type: 'ESTADIO', image_url: 'https://a57.foxsports.com/statics.foxsports.com/www.foxsports.com/content/uploads/2024/02/1294/728/1da64565-chiefs1.jpg?ve=1&tl=1', stats: { capacidad: 76416, año_inauguracion: 1972, costo_millones_usd: 375 } },
   ],
 
   /* ── LEYENDAS (stats de carrera en mundiales) ── */
   leyendas: [
-    { name: 'Miroslav Klose', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 16, mundiales_jugados: 4, partidos_mundiales: 24, copas_ganadas: 1 } },
-    { name: 'Ronaldo (Brasil)', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 15, mundiales_jugados: 4, partidos_mundiales: 19, copas_ganadas: 2 } },
-    { name: 'Gerd Müller', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 14, mundiales_jugados: 2, partidos_mundiales: 13, copas_ganadas: 1 } },
-    { name: 'Just Fontaine', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 13, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
-    { name: 'Pelé', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 12, mundiales_jugados: 4, partidos_mundiales: 14, copas_ganadas: 3 } },
-    { name: 'Lionel Messi', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 13, mundiales_jugados: 5, partidos_mundiales: 26, copas_ganadas: 1 } },
-    { name: 'Jürgen Klinsmann', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 11, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
-    { name: 'Gabriel Batistuta', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 12, copas_ganadas: 0 } },
-    { name: 'Kylian Mbappé', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 12, mundiales_jugados: 2, partidos_mundiales: 14, copas_ganadas: 1 } },
-    { name: 'Sándor Kocsis', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 11, mundiales_jugados: 1, partidos_mundiales: 5, copas_ganadas: 0 } },
-    { name: 'Thomas Müller', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
-    { name: 'Eusébio', type: 'LEYENDA', image_url: '', stats: { goles_mundiales: 9, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
+    { name: 'Miroslav Klose', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 16, mundiales_jugados: 4, partidos_mundiales: 24, copas_ganadas: 1 } },
+    { name: 'Ronaldo (Brasil)', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 15, mundiales_jugados: 4, partidos_mundiales: 19, copas_ganadas: 2 } },
+    { name: 'Gerd Müller', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 14, mundiales_jugados: 2, partidos_mundiales: 13, copas_ganadas: 1 } },
+    { name: 'Just Fontaine', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 13, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
+    { name: 'Pelé', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 12, mundiales_jugados: 4, partidos_mundiales: 14, copas_ganadas: 3 } },
+    { name: 'Lionel Messi', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 13, mundiales_jugados: 5, partidos_mundiales: 26, copas_ganadas: 1 } },
+    { name: 'Jürgen Klinsmann', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 11, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
+    { name: 'Gabriel Batistuta', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 12, copas_ganadas: 0 } },
+    { name: 'Kylian Mbappé', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 12, mundiales_jugados: 2, partidos_mundiales: 14, copas_ganadas: 1 } },
+    { name: 'Sándor Kocsis', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 11, mundiales_jugados: 1, partidos_mundiales: 5, copas_ganadas: 0 } },
+    { name: 'Thomas Müller', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 10, mundiales_jugados: 3, partidos_mundiales: 17, copas_ganadas: 1 } },
+    { name: 'Eusébio', type: 'LEYENDA', image_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80', stats: { goles_mundiales: 9, mundiales_jugados: 1, partidos_mundiales: 6, copas_ganadas: 0 } },
   ],
 };
 

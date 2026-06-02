@@ -3720,13 +3720,13 @@
       inset: 0;
       background-size: cover;
       background-position: center;
-      opacity: 0.12;
-      filter: saturate(0.5);
+      opacity: 0.5;
+      filter: saturate(1) brightness(0.7);
       transition: opacity .3s;
     }
 
     .hl-card-right .hl-card-bg {
-      opacity: 0.06;
+      opacity: 0.4;
     }
 
     /* Contenido de la tarjeta */
