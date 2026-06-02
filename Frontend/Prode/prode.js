@@ -821,7 +821,7 @@ async function fetchMyGroups(userId) {
     .select(`
       group_id,
       joined_at,
-      prode_groups (
+      prode_groups!prode_group_members_group_id_fkey (
         id, nombre, invite_code, es_publico, admin_id, created_at
       )
     `)
