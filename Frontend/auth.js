@@ -127,8 +127,12 @@ export async function iniciarSesionGoogle() {
 // ══════════════════════════════════════════════════════════════════
 export async function cerrarSesion() {
   const { error } = await supabase.auth.signOut();
-  if (error) console.error('Error al cerrar sesión:', error.message);
-  // onAuthStateChange se encarga de limpiar la UI automáticamente
+  if (error) {
+    console.error('Error al cerrar sesión:', error.message);
+  } else {
+    // Recargamos la página para limpiar todo el estado de JS (Prode, Perfil, etc)
+    window.location.reload();
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════

@@ -1275,7 +1275,7 @@
     // ─── 2. EVENTOS DE LOS BOTONES ───
 
     // Cambiar entre Login y Registro
-    modeToggle.addEventListener('click', () => {
+    modeToggle?.addEventListener('click', () => {
       authMode = authMode === 'login' ? 'register' : 'login';
       btnToken.textContent = authMode === 'login' ? 'Ingresar' : 'Crear cuenta';
       modeToggle.textContent = authMode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión';
@@ -1285,7 +1285,7 @@
     });
 
     // Mostrar form de olvidé contraseña
-    forgotLink.addEventListener('click', (e) => {
+    forgotLink?.addEventListener('click', (e) => {
       e.preventDefault();
       formToken.style.display = 'none';
       formForgot.style.display = 'block';
@@ -1295,7 +1295,7 @@
     });
 
     // Volver al login desde olvidé contraseña
-    btnForgotBack.addEventListener('click', () => {
+    btnForgotBack?.addEventListener('click', () => {
       formForgot.style.display = 'none';
       formToken.style.display = 'block';
       modeToggle.parentElement.style.display = 'block';
@@ -1305,7 +1305,7 @@
     });
 
     // Enviar email de recuperación
-    btnForgotSend.addEventListener('click', async () => {
+    btnForgotSend?.addEventListener('click', async () => {
       const email = forgotEmailEl.value.trim();
       if (!email) return setMsg('Ingresá tu email.', 'error', msgForgotEl);
 
@@ -1340,7 +1340,7 @@
     });
 
     // Guardar nueva contraseña
-    btnResetSave.addEventListener('click', async () => {
+    btnResetSave?.addEventListener('click', async () => {
       const newPass = resetPassEl.value;
       if (!newPass || newPass.length < 6) return setMsg('Debe tener al menos 6 caracteres.', 'error', msgResetEl);
 
@@ -1390,13 +1390,13 @@
     });
 
     // Botón de Google
-    btnGoogle.addEventListener('click', () => {
+    btnGoogle?.addEventListener('click', () => {
       btnGoogle.textContent = 'Cargando...';
       iniciarSesionGoogle();
     });
 
     // Botón de Email / Contraseña
-    btnToken.addEventListener('click', async () => {
+    btnToken?.addEventListener('click', async () => {
       const email = emailEl.value.trim();
       const password = passEl.value;
       const username = usernameEl?.value?.trim();
