@@ -798,7 +798,7 @@ export function switchSubTab(tab) {
 // ══════════════════════════════════════════════════════════════════
 
 let currentRankingOffset = 0;
-const RANKING_LIMIT = 15;
+const RANKING_LIMIT = 10;
 
 async function loadCommunities() {
   if (!_userId) return;
@@ -956,7 +956,7 @@ function renderGroupCard(group) {
     ? '<span class="group-visibility-badge badge--admin">⭐ Admin</span>'
     : '';
 
-  const membersHtml = members.slice(0, 10).map((m, i) => {
+  const renderRow = (m, i) => {
     const posClass = i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : i === 2 ? 'pos-3' : '';
     const isMe = m.id === _userId;
     const avatarHtml = m.avatar_url
@@ -977,7 +977,21 @@ function renderGroupCard(group) {
           </button>
         ` : '<span></span>'}
       </div>`;
-  }).join('');
+  };
+
+  const visibleMembersHtml = members.slice(0, 5).map((m, i) => renderRow(m, i)).join('');
+  const hiddenMembersHtml = members.slice(5).map((m, i) => renderRow(m, i + 5)).join('');
+  
+  let membersHtml = visibleMembersHtml;
+  if (members.length > 5) {
+    membersHtml += `
+      <div class="prode-ver-mas-container">
+        <button class="community-btn btn--secondary" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 6px;" onclick="this.parentElement.nextElementSibling.style.display='block'; this.parentElement.style.display='none';">Ver más (${members.length - 5})</button>
+      </div>
+      <div style="display: none;">
+        ${hiddenMembersHtml}
+      </div>`;
+  }
 
   const adminActionsHtml = isAdmin ? `
     <div class="group-admin-actions">
@@ -1139,6 +1153,12 @@ async function loadMoreRanking() {
 // EVENTOS: Crear / Unirse a grupo
 // ──────────────────────────────────────────────────────────────────
 function bindCommunityEvents() {
+  // Ver más ranking
+  const btnLoadMoreRanking = document.getElementById('btn-load-more-ranking');
+  if (btnLoadMoreRanking) {
+    btnLoadMoreRanking.addEventListener('click', loadMoreRanking);
+  }
+
   // Crear grupo
   const btnCreate = document.getElementById('btn-create-group');
   if (btnCreate) {

@@ -2556,7 +2556,7 @@ function widgetKeydown(e) {
       : `<span class="group-visibility-badge badge--private">🔒 Privado</span>`;
     const adminBadge = esAdmin ? `<span class="group-visibility-badge badge--admin">⭐ Admin</span>` : '';
 
-    const membersHTML = members.slice(0, 10).map((m, i) => {
+    const renderMemberRow = (m, i) => {
       const posCls = i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : i === 2 ? 'pos-3' : '';
       const isMe = m.id === _uid;
       const avatar = m.avatar_url
@@ -2577,7 +2577,22 @@ function widgetKeydown(e) {
         <span class="grr-pts">${m.puntos_prode || 0}</span>
         ${kickBtn}
       </div>`;
-    }).join('');
+    };
+
+    const visibleMembersHTML = members.slice(0, 5).map((m, i) => renderMemberRow(m, i)).join('');
+    const hiddenMembersHTML = members.slice(5).map((m, i) => renderMemberRow(m, i + 5)).join('');
+
+    let membersHTML = visibleMembersHTML;
+    if (members.length > 5) {
+      membersHTML += `
+        <div class="prode-ver-mas-container">
+          <button class="community-btn btn--secondary" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 6px;" onclick="this.parentElement.nextElementSibling.style.display='block'; this.parentElement.style.display='none';">Ver más (${members.length - 5})</button>
+        </div>
+        <div style="display: none;">
+          ${hiddenMembersHTML}
+        </div>
+      `;
+    }
 
     const adminActsHTML = esAdmin ? `
       <div class="group-admin-actions">
@@ -2729,7 +2744,7 @@ function widgetKeydown(e) {
   // RANKING GLOBAL (top 50 -> Paginado)
   // ──────────────────────────────────────────────────────────────
   let _rankingOffset = 0;
-  const _RANKING_LIMIT = 15;
+  const _RANKING_LIMIT = 10;
 
   async function _cargarRankingGlobal(append = false) {
     const cont = document.getElementById('prode-global-ranking-cont');
