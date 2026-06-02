@@ -12,6 +12,11 @@
 
 import { supabase } from '../auth.js';
 
+const BACKEND_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://mundialito-hzhf.onrender.com';
+const API_URL = `${BACKEND_BASE_URL}/api`;
+
 // ══════════════════════════════════════════════════════════════════
 // ESTADO INTERNO DEL MÓDULO
 // ══════════════════════════════════════════════════════════════════
@@ -1160,7 +1165,7 @@ function bindCommunityEvents() {
           .from('prode_group_members')
           .insert({ group_id: group.id, user_id: _userId });
 
-        if (memberErr) throw memberErr;
+        if (memberErr && memberErr.code !== '23505') throw memberErr;
 
         setCommunityMsg(msgEl, `✅ Grupo "${nombre}" creado. Código: ${group.invite_code}`, 'success');
         document.getElementById('new-group-name').value = '';
@@ -1191,33 +1196,19 @@ function bindCommunityEvents() {
       btnJoin.disabled = true; btnJoin.textContent = 'Buscando...';
 
       try {
-        // Buscar el grupo por invite_code
-        const { data: group, error: findErr } = await supabase
-          .from('prode_groups')
-          .select('id, nombre')
-          .eq('invite_code', code)
-          .single();
+        const res = await fetch(`${API_URL}/prode_groups/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invite_code: code, user_id: _userId })
+        });
 
-        if (findErr || !group) {
-          setCommunityMsg(msgEl, 'Código inválido o grupo no encontrado.', 'error');
-          btnJoin.disabled = false; btnJoin.textContent = 'Unirse al Grupo'; return;
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Error en el servidor');
         }
 
-        // Verificar si ya es miembro
-        const yaEsMiembro = _myGroups.some(g => g.id === group.id);
-        if (yaEsMiembro) {
-          setCommunityMsg(msgEl, `Ya sos miembro de "${group.nombre}".`, 'error');
-          btnJoin.disabled = false; btnJoin.textContent = 'Unirse al Grupo'; return;
-        }
-
-        // Unirse
-        const { error: joinErr } = await supabase
-          .from('prode_group_members')
-          .insert({ group_id: group.id, user_id: _userId });
-
-        if (joinErr) throw joinErr;
-
-        setCommunityMsg(msgEl, `✅ Te uniste a "${group.nombre}"!`, 'success');
+        setCommunityMsg(msgEl, `✅ Te uniste a "${data.group_name}"!`, 'success');
         document.getElementById('join-group-code').value = '';
 
         setTimeout(() => loadCommunities(), 800);
@@ -1284,13 +1275,16 @@ window.prodeEditGroupName = async function(groupId, currentName) {
   if (!newName || newName.trim().length < 2 || newName.trim() === currentName) return;
 
   try {
-    const { error } = await supabase
-      .from('prode_groups')
-      .update({ nombre: newName.trim(), updated_at: new Date().toISOString() })
-      .eq('id', groupId)
-      .eq('admin_id', _userId);
+    const res = await fetch(`${API_URL}/prode_groups/${groupId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: newName.trim(), admin_id: _userId })
+    });
 
-    if (error) throw error;
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error en el servidor');
+    }
 
     // Actualizar en UI
     const cardEl = document.getElementById(`group-card-${groupId}`);
@@ -1312,13 +1306,16 @@ window.prodeTogglePublic = async function(groupId, currentlyPublic) {
   const nuevoEstado = !currentlyPublic;
 
   try {
-    const { error } = await supabase
-      .from('prode_groups')
-      .update({ es_publico: nuevoEstado, updated_at: new Date().toISOString() })
-      .eq('id', groupId)
-      .eq('admin_id', _userId);
+    const res = await fetch(`${API_URL}/prode_groups/${groupId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ es_publico: nuevoEstado, admin_id: _userId })
+    });
 
-    if (error) throw error;
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error en el servidor');
+    }
 
     // Actualizar botón
     const btn = document.getElementById(`btn-toggle-public-${groupId}`);

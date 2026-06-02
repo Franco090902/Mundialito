@@ -2920,6 +2920,86 @@ ${mensaje.trim()}`;
 });
 
 // ══════════════════════════════════════════════════════════════════
+// ENDPOINT: PUT /api/prode_groups/:id
+// Actualiza nombre o visibilidad de un grupo (solo admin)
+// ══════════════════════════════════════════════════════════════════
+app.put('/api/prode_groups/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, es_publico, admin_id } = req.body;
+
+  if (!admin_id) return res.status(400).json({ error: 'Falta admin_id' });
+
+  try {
+    const updateData = { updated_at: new Date().toISOString() };
+    if (nombre !== undefined) updateData.nombre = nombre;
+    if (es_publico !== undefined) updateData.es_publico = es_publico;
+
+    const { data, error } = await supabase
+      .from('prode_groups')
+      .update(updateData)
+      .eq('id', id)
+      .eq('admin_id', admin_id)
+      .select();
+      
+    if (error) throw error;
+    if (!data || data.length === 0) {
+       return res.status(403).json({ error: 'No autorizado o grupo no existe' });
+    }
+    
+    res.json({ success: true, group: data[0] });
+  } catch (err) {
+    console.error('Error actualizando grupo:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: POST /api/prode_groups/join
+// Unirse a un grupo mediante código de invitación
+// ══════════════════════════════════════════════════════════════════
+app.post('/api/prode_groups/join', async (req, res) => {
+  const { invite_code, user_id } = req.body;
+  if (!invite_code || !user_id) return res.status(400).json({ error: 'Faltan datos' });
+
+  try {
+    // 1. Buscar grupo
+    const { data: group, error: findErr } = await supabase
+      .from('prode_groups')
+      .select('id, nombre')
+      .eq('invite_code', invite_code.toUpperCase())
+      .single();
+
+    if (findErr || !group) {
+      return res.status(404).json({ error: 'Código inválido o grupo no encontrado.' });
+    }
+
+    // 2. Verificar si ya es miembro
+    const { data: member } = await supabase
+      .from('prode_group_members')
+      .select('group_id')
+      .eq('group_id', group.id)
+      .eq('user_id', user_id)
+      .maybeSingle();
+
+    if (member) {
+      return res.status(400).json({ error: `Ya sos miembro de "${group.nombre}".` });
+    }
+
+    // 3. Unirse al grupo
+    const { error: joinErr } = await supabase
+      .from('prode_group_members')
+      .insert({ group_id: group.id, user_id: user_id });
+
+    if (joinErr) throw joinErr;
+
+    res.json({ success: true, group_name: group.nombre });
+  } catch (err) {
+    console.error('Error uniendose al grupo:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
 // ARRANQUE DEL SERVIDOR
 // ══════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
