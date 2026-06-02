@@ -364,6 +364,22 @@ function renderHistory() {
       `<button class="ed-btn ${e.year === selectedYear ? 'active' : ''}" onclick="showEdition(${e.year})">${e.year}</button>`
     ).join('');
 
+    const spotifySongs = {
+      2022: { title: "Canción Oficial - Qatar 2022", url: "https://open.spotify.com/embed/track/7vAJiDFrFtMYVOrZbOw7jj?utm_source=generator&theme=0" },
+      2018: { title: "Canción Oficial - Rusia 2018", url: "https://open.spotify.com/embed/track/4DnHUy01jEA4b5ydC3HgsT?utm_source=generator&theme=0" },
+      2014: { title: "Canción Oficial - Brasil 2014", url: "https://open.spotify.com/embed/track/1PCvKFPWnTXAe2oaReVUcr?utm_source=generator&theme=0" },
+      2010: { title: "Canción Oficial - Sudáfrica 2010", url: "https://open.spotify.com/embed/track/2Cd9iWfcOpGDHLz6tVA3G4?utm_source=generator&theme=0" },
+      2006: { title: "Canción Oficial - Alemania 2006", url: "https://open.spotify.com/embed/track/67odGWQ12yMWFyxairuPN3?utm_source=generator&theme=0" },
+      2002: { title: "Canción Oficial - Corea/Japón 2002", url: "https://open.spotify.com/embed/track/6UhIbqY2luV12f5FdSHpiU?utm_source=generator&theme=0" },
+      1998: { title: "Canción Oficial - Francia 1998", url: "https://open.spotify.com/embed/track/5PrGG8gAKXl4bi1odVla7l?utm_source=generator&theme=0" },
+      1994: { title: "Canción Oficial - Estados Unidos 1994", url: "https://open.spotify.com/embed/track/548gZRWmmxCtKoBuMIf1Id?utm_source=generator&theme=0" },
+      1990: { title: "Canción Oficial - Italia 1990", url: "https://open.spotify.com/embed/track/50jCUPNEHtmLfK6PQzcnOH?utm_source=generator&theme=0" },
+      1986: { title: "Canción Oficial - México 1986", url: "https://open.spotify.com/embed/track/4TlKsjoxSfwnPsX7wrJr3o?utm_source=generator&theme=0" },
+      1978: { title: "Canción Oficial - Argentina 1978", url: "https://open.spotify.com/embed/track/49QXZ4GaxHSN8PlMRrjVK8?utm_source=generator" },
+      1970: { title: "Canción Oficial - México 1970", url: "https://open.spotify.com/embed/track/1GSa6H0MaYZIszPuMipURB?utm_source=generator" },
+      1966: { title: "Canción Oficial - Inglaterra 1966", url: "https://open.spotify.com/embed/track/6otZIO8NVB7xV3seYqUfGt?utm_source=generator" }
+    };
+
     cards.innerHTML = window.EDITIONS.map(e => {
       // Transformar finalist info si runnersUp existe en lugar del viejo arreglo finalists
       const finalistsHtml = e.runnersUp ? `
@@ -394,12 +410,12 @@ function renderHistory() {
         </div>
       </div>
       
-      <!-- Videos Destacados -->
-      ${e.videos && e.videos.length > 0 ? `
+      <!-- Videos Destacados & Canciones -->
+      ${(e.videos && e.videos.length > 0) || spotifySongs[e.year] ? `
       <div class="ed-video-section" style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border3);">
-        <div class="ed-section-title" style="margin-bottom: 15px;">▶️ Momentos Destacados</div>
+        <div class="ed-section-title" style="margin-bottom: 15px;">▶️ Momentos Destacados & 🎵 Música Oficial</div>
         <div style="display:flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-          ${e.videos.map(v => `
+          ${e.videos && e.videos.length > 0 ? e.videos.map(v => `
             <div style="flex: 1; min-width: 300px; max-width: 500px; background: var(--navy1); border-radius: 8px; overflow: hidden; border: 1px solid var(--border3); margin-bottom: 15px;">
               ${v.url ? `
               <div style="aspect-ratio: 16/9; background: #000;">
@@ -413,7 +429,16 @@ function renderHistory() {
                 <p style="margin: 0; color: var(--text3); font-size: 14px; line-height: 1.4;">${v.description}</p>
               </div>
             </div>
-          `).join('')}
+          `).join('') : ''}
+          
+          ${spotifySongs[e.year] ? `
+            <div style="flex: 1; min-width: 300px; max-width: 500px; background: var(--navy1); border-radius: 8px; overflow: hidden; border: 1px solid var(--border3); margin-bottom: 15px; display: flex; flex-direction: column;">
+              <div style="padding: 15px;">
+                <h4 style="margin: 0 0 15px 0; color: var(--text1); font-size: 16px;">🎵 ${spotifySongs[e.year].title}</h4>
+                <iframe data-testid="embed-iframe" style="border-radius:12px" data-src="${spotifySongs[e.year].url}" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
       ` : ''}
