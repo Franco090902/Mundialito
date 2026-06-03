@@ -38,6 +38,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
 export let currentUser    = null; // Objeto del usuario de auth.users
 export let currentProfile = null; // Objeto de la tabla profiles (username, avatar, puntos)
 
+window.isUserAuthenticated = () => currentUser !== null;
+window.getCurrentUserId = () => currentUser ? currentUser.id : null;
+
 
 // ══════════════════════════════════════════════════════════════════
 // FUNCIÓN 1: Registrar con Email y Password
@@ -327,6 +330,28 @@ function actualizarUILogueado(profile) {
   // ── Cerrar el modal de login si estaba abierto ───────────────────
   const modalAuth = document.getElementById('auth-overlay');
   if (modalAuth) modalAuth.classList.add('hidden');
+
+  // ── Cargar estadísticas de juegos desde el backend ─────────────────
+  if (currentUser) {
+    fetch(`/api/users/${currentUser.id}/profile`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.game_stats) {
+          const wordleStats = data.game_stats.find(g => g.game_name === 'wordle');
+          const streakEl = document.getElementById('stat-wordle-streak');
+          const scoreEl = document.getElementById('stat-wordle-score');
+          if (streakEl) streakEl.textContent = wordleStats ? wordleStats.max_streak : '0';
+          if (scoreEl) scoreEl.textContent = wordleStats ? wordleStats.max_score : '0';
+
+          const hlStats = data.game_stats.find(g => g.game_name === 'higherlower');
+          const hlStreakEl = document.getElementById('stat-hl-streak');
+          const hlScoreEl = document.getElementById('stat-hl-score');
+          if (hlStreakEl) hlStreakEl.textContent = hlStats ? hlStats.max_streak : '0';
+          if (hlScoreEl) hlScoreEl.textContent = hlStats ? hlStats.max_score : '0';
+        }
+      })
+      .catch(err => console.error('Error cargando stats de juegos:', err));
+  }
 
   // Callback global para sincronizar con HTML principal de forma síncrona
   if (window.onMundialitoAuth) {

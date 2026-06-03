@@ -302,16 +302,16 @@ function wlSubmitGuess() {
     wlUpdateKeyColors();
 
     if (guess === wlWord) {
-      wlSetMsg("⚽  ¡Gol! Adivinaste la palabra", "win");
       wlGameOver = true;
       wlAddGamePlayed();
       wlUpdateCounter();
+      wlHandleGameEnd(true);
       setTimeout(() => wlCheckLimit(), 400);
     } else if (wlRow === WL_MAX_TRIES - 1) {
-      wlSetMsg(`La palabra era: ${wlWord}`, "lose");
       wlGameOver = true;
       wlAddGamePlayed();
       wlUpdateCounter();
+      wlHandleGameEnd(false);
       setTimeout(() => wlCheckLimit(), 400);
     } else {
       wlRow++;
@@ -373,8 +373,43 @@ function wlShakeRow(rowIdx) {
 function wlSetMsg(text, cls = "") {
   const el = document.getElementById("wl-msg");
   if (!el) return;
-  el.textContent = text;
+  el.innerHTML = text; // Cambiado a innerHTML para permitir botones
   el.className = "wl-msg" + (cls ? ` ${cls}` : "");
+}
+
+async function wlHandleGameEnd(won) {
+  const baseMsg = won ? "⚽  ¡Gol! Adivinaste la palabra" : `La palabra era: ${wlWord}`;
+  const msgClass = won ? "win" : "lose";
+  wlSetMsg(baseMsg, msgClass);
+
+  const el = document.getElementById("wl-msg");
+  if (!el) return;
+
+  if (window.isUserAuthenticated && window.isUserAuthenticated()) {
+    // Calcular puntaje
+    const score = won ? ((WL_MAX_TRIES - wlRow) * 10) : 0;
+    
+    try {
+      const res = await fetch('/api/stats/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: window.getCurrentUserId(),
+          game_name: 'wordle',
+          score: score,
+          current_streak: won ? 1 : 0 // Para la DB, mandamos 1 por ganar o 0
+        })
+      });
+      if (res.ok) {
+        el.innerHTML = `${baseMsg}<br><small style='color: #4caf50; font-size: 14px; margin-top: 5px; display: block;'>¡Resultado guardado en tu perfil! ✅</small>`;
+      }
+    } catch(e) {
+      console.error('Error guardando stats:', e);
+    }
+  } else {
+    // No autenticado
+    el.innerHTML = `${baseMsg}<br><button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" style="margin-top:12px; padding:10px 15px; background:var(--accent-color, #ffd700); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">Si quieres guardar tu resultado, inicia sesión 👤</button>`;
+  }
 }
 
 function wlUpdateKeyColors() {

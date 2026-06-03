@@ -3053,6 +3053,141 @@ app.delete('/api/prode_groups/:id', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
+// ENDPOINT: POST /api/stats/update
+// Actualiza stats de un juego para un usuario.
+// ══════════════════════════════════════════════════════════════════
+app.post('/api/stats/update', async (req, res) => {
+  const { user_id, game_name, score, current_streak } = req.body;
+  
+  if (!user_id || !game_name) {
+    return res.status(400).json({ error: 'Faltan parámetros requeridos: user_id y game_name' });
+  }
+
+  try {
+    // Buscar estadística actual
+    const { data: stats, error: findErr } = await supabase
+      .from('game_stats')
+      .select('max_score, max_streak')
+      .eq('user_id', user_id)
+      .eq('game_name', game_name)
+      .single();
+
+    if (findErr && findErr.code !== 'PGRST116') {
+      throw findErr;
+    }
+
+    const currentMaxScore = stats ? stats.max_score : 0;
+    const currentMaxStreak = stats ? stats.max_streak : 0;
+
+    const newScore = score !== undefined ? score : 0;
+    const newStreak = current_streak !== undefined ? current_streak : 0;
+
+    const newMaxScore = Math.max(currentMaxScore, newScore);
+    const newMaxStreak = Math.max(currentMaxStreak, newStreak);
+
+    const upsertData = {
+      user_id,
+      game_name,
+      max_score: newMaxScore,
+      current_streak: newStreak,
+      max_streak: newMaxStreak,
+      last_played_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error: upsertErr } = await supabase
+      .from('game_stats')
+      .upsert(upsertData, { onConflict: 'user_id, game_name' });
+
+    if (upsertErr) throw upsertErr;
+
+    res.json({ success: true, message: 'Stats actualizadas', data: upsertData });
+  } catch (err) {
+    console.error('Error en /api/stats/update:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: GET /api/stats/ranking/:game_name
+// Ranking global de un juego, paginado.
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/stats/ranking/:game_name', async (req, res) => {
+  const { game_name } = req.params;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = parseInt(req.query.offset) || 0;
+
+  try {
+    const { data, error, count } = await supabase
+      .from('game_stats')
+      .select('max_score, max_streak, current_streak, profiles!inner(username, avatar_url)', { count: 'exact' })
+      .eq('game_name', game_name)
+      .order('max_score', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    const ranking = data.map(row => ({
+      username: row.profiles.username,
+      avatar_url: row.profiles.avatar_url,
+      max_score: row.max_score,
+      max_streak: row.max_streak,
+      current_streak: row.current_streak
+    }));
+
+    res.json({
+      success: true,
+      game_name,
+      total: count,
+      limit,
+      offset,
+      ranking
+    });
+  } catch (err) {
+    console.error('Error en /api/stats/ranking:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: GET /api/users/:user_id/profile
+// Perfil público de un usuario y sus stats.
+// ══════════════════════════════════════════════════════════════════
+app.get('/api/users/:user_id/profile', async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    // Perfil básico
+    const { data: profile, error: profErr } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url, puntos_prode, created_at')
+      .eq('id', user_id)
+      .single();
+
+    if (profErr || !profile) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Stats de los juegos
+    const { data: stats, error: statsErr } = await supabase
+      .from('game_stats')
+      .select('game_name, max_score, current_streak, max_streak, last_played_at')
+      .eq('user_id', user_id);
+
+    if (statsErr) throw statsErr;
+
+    res.json({
+      success: true,
+      profile,
+      game_stats: stats || []
+    });
+  } catch (err) {
+    console.error('Error en /api/users/:user_id/profile:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
 // ARRANQUE DEL SERVIDOR
 // ══════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;

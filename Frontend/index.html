@@ -28,6 +28,65 @@
 <body>
 
   <!-- ══════════════════════════════════════
+     PUBLIC PROFILE OVERLAY
+══════════════════════════════════════ -->
+  <div id="public-profile-overlay" class="hidden">
+    <div class="auth-card" style="position: relative; max-width: 400px; width: 100%; padding: 40px 30px;">
+      <button onclick="document.getElementById('public-profile-overlay').classList.add('hidden')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer;">✕</button>
+
+      <!-- Loading State -->
+      <div id="public-profile-loading" style="text-align: center; color: var(--text3); padding: 20px;">
+        Cargando perfil...
+      </div>
+
+      <!-- Content State -->
+      <div id="public-profile-content" style="display: none;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img id="public-profile-avatar" src="" onerror="this.src=''; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto; display: block; border: 2px solid var(--accent-color, #ffd700);">
+          <div id="public-profile-avatar-fallback" style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-color, #ffd700); color: black; display: none; align-items: center; justify-content: center; font-weight: bold; font-size: 32px; margin: 0 auto; border: 2px solid rgba(255,255,255,0.2);"></div>
+          
+          <h2 id="public-profile-username" style="color: var(--white); margin-top: 15px; font-size: 22px;">Usuario</h2>
+        </div>
+
+        <p class="section-label" style="margin-top: 20px; text-align: center;">🎮 Estadísticas de Juegos</p>
+        
+        <div class="prode-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 15px; display: grid; gap: 10px;">
+          <!-- Wordle Stats -->
+          <div class="prode-stat-widget widget-green">
+            <span class="widget-icon">📝</span>
+            <div class="widget-data">
+              <span class="widget-value" id="public-stat-wordle-streak">0</span>
+              <span class="widget-label">Racha Wordle</span>
+            </div>
+          </div>
+          <div class="prode-stat-widget widget-gold">
+            <span class="widget-icon">⭐</span>
+            <div class="widget-data">
+              <span class="widget-value" id="public-stat-wordle-score">0</span>
+              <span class="widget-label">Récord Wordle</span>
+            </div>
+          </div>
+          <!-- Higher/Lower Stats -->
+          <div class="prode-stat-widget widget-blue">
+            <span class="widget-icon">📈</span>
+            <div class="widget-data">
+              <span class="widget-value" id="public-stat-hl-streak">0</span>
+              <span class="widget-label">Racha H/L</span>
+            </div>
+          </div>
+          <div class="prode-stat-widget widget-gold">
+            <span class="widget-icon">🌟</span>
+            <div class="widget-data">
+              <span class="widget-value" id="public-stat-hl-score">0</span>
+              <span class="widget-label">Récord H/L</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
      AUTH OVERLAY — se oculta al loguearse
 ══════════════════════════════════════ -->
   <div id="auth-overlay" class="hidden">
@@ -922,6 +981,7 @@
             <script src="https://www.highperformanceformat.com/e1220a39abe7668dac4971f976aed7d1/invoke.js?p=8"></script>
           </div>
           <div id="wordle-wrapper"></div>
+          <div id="wordle-ranking-container" style="max-width: 600px; margin: 20px auto 0;"></div>
         </div>
       </section>
 
@@ -1005,6 +1065,44 @@
               </div>
 
             </div>
+          </div>
+            
+            <p class="section-label" style="margin-top: 30px;">🎮 Mis Estadísticas de Juegos</p>
+            <div class="perfil-card" style="padding: 20px;">
+              <div id="game-stats-container" class="prode-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+                <!-- Wordle Stats -->
+                <div class="prode-stat-widget widget-green">
+                  <span class="widget-icon">📝</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="stat-wordle-streak">0</span>
+                    <span class="widget-label">Racha Wordle</span>
+                  </div>
+                </div>
+                <div class="prode-stat-widget widget-gold">
+                  <span class="widget-icon">⭐</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="stat-wordle-score">0</span>
+                    <span class="widget-label">Récord Wordle</span>
+                  </div>
+                </div>
+                <!-- Higher/Lower Stats -->
+                <div class="prode-stat-widget widget-blue">
+                  <span class="widget-icon">📈</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="stat-hl-streak">0</span>
+                    <span class="widget-label">Racha H/L</span>
+                  </div>
+                </div>
+                <div class="prode-stat-widget widget-gold">
+                  <span class="widget-icon">🌟</span>
+                  <div class="widget-data">
+                    <span class="widget-value" id="stat-hl-score">0</span>
+                    <span class="widget-label">Récord H/L</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
           </div>
 
           <!-- Columna Derecha: Configuración de Cuenta & Cambio de Contraseña -->
@@ -1169,6 +1267,8 @@
           </div>
         </div>
       </div>
+
+      <div id="higherlower-ranking-container" style="max-width: 600px; margin: 20px auto 0;"></div>
 
     </div>
 
@@ -1934,6 +2034,7 @@
     });
   </script>
   <script src="wordle.js"></script>
+  <script type="module" src="ranking.js"></script>
   <script>
     // Arrancar el juego al cargar el DOM
     document.addEventListener("DOMContentLoaded", () => {

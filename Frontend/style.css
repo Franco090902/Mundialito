@@ -1847,7 +1847,7 @@
     /* ════════════════════════════════════════════════
        18. AUTH — Pantalla de login / overlay
     ════════════════════════════════════════════════ */
-    #auth-overlay {
+    #auth-overlay, #public-profile-overlay {
       position: fixed;
       inset: 0;
       z-index: 9999;
@@ -1858,7 +1858,7 @@
       padding: 20px;
     }
 
-    #auth-overlay.hidden {
+    #auth-overlay.hidden, #public-profile-overlay.hidden {
       display: none;
     }
 
