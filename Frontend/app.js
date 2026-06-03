@@ -380,6 +380,31 @@ function renderHistory() {
       1966: { title: "Canción Oficial - Inglaterra 1966", url: "https://open.spotify.com/embed/track/6otZIO8NVB7xV3seYqUfGt?utm_source=generator" }
     };
 
+    const worldCupExtras = {
+      2022: { mascot: "La'eeb 👻", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCr-PMfoZHc7VSTYexCEIcRhwEVYh-Necy7A&s", ball: "Al Rihla ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Adidas_Al_Rihla.jpg/300px-Adidas_Al_Rihla.jpg" },
+      2018: { mascot: "Zabivaka 🐺", mascotImg: "https://www.tudn.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F5b%2Fc5%2F47bca6fa41ffb6a7a3be3853cc49%2Fzabivaka.png&w=1280&q=75", ball: "Telstar 18 ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Telstar_18%2C_2018_FIFA_World_Cup_official_match_ball.jpg/300px-Telstar_18%2C_2018_FIFA_World_Cup_official_match_ball.jpg" },
+      2014: { mascot: "Fuleco 🦔", mascotImg: "https://s.yimg.com/ny/api/res/1.2/raMOxEUJQvEMbTXDYsexoQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTcyOTtjZj13ZWJw/https://media.zenfs.com/es_US/News/es.afp.com/photo_1347906101272-1-0.jpg", ball: "Brazuca ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Brazuca.jpg/300px-Brazuca.jpg" },
+      2010: { mascot: "Zakumi 🐆", mascotImg: "https://visitaxela.wordpress.com/wp-content/uploads/2010/06/zakumi.jpg", ball: "Jabulani ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Jabulani.jpg/300px-Jabulani.jpg" },
+      2006: { mascot: "Goleo VI 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqvYoadAnfFGuXQhfDFGhLZGQ18m4iG5q3pA&s", ball: "Teamgeist ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Teamgeist.jpg/300px-Teamgeist.jpg" },
+      2002: { mascot: "Ato, Kaz & Nik 👽", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPxzAnScqCWGrqdArzgKXj4Y_B_9Wu5uHTWS4z7t9eXQ&s", ball: "Fevernova ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Fevernova.jpg/300px-Fevernova.jpg" },
+      1998: { mascot: "Footix 🐓", mascotImg: "https://img.emisorasunidas.com/upload/2026/05/17161D524C43416D17110F54594947781F16171854434778141516.jpg", ball: "Tricolore ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Adidas_Tricolore.jpg/300px-Adidas_Tricolore.jpg" },
+      1994: { mascot: "Striker 🐶", mascotImg: "https://i.pinimg.com/736x/9a/12/cf/9a12cf867efe7bda136a13afbf3086c2.jpg", ball: "Questra ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Adidas_Questra.jpg/300px-Adidas_Questra.jpg" },
+      1990: { mascot: "Ciao 🪆", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol0711-d3fd1dd3560da5cf8015856039727882-480-0.webp", ball: "Etrusco Unico ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Etrusco_Unico.jpg/300px-Etrusco_Unico.jpg" },
+      1986: { mascot: "Pique 🌶️", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol051-62f73c0b1396e8267815856034166165-640-0.webp", ball: "Azteca ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Azteca-mexico.jpg/300px-Azteca-mexico.jpg" },
+      1982: { mascot: "Naranjito 🍊", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZUirtVmwg5ZQxs-U_dBlh1Vhaqp1xfwb-w&s", ball: "Tango España ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Tango_Espa%C3%B1a_football_ball.jpg/300px-Tango_Espa%C3%B1a_football_ball.jpg" },
+      1978: { mascot: "Gauchito 👦", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc82vVEOIgGkyII6jMVnLvmkHntVU_K2pK4A&s", ball: "Tango ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tango_Rosario.jpg/300px-Tango_Rosario.jpg" },
+      1974: { mascot: "Tip y Tap 👦👦", mascotImg: "https://www.mundiario.com/media/mundiario/images/2018/05/24/2018052417443888580.jpg", ball: "Telstar Durlast ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Adidas_Telstar.jpg/300px-Adidas_Telstar.jpg" },
+      1970: { mascot: "Juanito 👦", mascotImg: "https://www.infobae.com/resizer/v2/RBFBVBU2HFGTLGB5P62V5Y2TTU.jpg?auth=b753e04443767024fe945b5b141fb16e5f4f61439f976c648b11591d7cf306d2&smart=true&width=350&height=467&quality=85", ball: "Telstar ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Adidas_Telstar.jpg/300px-Adidas_Telstar.jpg" },
+      1966: { mascot: "World Cup Willie 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxnG1Xy7Z8M7c3zRIf7TcsUiFraLyaSTr4tw&s", ball: "Challenge 4-Star ⚽", ballImg: "" },
+      1962: { mascot: "N/A", mascotImg: "", ball: "Crack ⚽", ballImg: "" },
+      1958: { mascot: "N/A", mascotImg: "", ball: "Top Star ⚽", ballImg: "" },
+      1954: { mascot: "N/A", mascotImg: "", ball: "Swiss World Champion ⚽", ballImg: "" },
+      1950: { mascot: "N/A", mascotImg: "", ball: "Duplo T ⚽", ballImg: "" },
+      1938: { mascot: "N/A", mascotImg: "", ball: "Allen ⚽", ballImg: "" },
+      1934: { mascot: "N/A", mascotImg: "", ball: "Federale 102 ⚽", ballImg: "" },
+      1930: { mascot: "N/A", mascotImg: "", ball: "T-Model / Tiento ⚽", ballImg: "" }
+    };
+
     cards.innerHTML = window.EDITIONS.map(e => {
       // Transformar finalist info si runnersUp existe en lugar del viejo arreglo finalists
       const finalistsHtml = e.runnersUp ? `
@@ -410,6 +435,24 @@ function renderHistory() {
         </div>
       </div>
       
+      <!-- Mascot and Ball Section -->
+      <div style="display: flex; gap: 20px; margin-bottom: 25px; background: var(--navy2); padding: 20px; border-radius: 8px; border: 1px solid var(--border3); flex-wrap: wrap;">
+         <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 20px;">
+            ${(e.mascota_img || worldCupExtras[e.year]?.mascotImg) ? `<img src="${e.mascota_img || worldCupExtras[e.year]?.mascotImg}" style="width: 120px; height: 120px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.05); padding: 10px;" alt="Mascota">` : `<div style="width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: rgba(255,255,255,0.05); border-radius: 8px;">👻</div>`}
+            <div>
+              <div style="font-size: 12px; color: var(--text4); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Mascota Oficial</div>
+              <div style="font-weight: bold; color: var(--text1); font-size: 20px; margin-bottom: 5px;">${e.mascota || worldCupExtras[e.year]?.mascot || 'No tuvo mascota 🤷‍♂️'}</div>
+            </div>
+         </div>
+         <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 20px;">
+            ${(e.pelota_img || worldCupExtras[e.year]?.ballImg) ? `<img src="${e.pelota_img || worldCupExtras[e.year]?.ballImg}" style="width: 120px; height: 120px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.05); padding: 10px;" alt="Pelota">` : `<div style="width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: rgba(255,255,255,0.05); border-radius: 8px;">⚽</div>`}
+            <div>
+              <div style="font-size: 12px; color: var(--text4); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Pelota Oficial</div>
+              <div style="font-weight: bold; color: var(--text1); font-size: 20px; margin-bottom: 5px;">${e.pelota || worldCupExtras[e.year]?.ball || 'Desconocida ⚽'}</div>
+            </div>
+         </div>
+      </div>
+
       <!-- Videos Destacados & Canciones -->
       ${(e.videos && e.videos.length > 0) || spotifySongs[e.year] ? `
       <div class="ed-video-section" style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border3);">
