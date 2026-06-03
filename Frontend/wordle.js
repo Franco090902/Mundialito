@@ -27,6 +27,7 @@ let wlCol = 0;
 let wlGameOver = false;
 let wlGrid = [];    // referencias a celdas DOM
 let wlKeyState = {};    // 'correct' | 'present' | 'absent' por tecla
+let wlCurrentStreak = 0;  // racha acumulada de la sesión
 
 /* ════════════════════════════════════════
    CONTROL DE LÍMITE DIARIO (localStorage)
@@ -85,7 +86,10 @@ function wlInit() {
     </div>
 
     <div class="wl-counter" id="wl-counter"></div>
+    <div class="wl-streak-badge" id="wl-streak-display" style="display:none; text-align:center; font-size:14px; font-weight:700; color:var(--wl-gold); letter-spacing:1px; margin-bottom:6px;"></div>
     <div class="wl-msg"     id="wl-msg"></div>
+    <div id="wl-restart-countdown" style="display:none; text-align:center; font-size:12px; color:var(--wl-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;"></div>
+    <div id="wl-result-card" class="wl-result-card" style="display:none;"></div>
 
     <div class="wl-limit-msg" id="wl-limit-msg">
       <span class="wl-limit-icon">⏰</span>
@@ -129,6 +133,15 @@ function wlStartGame() {
   wlBuildBoard();
   wlBuildKeyboard();
   wlSetMsg("", "");
+  wlUpdateStreakDisplay();
+
+  // Ocultar card de resultado al reiniciar
+  const card = document.getElementById('wl-result-card');
+  if (card) {
+    card.classList.remove('wl-card-visible');
+    card.style.display = 'none';
+    card.innerHTML = '';
+  }
 }
 
 function wlPickWord(len) {
@@ -140,7 +153,7 @@ function wlPickWord(len) {
    CONTROL DE LÍMITE DIARIO
 ════════════════════════════════════════ */
 
-function wlCheckLimit() {
+function wlCheckLimit(preserveMsg = false) {
   const played = wlGetGamesPlayed();
   const limitEl = document.getElementById("wl-limit-msg");
   const boardEl = document.getElementById("wl-board");
@@ -150,7 +163,7 @@ function wlCheckLimit() {
     if (limitEl) limitEl.style.display = "block";
     if (boardEl) boardEl.style.display = "none";
     if (kbdEl) kbdEl.style.display = "none";
-    wlSetMsg("", "");
+    if (!preserveMsg) wlSetMsg("", "");
     return true;
   }
 
@@ -306,13 +319,13 @@ function wlSubmitGuess() {
       wlAddGamePlayed();
       wlUpdateCounter();
       wlHandleGameEnd(true);
-      setTimeout(() => wlCheckLimit(), 400);
+      setTimeout(() => wlCheckLimit(true), 4000);
     } else if (wlRow === WL_MAX_TRIES - 1) {
       wlGameOver = true;
       wlAddGamePlayed();
       wlUpdateCounter();
       wlHandleGameEnd(false);
-      setTimeout(() => wlCheckLimit(), 400);
+      setTimeout(() => wlCheckLimit(true), 4000);
     } else {
       wlRow++;
       wlCol = 0;
@@ -378,17 +391,24 @@ function wlSetMsg(text, cls = "") {
 }
 
 async function wlHandleGameEnd(won) {
-  const baseMsg = won ? "⚽  ¡Gol! Adivinaste la palabra" : `La palabra era: ${wlWord}`;
+  // Actualizar racha
+  if (won) {
+    wlCurrentStreak++;
+  } else {
+    wlCurrentStreak = 0;
+  }
+
+  const baseMsg = won
+    ? `⚽ ¡Gol! Adivinaste la palabra${wlCurrentStreak > 1 ? ` — Racha: ${wlCurrentStreak} 🔥` : ''}`
+    : `La palabra era: <strong>${wlWord}</strong>`;
   const msgClass = won ? "win" : "lose";
   wlSetMsg(baseMsg, msgClass);
 
-  const el = document.getElementById("wl-msg");
-  if (!el) return;
+  // Mostrar card de resultado
+  wlShowResultCard(won);
 
   if (window.isUserAuthenticated && window.isUserAuthenticated()) {
-    // Calcular puntaje
     const score = won ? ((WL_MAX_TRIES - wlRow) * 10) : 0;
-    
     try {
       const res = await fetch('/api/stats/update', {
         method: 'POST',
@@ -397,19 +417,107 @@ async function wlHandleGameEnd(won) {
           user_id: window.getCurrentUserId(),
           game_name: 'wordle',
           score: score,
-          current_streak: won ? 1 : 0 // Para la DB, mandamos 1 por ganar o 0
+          current_streak: wlCurrentStreak
         })
       });
       if (res.ok) {
-        el.innerHTML = `${baseMsg}<br><small style='color: #4caf50; font-size: 14px; margin-top: 5px; display: block;'>¡Resultado guardado en tu perfil! ✅</small>`;
+        // Actualizar la card para mostrar confirmación de guardado
+        const savedEl = document.getElementById('wl-card-save-status');
+        if (savedEl) {
+          savedEl.innerHTML = `<span style="color:#4caf50; font-size:13px; display:flex; align-items:center; gap:6px; justify-content:center;">&#10003; Racha guardada en tu perfil</span>`;
+        }
       }
     } catch(e) {
       console.error('Error guardando stats:', e);
     }
-  } else {
-    // No autenticado
-    el.innerHTML = `${baseMsg}<br><button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" style="margin-top:12px; padding:10px 15px; background:var(--accent-color, #ffd700); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">Si quieres guardar tu resultado, inicia sesión 👤</button>`;
   }
+
+  // Auto-reinicio
+  wlScheduleRestart();
+}
+
+function wlShowResultCard(won) {
+  const card = document.getElementById('wl-result-card');
+  if (!card) return;
+
+  const isAuth = window.isUserAuthenticated && window.isUserAuthenticated();
+  const streakInfo = wlCurrentStreak > 0
+    ? `<div class="wl-card-streak">🔥 Racha actual: <strong>${wlCurrentStreak}</strong></div>`
+    : '';
+
+  if (isAuth) {
+    // Usuario autenticado: mostrar que se está guardando
+    card.innerHTML = `
+      <div class="wl-card-inner ${won ? 'win' : 'lose'}">
+        <div class="wl-card-icon">${won ? '⚽' : '💔'}</div>
+        ${streakInfo}
+        <div id="wl-card-save-status" class="wl-card-saving">
+          <span class="wl-saving-dots">Guardando racha</span>
+        </div>
+      </div>
+    `;
+  } else {
+    // Usuario no autenticado: invitar a registrarse
+    const streakMsg = wlCurrentStreak > 1
+      ? `¡Tenés una racha de <strong>${wlCurrentStreak}</strong>! No la pierdas.`
+      : 'Guardá tu racha y competí en el ranking.';
+
+    card.innerHTML = `
+      <div class="wl-card-inner guest">
+        <div class="wl-card-icon">🏆</div>
+        <div class="wl-card-title">Guardá tu racha</div>
+        <div class="wl-card-desc">${streakMsg}</div>
+        <button class="wl-card-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">
+          Iniciá sesión 👤
+        </button>
+      </div>
+    `;
+  }
+
+  card.style.display = 'block';
+  // Animar entrada
+  requestAnimationFrame(() => card.classList.add('wl-card-visible'));
+}
+
+function wlUpdateStreakDisplay() {
+  const el = document.getElementById('wl-streak-display');
+  if (!el) return;
+  if (wlCurrentStreak > 0) {
+    el.textContent = `🔥 Racha: ${wlCurrentStreak}`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function wlScheduleRestart() {
+  // No reiniciar si ya llegó al límite
+  if (wlGetGamesPlayed() >= WL_MAX_DAILY) return;
+
+  let secs = 3;
+  const msgEl = document.getElementById('wl-restart-countdown');
+  if (msgEl) {
+    msgEl.textContent = `Nueva partida en ${secs}...`;
+    msgEl.style.display = 'block';
+  }
+
+  const interval = setInterval(() => {
+    secs--;
+    if (msgEl) {
+      if (secs > 0) {
+        msgEl.textContent = `Nueva partida en ${secs}...`;
+      } else {
+        msgEl.textContent = '';
+        msgEl.style.display = 'none';
+      }
+    }
+    if (secs <= 0) {
+      clearInterval(interval);
+      if (wlGetGamesPlayed() < WL_MAX_DAILY) {
+        wlStartGame();
+      }
+    }
+  }, 1000);
 }
 
 function wlUpdateKeyColors() {

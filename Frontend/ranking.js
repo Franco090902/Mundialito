@@ -1,6 +1,8 @@
 export function createRankingWidget(containerId, gameName, title) {
   const container = document.getElementById(containerId);
   if (!container) return;
+
+  const isWordle = gameName === 'wordle';
   
   container.innerHTML = `
     <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 20px;">
@@ -11,7 +13,10 @@ export function createRankingWidget(containerId, gameName, title) {
             <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
               <th style="padding: 10px; width: 50px; text-align: center;">Pos</th>
               <th style="padding: 10px;">Usuario</th>
-              <th style="padding: 10px; text-align: right;">Récord</th>
+              ${isWordle
+                ? `<th style="padding: 10px; text-align: right;">🔥 Racha actual</th>
+                   <th style="padding: 10px; text-align: right;">⭐ Mejor racha</th>`
+                : `<th style="padding: 10px; text-align: right;">Récord</th>`}
             </tr>
           </thead>
           <tbody class="ranking-table-body">
@@ -58,7 +63,7 @@ export function createRankingWidget(containerId, gameName, title) {
 
       if (!data.success) {
         if (!append) {
-          tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px;">Error al cargar el ranking</td></tr>';
+          tableBody.innerHTML = `<tr><td colspan="${isWordle ? 4 : 3}" style="text-align: center; padding: 20px;">Error al cargar el ranking</td></tr>`;
         }
         return;
       }
@@ -67,7 +72,7 @@ export function createRankingWidget(containerId, gameName, title) {
       const total = data.total;
 
       if (rows.length === 0 && !append) {
-        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text3);">No hay resultados para este juego aún.</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="${isWordle ? 4 : 3}" style="text-align: center; padding: 20px; color: var(--text3);">No hay resultados para este juego aún.</td></tr>`;
       }
 
       rows.forEach((row, index) => {
@@ -84,7 +89,10 @@ export function createRankingWidget(containerId, gameName, title) {
         else if (pos === 2) posHtml = '🥈';
         else if (pos === 3) posHtml = '🥉';
 
-        const val = gameName === 'wordle' ? row.max_streak : row.max_score;
+        const valueCell = isWordle
+          ? `<td style="padding: 10px; text-align: right; font-weight: bold; font-size: 14px; color: var(--gold);">${row.current_streak}</td>
+             <td style="padding: 10px; text-align: right; font-size: 13px; color: var(--offwhite);">${row.max_streak}</td>`
+          : `<td style="padding: 10px; text-align: right; font-weight: bold; font-size: 14px;">${row.max_score}</td>`;
 
         tr.innerHTML = `
           <td style="padding: 10px; text-align: center; font-weight: bold; color: var(--gold);">${posHtml}</td>
@@ -93,7 +101,7 @@ export function createRankingWidget(containerId, gameName, title) {
             <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent-color, #ffd700); color: black; display: none; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${(row.profiles?.username || 'U')[0].toUpperCase()}</div>
             <span style="text-decoration: underline; text-decoration-color: rgba(255,255,255,0.2);">${row.profiles?.username || 'Anónimo'}</span>
           </td>
-          <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 14px;">${val}</td>
+          ${valueCell}
         `;
         tableBody.appendChild(tr);
       });

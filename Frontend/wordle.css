@@ -316,3 +316,112 @@
   .wl-key  { min-width: 30px; height: 40px; font-size: 12px; }
   .wl-key.wide { min-width: 46px; font-size: 10px; }
 }
+
+/* ── Card de resultado final ── */
+.wl-result-card {
+  max-width: 380px;
+  margin: 12px auto 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.wl-result-card.wl-card-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wl-card-inner {
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.wl-card-inner.win {
+  background: linear-gradient(135deg, rgba(59,109,17,0.35) 0%, rgba(13,53,96,0.6) 100%);
+  border-color: rgba(59,109,17,0.5);
+}
+
+.wl-card-inner.lose {
+  background: linear-gradient(135deg, rgba(226,75,74,0.2) 0%, rgba(13,53,96,0.6) 100%);
+  border-color: rgba(226,75,74,0.35);
+}
+
+.wl-card-inner.guest {
+  background: linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(13,53,96,0.7) 100%);
+  border-color: rgba(255,215,0,0.35);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.wl-card-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.wl-card-streak {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  color: var(--wl-gold);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.wl-card-streak strong { font-size: 18px; }
+
+.wl-card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--wl-gold);
+  margin-bottom: 6px;
+}
+
+.wl-card-desc {
+  font-size: 13px;
+  color: var(--wl-muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.wl-card-btn {
+  background: var(--wl-gold);
+  color: #0a1a2e;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(255,215,0,0.3);
+}
+
+.wl-card-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,215,0,0.45);
+}
+
+.wl-card-saving {
+  font-size: 13px;
+  color: var(--wl-muted);
+  letter-spacing: 1px;
+}
+
+/* Animación "guardando..." */
+.wl-saving-dots::after {
+  content: '';
+  animation: wl-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes wl-dots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}

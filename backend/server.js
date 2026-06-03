@@ -3118,21 +3118,25 @@ app.get('/api/stats/ranking/:game_name', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
 
   try {
+    const orderBy = game_name === 'wordle' ? 'max_streak' : 'max_score';
+
     const { data, error, count } = await supabase
       .from('game_stats')
-      .select('max_score, max_streak, current_streak, profiles!inner(username, avatar_url)', { count: 'exact' })
+      .select('user_id, max_score, max_streak, current_streak, profiles!inner(username, avatar_url)', { count: 'exact' })
       .eq('game_name', game_name)
-      .order('max_score', { ascending: false })
+      .order(orderBy, { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
     const ranking = data.map(row => ({
+      user_id: row.user_id,
       username: row.profiles.username,
       avatar_url: row.profiles.avatar_url,
       max_score: row.max_score,
       max_streak: row.max_streak,
-      current_streak: row.current_streak
+      current_streak: row.current_streak,
+      profiles: row.profiles
     }));
 
     res.json({
