@@ -156,7 +156,7 @@ function renderMensaje(msg) {
         ? `<img class="chat-avatar" src="${msg.avatar_url}" alt="${msg.username}">`
         : `<span class="chat-avatar-placeholder">${msg.username[0].toUpperCase()}</span>`
       }
-      <span class="chat-username ${esMio ? 'chat-username--own' : ''}">${escapeHtml(msg.username)}</span>
+      <span class="chat-username clickable-profile ${esMio ? 'chat-username--own' : ''}" data-user-id="${msg.user_id}" style="cursor:pointer">${escapeHtml(msg.username)}</span>
       <span class="chat-time">${hora}</span>
     </div>
     <div class="chat-msg-body">${escapeHtml(msg.mensaje)}</div>

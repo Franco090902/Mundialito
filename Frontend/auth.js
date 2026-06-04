@@ -558,3 +558,110 @@ if (document.readyState === 'loading') {
 } else {
   initAuthEvents();
 }
+
+// ──────────────────────────────────────────────────────────────────
+// PERFIL PÚBLICO
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Hace fetch a Supabase y muestra el modal del perfil público
+ * @param {string} userId - UUID del usuario a consultar
+ */
+window.verPerfilPublico = async function(userId) {
+  const overlay = document.getElementById('public-profile-overlay');
+  const loading = document.getElementById('public-profile-loading');
+  const content = document.getElementById('public-profile-content');
+  
+  const avatarImg = document.getElementById('public-profile-avatar');
+  const avatarFallback = document.getElementById('public-profile-avatar-fallback');
+  const usernameEl = document.getElementById('public-profile-username');
+  
+  const statWordleStreak = document.getElementById('public-stat-wordle-streak');
+  const statWordleScore = document.getElementById('public-stat-wordle-score');
+  const statHlStreak = document.getElementById('public-stat-hl-streak');
+  const statHlScore = document.getElementById('public-stat-hl-score');
+
+  if (!overlay) return;
+
+  overlay.classList.remove('hidden');
+  if (loading) {
+    loading.style.display = 'block';
+    loading.innerHTML = 'Cargando perfil...';
+  }
+  if (content) content.style.display = 'none';
+
+  try {
+    // 2. Fetch de datos básicos de Supabase (las columnas que sabemos que existen)
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username, avatar_url, puntos_prode, aciertos_exactos') 
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    if (!profile) throw new Error("Perfil no encontrado");
+
+    // 3. Renderizar Datos Principales
+    usernameEl.textContent = profile.username || 'Usuario Anónimo';
+
+    if (profile.avatar_url) {
+      avatarImg.src = profile.avatar_url;
+      avatarImg.style.display = 'block';
+      avatarFallback.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      avatarFallback.textContent = (profile.username || 'U')[0].toUpperCase();
+      avatarFallback.style.display = 'flex';
+    }
+
+    // 4. Inyectar Estadísticas de Supabase
+    if (statHlScore) statHlScore.textContent = profile.puntos_prode || 0; 
+
+    // Resetear las de minijuegos por defecto
+    if (statWordleStreak) statWordleStreak.textContent = '0';
+    if (statWordleScore) statWordleScore.textContent = '0';
+    if (statHlStreak) statHlStreak.textContent = '0';
+
+    // 5. Ocultar el cargando
+    if (loading) loading.style.display = 'none';
+    if (content) content.style.display = 'block';
+
+    // 6. Fetch secundario al backend para traer estadísticas de juegos (sin bloquear la UI principal)
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:3000' 
+      : 'https://mundialito-hzhf.onrender.com';
+      
+    fetch(`${API_BASE_URL}/api/users/${userId}/profile`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.game_stats) {
+          const wordleStats = data.game_stats.find(g => g.game_name === 'wordle');
+          if (statWordleStreak) statWordleStreak.textContent = wordleStats ? wordleStats.max_streak : '0';
+          if (statWordleScore) statWordleScore.textContent = wordleStats ? wordleStats.max_score : '0';
+
+          const hlStats = data.game_stats.find(g => g.game_name === 'higherlower');
+          if (statHlStreak) statHlStreak.textContent = hlStats ? hlStats.max_streak : '0';
+        }
+      })
+      .catch(err => console.error('Error cargando stats secundarias del perfil:', err));
+
+  } catch (err) {
+    console.error("Error al cargar perfil público:", err);
+    if (loading) loading.innerHTML = '<span style="color:var(--red);">Error al cargar el perfil.</span>';
+    setTimeout(() => overlay.classList.add('hidden'), 2000); 
+  }
+};
+
+window.cerrarPerfilPublico = function() {
+  document.getElementById('public-profile-overlay')?.classList.add('hidden');
+};
+
+document.addEventListener('click', (e) => {
+  const profileTarget = e.target.closest('.clickable-profile');
+  if (profileTarget) {
+    const userId = profileTarget.getAttribute('data-user-id');
+    if (userId) {
+      verPerfilPublico(userId);
+    }
+  }
+});

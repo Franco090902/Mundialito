@@ -968,7 +968,7 @@ function renderGroupCard(group) {
       <div class="group-ranking-row" id="member-${group.id}-${m.id}">
         <span class="grr-pos ${posClass}">${i + 1}</span>
         ${avatarHtml}
-        <span class="grr-name ${isMe ? 'is-me' : ''}">${m.username || 'Anónimo'}${isMe ? ' (vos)' : ''}</span>
+        <span class="grr-name clickable-profile ${isMe ? 'is-me' : ''}" data-user-id="${m.id}" style="cursor:pointer">${m.username || 'Anónimo'}${isMe ? ' (vos)' : ''}</span>
         <span class="grr-exactos">🎯 ${m.aciertos_exactos || 0}</span>
         <span class="grr-pts">${m.puntos_prode || 0}</span>
         ${isAdmin && !isMe ? `
@@ -1082,7 +1082,7 @@ function renderRankingRows(profiles, startIndex = 0) {
       <div class="grt-row ${isMe ? 'row--me' : ''}">
         <span class="grt-pos ${posClass}">${pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos}</span>
         ${avatarHtml}
-        <span class="grt-name ${isMe ? 'is-me' : ''}">${p.username || 'Anónimo'}${isMe ? ' ★' : ''}</span>
+        <span class="grt-name clickable-profile ${isMe ? 'is-me' : ''}" data-user-id="${p.id}" style="cursor:pointer">${p.username || 'Anónimo'}${isMe ? ' ★' : ''}</span>
         <span class="grt-pts">${p.puntos_prode || 0}</span>
         <span class="grt-exactos">🎯 ${p.aciertos_exactos || 0}</span>
         <span class="grt-signo">⚖️ ${p.aciertos_signo || 0}</span>
