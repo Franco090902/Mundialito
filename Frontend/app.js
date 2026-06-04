@@ -381,31 +381,31 @@ function renderHistory() {
     };
 
     const worldCupExtras = {
-      2022: { mascot: "La'eeb 👻", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCr-PMfoZHc7VSTYexCEIcRhwEVYh-Necy7A&s", ball: "Al Rihla ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/2/25/Al-Rihla_%28cropped%29.jpg" },
-      2018: { mascot: "Zabivaka 🐺", mascotImg: "https://www.tudn.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F5b%2Fc5%2F47bca6fa41ffb6a7a3be3853cc49%2Fzabivaka.png&w=1280&q=75", ball: "Telstar 18 ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/50/Adidas_Telstar_18_in_Russia_vs._Argentina.jpg" },
-      2014: { mascot: "Fuleco 🦔", mascotImg: "https://s.yimg.com/ny/api/res/1.2/raMOxEUJQvEMbTXDYsexoQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTcyOTtjZj13ZWJw/https://media.zenfs.com/es_US/News/es.afp.com/photo_1347906101272-1-0.jpg", ball: "Brazuca ⚽", ballImg: "https://www.infobae.com/resizer/v2/QVJTGQEKQZCZRBSZ2BXDBHFAKU?auth=539c29e8b57d382e60a7080f6af1d1f3d06fe553d033e32f80b9dfd10bc7feaa&smart=true&width=1200&height=900&quality=85" },
-      2010: { mascot: "Zakumi 🐆", mascotImg: "https://visitaxela.wordpress.com/wp-content/uploads/2010/06/zakumi.jpg", ball: "Jabulani ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/57/Adidas_Jabulani_Official_World_Cup_2010_%284158450149%29.jpg" },
-      2006: { mascot: "Goleo VI 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqvYoadAnfFGuXQhfDFGhLZGQ18m4iG5q3pA&s", ball: "Teamgeist ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeaJnGD3DtySQOMmkTfAz9845Y9unVmjis5A&s" },
-      2002: { mascot: "Ato, Kaz & Nik 👽", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPxzAnScqCWGrqdArzgKXj4Y_B_9Wu5uHTWS4z7t9eXQ&s", ball: "Fevernova ⚽", ballImg: "https://i.ebayimg.com/images/g/iu4AAeSwqLZoqu6l/s-l1200.webp" },
-      1998: { mascot: "Footix 🐓", mascotImg: "https://img.emisorasunidas.com/upload/2026/05/17161D524C43416D17110F54594947781F16171854434778141516.jpg", ball: "Tricolore ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe9ThcYWNP1TksC5yREFyOUY_ByUVa-xOTMQ&s" },
-      1994: { mascot: "Striker 🐶", mascotImg: "https://i.pinimg.com/736x/9a/12/cf/9a12cf867efe7bda136a13afbf3086c2.jpg", ball: "Questra ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678080_20180523105010.jpg" },
-      1990: { mascot: "Ciao 🪆", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol0711-d3fd1dd3560da5cf8015856039727882-480-0.webp", ball: "Etrusco Unico ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuYUPQopKkV7hp_OnYW8Oz9YIigUtx32iOTA&s" },
-      1986: { mascot: "Pique 🌶️", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol051-62f73c0b1396e8267815856034166165-640-0.webp", ball: "Azteca ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTkouJjcM07mBZVXjBrMtkOr5na1p8cL8Mqg&s" },
-      1982: { mascot: "Naranjito 🍊", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZUirtVmwg5ZQxs-U_dBlh1Vhaqp1xfwb-w&s", ball: "Tango España ⚽", ballImg: "https://i.pinimg.com/564x/0a/a9/4f/0aa94f31c6bf757472d47eed684d0e49.jpg" },
-      1978: { mascot: "Gauchito 👦", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc82vVEOIgGkyII6jMVnLvmkHntVU_K2pK4A&s", ball: "Tango ⚽", ballImg: "https://lh6.googleusercontent.com/proxy/YvqCBi5_l5dl9Y_CuK4XL5svhR4MofODCjCB5htVp8R-vSTym-iWGPw32OV4YaroRLXX7izAd4N-ZITxfsZAv0hXaF1nYDVYdN4ROxN2xbIDvXkXy2VZlnWiYFxUy7T0ig" },
-      1974: { mascot: "Tip y Tap 👦👦", mascotImg: "https://www.mundiario.com/media/mundiario/images/2018/05/24/2018052417443888580.jpg", ball: "Telstar Durlast ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Telstar_Durlast.jpg/330px-Telstar_Durlast.jpg" },
-      1970: { mascot: "Juanito 👦", mascotImg: "https://www.infobae.com/resizer/v2/RBFBVBU2HFGTLGB5P62V5Y2TTU.jpg?auth=b753e04443767024fe945b5b141fb16e5f4f61439f976c648b11591d7cf306d2&smart=true&width=350&height=467&quality=85", ball: "Telstar ⚽", ballImg: "https://http2.mlstatic.com/D_NQ_NP_634179-MLA89453347991_082025-O.webp" },
-      1966: { mascot: "World Cup Willie 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxnG1Xy7Z8M7c3zRIf7TcsUiFraLyaSTr4tw&s", ball: "Challenge 4-Star ⚽", ballImg: "https://i.etsystatic.com/38427944/r/il/8aa2d8/4366871280/il_fullxfull.4366871280_3stk.jpg" },
-      1962: { mascot: "N/A", mascotImg: "", ball: "Crack ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbQZHMnsEugCp72n-rvsi4KIlhrvN6hCQKIw&s" },
-      1958: { mascot: "N/A", mascotImg: "", ball: "Top Star ⚽", ballImg: "https://www.sopitas.com/wp-content/uploads/2025/10/balones-mundial-1958.jpg" },
-      1954: { mascot: "N/A", mascotImg: "", ball: "Swiss World Champion ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Balon_mundial_1954.jpg" },
-      1950: { mascot: "N/A", mascotImg: "", ball: "Duplo T ⚽", ballImg: "https://phantom-expansion.unidadeditorial.es/021bff6c0ad3f2e8b8bc095b8952a719/assets/multimedia/imagenes/2022/11/22/16691363486911.jpg" },
-      1938: { mascot: "N/A", mascotImg: "", ball: "Allen ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Balon_mundial_1938.jpg" },
-      1934: { mascot: "N/A", mascotImg: "", ball: "Federale 102 ⚽", ballImg: "https://i.pinimg.com/736x/a5/f5/30/a5f530fa350b3996b4ba96e88078f2fb.jpg" },
-      1930: { mascot: "N/A", mascotImg: "", ball: "T-Model / Tiento ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678126_20180523105001.jpg" }
+      2022: { hostFlag: "https://flagcdn.com/w320/qa.png", champFlag: "https://flagcdn.com/w320/ar.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/e3/2022_FIFA_World_Cup.svg/600px-2022_FIFA_World_Cup.svg.png", mascot: "La'eeb 👻", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCr-PMfoZHc7VSTYexCEIcRhwEVYh-Necy7A&s", ball: "Al Rihla ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/2/25/Al-Rihla_%28cropped%29.jpg" },
+      2018: { hostFlag: "https://flagcdn.com/w320/ru.png", champFlag: "https://flagcdn.com/w320/fr.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2018_FIFA_World_Cup.svg/600px-2018_FIFA_World_Cup.svg.png", mascot: "Zabivaka 🐺", mascotImg: "https://www.tudn.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F5b%2Fc5%2F47bca6fa41ffb6a7a3be3853cc49%2Fzabivaka.png&w=1280&q=75", ball: "Telstar 18 ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/50/Adidas_Telstar_18_in_Russia_vs._Argentina.jpg" },
+      2014: { hostFlag: "https://flagcdn.com/w320/br.png", champFlag: "https://flagcdn.com/w320/de.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/WC-2014-Brasil.svg/600px-WC-2014-Brasil.svg.png", mascot: "Fuleco 🦔", mascotImg: "https://s.yimg.com/ny/api/res/1.2/raMOxEUJQvEMbTXDYsexoQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTcyOTtjZj13ZWJw/https://media.zenfs.com/es_US/News/es.afp.com/photo_1347906101272-1-0.jpg", ball: "Brazuca ⚽", ballImg: "https://www.infobae.com/resizer/v2/QVJTGQEKQZCZRBSZ2BXDBHFAKU?auth=539c29e8b57d382e60a7080f6af1d1f3d06fe553d033e32f80b9dfd10bc7feaa&smart=true&width=1200&height=900&quality=85" },
+      2010: { hostFlag: "https://flagcdn.com/w320/za.png", champFlag: "https://flagcdn.com/w320/es.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/2010_FIFA_World_Cup_logo.svg/600px-2010_FIFA_World_Cup_logo.svg.png", mascot: "Zakumi 🐆", mascotImg: "https://visitaxela.wordpress.com/wp-content/uploads/2010/06/zakumi.jpg", ball: "Jabulani ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/57/Adidas_Jabulani_Official_World_Cup_2010_%284158450149%29.jpg" },
+      2006: { hostFlag: "https://flagcdn.com/w320/de.png", champFlag: "https://flagcdn.com/w320/it.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/2006_FIFA_World_Cup_logo.svg/600px-2006_FIFA_World_Cup_logo.svg.png", mascot: "Goleo VI 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqvYoadAnfFGuXQhfDFGhLZGQ18m4iG5q3pA&s", ball: "Teamgeist ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeaJnGD3DtySQOMmkTfAz9845Y9unVmjis5A&s" },
+      2002: { hostFlag: "https://flagcdn.com/w320/kr.png", champFlag: "https://flagcdn.com/w320/br.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/2002_FIFA_World_Cup_logo.svg/600px-2002_FIFA_World_Cup_logo.svg.png", mascot: "Ato, Kaz & Nik 👽", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPxzAnScqCWGrqdArzgKXj4Y_B_9Wu5uHTWS4z7t9eXQ&s", ball: "Fevernova ⚽", ballImg: "https://i.ebayimg.com/images/g/iu4AAeSwqLZoqu6l/s-l1200.webp" },
+      1998: { hostFlag: "https://flagcdn.com/w320/fr.png", champFlag: "https://flagcdn.com/w320/fr.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/1998_FIFA_World_Cup_logo.svg/600px-1998_FIFA_World_Cup_logo.svg.png", mascot: "Footix 🐓", mascotImg: "https://img.emisorasunidas.com/upload/2026/05/17161D524C43416D17110F54594947781F16171854434778141516.jpg", ball: "Tricolore ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe9ThcYWNP1TksC5yREFyOUY_ByUVa-xOTMQ&s" },
+      1994: { hostFlag: "https://flagcdn.com/w320/us.png", champFlag: "https://flagcdn.com/w320/br.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f3/1994_FIFA_World_Cup_logo.svg/600px-1994_FIFA_World_Cup_logo.svg.png", mascot: "Striker 🐶", mascotImg: "https://i.pinimg.com/736x/9a/12/cf/9a12cf867efe7bda136a13afbf3086c2.jpg", ball: "Questra ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678080_20180523105010.jpg" },
+      1990: { hostFlag: "https://flagcdn.com/w320/it.png", champFlag: "https://flagcdn.com/w320/de.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Italia_90.svg/600px-Italia_90.svg.png", mascot: "Ciao 🪆", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol0711-d3fd1dd3560da5cf8015856039727882-480-0.webp", ball: "Etrusco Unico ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuYUPQopKkV7hp_OnYW8Oz9YIigUtx32iOTA&s" },
+      1986: { hostFlag: "https://flagcdn.com/w320/mx.png", champFlag: "https://flagcdn.com/w320/ar.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/23/1986_FIFA_World_Cup_logo.svg/600px-1986_FIFA_World_Cup_logo.svg.png", mascot: "Pique 🌶️", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol051-62f73c0b1396e8267815856034166165-640-0.webp", ball: "Azteca ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTkouJjcM07mBZVXjBrMtkOr5na1p8cL8Mqg&s" },
+      1982: { hostFlag: "https://flagcdn.com/w320/es.png", champFlag: "https://flagcdn.com/w320/it.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/1982_FIFA_World_Cup_logo.svg/600px-1982_FIFA_World_Cup_logo.svg.png", mascot: "Naranjito 🍊", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZUirtVmwg5ZQxs-U_dBlh1Vhaqp1xfwb-w&s", ball: "Tango España ⚽", ballImg: "https://i.pinimg.com/564x/0a/a9/4f/0aa94f31c6bf757472d47eed684d0e49.jpg" },
+      1978: { hostFlag: "https://flagcdn.com/w320/ar.png", champFlag: "https://flagcdn.com/w320/ar.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/1978_FIFA_World_Cup_logo.svg/600px-1978_FIFA_World_Cup_logo.svg.png", mascot: "Gauchito 👦", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc82vVEOIgGkyII6jMVnLvmkHntVU_K2pK4A&s", ball: "Tango ⚽", ballImg: "https://lh6.googleusercontent.com/proxy/YvqCBi5_l5dl9Y_CuK4XL5svhR4MofODCjCB5htVp8R-vSTym-iWGPw32OV4YaroRLXX7izAd4N-ZITxfsZAv0hXaF1nYDVYdN4ROxN2xbIDvXkXy2VZlnWiYFxUy7T0ig" },
+      1974: { hostFlag: "https://flagcdn.com/w320/de.png", champFlag: "https://flagcdn.com/w320/de.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/1974_FIFA_World_Cup_logo.svg/600px-1974_FIFA_World_Cup_logo.svg.png", mascot: "Tip y Tap 👦👦", mascotImg: "https://www.mundiario.com/media/mundiario/images/2018/05/24/2018052417443888580.jpg", ball: "Telstar Durlast ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Telstar_Durlast.jpg/330px-Telstar_Durlast.jpg" },
+      1970: { hostFlag: "https://flagcdn.com/w320/mx.png", champFlag: "https://flagcdn.com/w320/br.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8c/1970_FIFA_World_Cup_logo.svg/600px-1970_FIFA_World_Cup_logo.svg.png", mascot: "Juanito 👦", mascotImg: "https://www.infobae.com/resizer/v2/RBFBVBU2HFGTLGB5P62V5Y2TTU.jpg?auth=b753e04443767024fe945b5b141fb16e5f4f61439f976c648b11591d7cf306d2&smart=true&width=350&height=467&quality=85", ball: "Telstar ⚽", ballImg: "https://http2.mlstatic.com/D_NQ_NP_634179-MLA89453347991_082025-O.webp" },
+      1966: { hostFlag: "https://flagcdn.com/w320/gb-eng.png", champFlag: "https://flagcdn.com/w320/gb-eng.png", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/23/1966_FIFA_World_Cup_logo.svg/600px-1966_FIFA_World_Cup_logo.svg.png", mascot: "World Cup Willie 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxnG1Xy7Z8M7c3zRIf7TcsUiFraLyaSTr4tw&s", ball: "Challenge 4-Star ⚽", ballImg: "https://i.etsystatic.com/38427944/r/il/8aa2d8/4366871280/il_fullxfull.4366871280_3stk.jpg" },
+      1962: { hostFlag: "https://media.istockphoto.com/id/175584631/es/vector/bandera-de-chile.jpg?s=612x612&w=0&k=20&c=sWEYjfxsthtfpDLCwCtfbiNFrzHSt3xp_T3JvHMhExw=", champFlag: "https://flagcdn.com/w320/br.png", logo: "", mascot: "N/A", mascotImg: "", ball: "Crack ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbQZHMnsEugCp72n-rvsi4KIlhrvN6hCQKIw&s" },
+      1958: { hostFlag: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Flag_of_Sweden.svg", champFlag: "https://flagcdn.com/w320/br.png", logo: "", mascot: "N/A", mascotImg: "", ball: "Top Star ⚽", ballImg: "https://www.sopitas.com/wp-content/uploads/2025/10/balones-mundial-1958.jpg" },
+      1954: { hostFlag: "https://upload.wikimedia.org/wikipedia/commons/0/08/Flag_of_Switzerland_%28Pantone%29.svg", champFlag: "https://flagcdn.com/w320/de.png", logo: "", mascot: "N/A", mascotImg: "", ball: "Swiss World Champion ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Balon_mundial_1954.jpg" },
+      1950: { hostFlag: "https://flagcdn.com/w320/br.png", champFlag: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpa2WUFbcL5iwqA3sAHqkNKTlNuWs2bAuKPg&s", logo: "", mascot: "N/A", mascotImg: "", ball: "Duplo T ⚽", ballImg: "https://phantom-expansion.unidadeditorial.es/021bff6c0ad3f2e8b8bc095b8952a719/assets/multimedia/imagenes/2022/11/22/16691363486911.jpg" },
+      1938: { hostFlag: "https://flagcdn.com/w320/fr.png", champFlag: "https://flagcdn.com/w320/it.png", logo: "", mascot: "N/A", mascotImg: "", ball: "Allen ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Balon_mundial_1938.jpg" },
+      1934: { hostFlag: "https://flagcdn.com/w320/it.png", champFlag: "https://flagcdn.com/w320/it.png", logo: "", mascot: "N/A", mascotImg: "", ball: "Federale 102 ⚽", ballImg: "https://i.pinimg.com/736x/a5/f5/30/a5f530fa350b3996b4ba96e88078f2fb.jpg" },
+      1930: { hostFlag: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpa2WUFbcL5iwqA3sAHqkNKTlNuWs2bAuKPg&s", champFlag: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpa2WUFbcL5iwqA3sAHqkNKTlNuWs2bAuKPg&s", logo: "", mascot: "N/A", mascotImg: "", ball: "T-Model / Tiento ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678126_20180523105001.jpg" }
     };
 
-    
+
     cards.innerHTML = window.EDITIONS.map(e => {
       // Transformar finalist info si runnersUp existe en lugar del viejo arreglo finalists
       const finalistsHtml = e.runnersUp ? `
@@ -423,16 +423,33 @@ function renderHistory() {
 
       return `
     <div class="ed-card ${e.year === selectedYear ? 'active' : ''}" id="ed-${e.year}">
-      <div class="ed-header">
-        <div class="ed-year">${e.year}</div>
-        <div class="ed-info-main">
-          <div class="ed-host">${e.host}</div>
-          <div class="ed-dates">${e.dates}</div>
+      <!-- Banner Rediseñado -->
+      <div style="display: flex; position: relative; height: 160px; border-radius: 8px 8px 0 0; overflow: hidden; margin-bottom: 20px; background: var(--navy2);">
+        
+        <!-- Left: Host Flag -->
+        <div style="flex: 1; position: relative;">
+          ${(e.host_flag || worldCupExtras[e.year]?.hostFlag) ? `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('${e.host_flag || worldCupExtras[e.year]?.hostFlag}'); background-size: cover; background-position: center;"></div>` : ''}
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(10,25,47,0.95) 10%, rgba(10,25,47,0.5) 100%);"></div>
+          <div style="position: relative; z-index: 1; padding: 25px 30px; color: white; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+            <div style="font-size: 42px; font-weight: 800; line-height: 1; color: var(--green);">${e.year}</div>
+            <div style="font-size: 20px; font-weight: 700; text-transform: uppercase; margin-top: 5px;">${e.host}</div>
+            <div style="font-size: 13px; color: var(--text4); margin-top: 5px;">${e.dates}</div>
+          </div>
         </div>
-        <div class="ed-champion-block">
-          <div class="ed-champion-lbl">CAMPEÓN</div>
-          <span class="ed-champion-flag">${e.champFlag}</span>
-          <div class="ed-champion-name">${e.champion}</div>
+
+        <!-- Center: Logo -->
+        <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; background: radial-gradient(circle, rgba(10,25,47,0.8) 0%, transparent 70%);">
+          ${(e.logo || worldCupExtras[e.year]?.logo) ? `<img src="${e.logo || worldCupExtras[e.year]?.logo}" style="max-width: 100%; max-height: 85%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));" alt="Logo ${e.year}">` : `<div style="font-size: 18px; color: white; opacity: 0.5;">Logo ${e.year}</div>`}
+        </div>
+
+        <!-- Right: Champion Flag -->
+        <div style="flex: 1; position: relative;">
+          ${(e.champion_flag || worldCupExtras[e.year]?.champFlag) ? `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('${e.champion_flag || worldCupExtras[e.year]?.champFlag}'); background-size: cover; background-position: center;"></div>` : ''}
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to left, rgba(10,25,47,0.95) 10%, rgba(10,25,47,0.5) 100%);"></div>
+          <div style="position: relative; z-index: 1; padding: 25px 30px; color: white; text-align: right; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+            <div style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text4); margin-bottom: 5px;">Campeón</div>
+            <div style="font-size: 28px; font-weight: 800; text-transform: uppercase; color: var(--gold);">${e.champion}</div>
+          </div>
         </div>
       </div>
       
@@ -1353,11 +1370,11 @@ document.addEventListener('DOMContentLoaded', () => {
     (typeof cargarCardsDesdeAPI === 'function' ? cargarCardsDesdeAPI() : Promise.resolve()),
     (typeof cargarPartidosEnVivo === 'function' ? cargarPartidosEnVivo() : Promise.resolve())
   ])
-  .finally(() => {
-    // Se oculta inmediatamente al resolverse (o fallar) todas las llamadas
-    clearTimeout(failsafeTimer); // Cancelamos el timer si terminó antes de los 5s
-    hideLoader();
-  });
+    .finally(() => {
+      // Se oculta inmediatamente al resolverse (o fallar) todas las llamadas
+      clearTimeout(failsafeTimer); // Cancelamos el timer si terminó antes de los 5s
+      hideLoader();
+    });
 
   // Refrescar partidos en vivo cada 60 segundos como fallback
   setInterval(() => {
@@ -3401,8 +3418,8 @@ async function hlShowGameOver(isVictory = false) {
       attemptsEl.innerHTML = `<span style="color:var(--gold);font-size:13px;">&#9203; Guardando puntaje...</span>`;
     }
     try {
-      const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:3000' 
+      const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3000'
         : 'https://mundialito-hzhf.onrender.com';
 
       const res = await fetch(`${API_BASE_URL}/api/stats/update`, {
