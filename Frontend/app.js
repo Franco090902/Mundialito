@@ -649,21 +649,75 @@ function debounce(fn, delay) {
   };
 }
 
+// ─────────────────────────────────────
+// Array constante: 48 países clasificados al Mundial 2026
+// Extraídos directamente de los grupos A–L definidos en window.GROUPS
+// ─────────────────────────────────────
+const PAISES_MUNDIAL_2026 = [
+  // Grupo A
+  "México", "Sudáfrica", "Corea del Sur", "Chequia",
+  // Grupo B
+  "Canadá", "Suiza", "Qatar", "Bosnia-Herzegovina",
+  // Grupo C
+  "Brasil", "Marruecos", "Escocia", "Haití",
+  // Grupo D
+  "EEUU", "Paraguay", "Australia", "Turquía",
+  // Grupo E
+  "Alemania", "Ecuador", "Costa de Marfil", "Curazao",
+  // Grupo F
+  "Países Bajos", "Japón", "Túnez", "Suecia",
+  // Grupo G
+  "Bélgica", "Irán", "Egipto", "Nueva Zelanda",
+  // Grupo H
+  "España", "Uruguay", "Arabia Saudita", "Cabo Verde",
+  // Grupo I
+  "Francia", "Senegal", "Noruega", "Irak",
+  // Grupo J
+  "Argentina", "Argelia", "Austria", "Jordania",
+  // Grupo K
+  "Portugal", "Colombia", "Uzbekistán", "R.D. Congo",
+  // Grupo L
+  "Inglaterra", "Croacia", "Ghana", "Panamá"
+].sort((a, b) => a.localeCompare(b, 'es'));
+
 // 1. Carga los países en los selectores correspondientes
 window.cargarFiltrosDinamicos = async function () {
   try {
-    // A) Países para el filtro de Noticias (Todos los posibles del Mundial 2026)
+    // A) Países para el filtro de Noticias
+    // Se puebla dinámicamente desde PAISES_MUNDIAL_2026 (48 clasificados al Mundial 2026).
+    // Si window.GROUPS ya está cargado, se extrae desde ahí para garantizar sincronía;
+    // en caso contrario se usa el array constante como fallback.
     const selectNoticias = document.getElementById('filtro-noticias');
     if (selectNoticias) {
-      const paisesMundial = [
-        "Alemania", "Arabia Saudita", "Argelia", "Argentina", "Australia", "Bélgica", "Brasil", "Camerún", "Canadá", "Colombia", "Corea del Sur", "Costa Rica", "Costa de Marfil", "Croacia", "Dinamarca", "Ecuador", "Egipto", "Emiratos Árabes Unidos", "España", "Estados Unidos", "Francia", "Gales", "Ghana", "Honduras", "Inglaterra", "Irán", "Italia", "Jamaica", "Japón", "Marruecos", "México", "Nigeria", "Nueva Zelanda", "Países Bajos", "Panamá", "Perú", "Polonia", "Portugal", "Qatar", "Senegal", "Serbia", "Suecia", "Suiza", "Turquía", "Túnez", "Ucrania", "Uruguay", "Venezuela"
-      ];
+      // Limpiar opciones previas (excepto la primera opción "Todos")
+      while (selectNoticias.options.length > 1) {
+        selectNoticias.remove(1);
+      }
+
+      // Intentar derivar los países desde window.GROUPS para mantener sincronía automática
+      let paisesMundial = PAISES_MUNDIAL_2026;
+      if (window.GROUPS && Object.keys(window.GROUPS).length > 0) {
+        const fromGroups = [];
+        Object.values(window.GROUPS).forEach(grupo => {
+          if (Array.isArray(grupo.teams)) {
+            grupo.teams.forEach(equipo => {
+              if (!fromGroups.includes(equipo)) fromGroups.push(equipo);
+            });
+          }
+        });
+        if (fromGroups.length === 48) {
+          paisesMundial = fromGroups.sort((a, b) => a.localeCompare(b, 'es'));
+        }
+      }
+
+      const fragment = document.createDocumentFragment();
       paisesMundial.forEach(pais => {
         const opt = document.createElement('option');
         opt.value = pais;
         opt.textContent = `📍 ${pais}`;
-        selectNoticias.appendChild(opt);
+        fragment.appendChild(opt);
       });
+      selectNoticias.appendChild(fragment);
     }
 
     // B) Países para el filtro de la Tienda (Solo los que tienen productos activos)
@@ -4060,6 +4114,166 @@ function xiDownload() {
   };
   img.src = url;
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   GUARDAR EN PERFIL
+──────────────────────────────────────────────────────────────────── */
+async function xiSaveToProfile() {
+  const btn = document.getElementById('btn-save-ideal-profile');
+  const msgEl = document.getElementById('xi-profile-msg');
+  if (!btn || !msgEl) return;
+
+  const formacionStr = xiState.formation;
+  const formationInfo = XI_FORMATIONS[formacionStr];
+  const onceJugadores = [];
+  
+  let validos = 0;
+  for (let i = 0; i < 11; i++) {
+    const key = `${formacionStr}_${i}`;
+    let name = xiState.playerNames[key];
+    
+    // Si no tiene nombre o tiene el nombre por defecto
+    if (!name || name.trim() === '' || name.startsWith('Jugador ')) {
+       name = '';
+    } else {
+       validos++;
+    }
+    
+    onceJugadores.push({
+      posicion: formationInfo.positions[i].label,
+      nombre: name,
+      pais: ""
+    });
+  }
+
+  if (validos < 11) {
+    msgEl.style.color = '#FF5555';
+    msgEl.textContent = `Faltan completar ${11 - validos} jugador(es).`;
+    msgEl.style.display = 'block';
+    setTimeout(() => msgEl.style.display = 'none', 3000);
+    return;
+  }
+
+  const onceData = {
+    formacion: formacionStr,
+    jugadores: onceJugadores
+  };
+
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  btn.innerHTML = '<span>⏳</span> GUARDANDO...';
+
+  try {
+    if (typeof window.actualizarPerfil === 'function') {
+      const { error } = await window.actualizarPerfil({ once_inicial: onceData });
+      if (error) throw error;
+
+      msgEl.style.color = 'var(--gold)';
+      msgEl.textContent = '✅ ¡11 inicial guardado en tu perfil!';
+      msgEl.style.display = 'block';
+      setTimeout(() => msgEl.style.display = 'none', 4000);
+    } else {
+      throw new Error('Iniciá sesión para guardar.');
+    }
+  } catch (err) {
+    console.error(err);
+    msgEl.style.color = '#FF5555';
+    msgEl.textContent = err.message || 'Error al guardar.';
+    msgEl.style.display = 'block';
+    setTimeout(() => msgEl.style.display = 'none', 4000);
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerHTML = '<span>💾</span> GUARDAR COMO MI 11 INICIAL';
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   CARGAR DESDE PERFIL
+──────────────────────────────────────────────────────────────────── */
+window.xiLoadFromProfile = function(onceData) {
+  if (!onceData || !onceData.formacion || !onceData.jugadores) return;
+  
+  const formacionStr = onceData.formacion;
+  if (XI_FORMATIONS[formacionStr]) {
+    xiState.formation = formacionStr;
+    const selectFormation = document.getElementById('xi-select-formation');
+    if (selectFormation) selectFormation.value = formacionStr;
+  }
+  
+  onceData.jugadores.forEach((jugador, i) => {
+    if (jugador && jugador.nombre) {
+      const key = `${xiState.formation}_${i}`;
+      xiState.playerNames[key] = jugador.nombre;
+    }
+  });
+  
+  xiRenderPlayers();
+};
+
+/* ──────────────────────────────────────────────────────────────────
+   RENDERIZAR SVG ESTÁTICO PARA EL PERFIL
+──────────────────────────────────────────────────────────────────── */
+window.renderProfilePitchHTML = function(onceData) {
+  if (!onceData || !onceData.formacion || !onceData.jugadores) return '';
+  const formation = XI_FORMATIONS[onceData.formacion];
+  if (!formation) return '';
+
+  const R = 22;
+  const primary = '#D5001C';
+  const secondary = '#FFFFFF';
+  const shorts = '#111111';
+  let playersHTML = '';
+
+  onceData.jugadores.forEach((jugador, i) => {
+    if (!jugador.nombre) return;
+    const pos = formation.positions[i];
+    if (!pos) return;
+    const sw = R * 2, sh = R * 1.7;
+    
+    playersHTML += `
+      <g transform="translate(${pos.x - R}, ${pos.y - R - 8})">
+        <path d="M ${sw*0.25} 4 L ${sw*0.05} ${sh*0.2} L ${sw*0.22} ${sh*0.3} L ${sw*0.22} ${sh} L ${sw*0.78} ${sh} L ${sw*0.78} ${sh*0.3} L ${sw*0.95} ${sh*0.2} L ${sw*0.75} 4 C ${sw*0.65} 0 ${sw*0.35} 0 ${sw*0.25} 4 Z" fill="${primary}" stroke="${secondary}" stroke-width="1.5"></path>
+        <rect x="${sw*0.22}" y="${sh*0.38}" width="${sw*0.56}" height="${sh*0.18}" fill="${secondary}" opacity="0.5"></rect>
+        <rect x="${sw*0.24}" y="${sh}" width="${sw*0.52}" height="${sh*0.28}" rx="2" fill="${shorts}"></rect>
+        <circle cx="${sw*0.5}" cy="-5" r="${R*0.55}" fill="#f0c8a0" stroke="${secondary}" stroke-width="1.5"></circle>
+        <text x="${sw*0.5}" y="${sh*0.55}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" font-family="Bebas Neue, sans-serif" fill="${secondary}" opacity="0.85">${i + 1}</text>
+      </g>
+      <rect x="${pos.x - 36}" y="${pos.y + R*0.9 - 9}" width="72" height="17" rx="3" fill="rgba(0,0,0,0.72)"></rect>
+      <text x="${pos.x}" y="${pos.y + R*0.9}" text-anchor="middle" dominant-baseline="middle" font-size="10.5" font-weight="700" font-family="Barlow Condensed, sans-serif" fill="white">${jugador.nombre}</text>
+      <text x="${pos.x}" y="${pos.y - R*1.6 - 14}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="700" font-family="Barlow Condensed, sans-serif" fill="rgba(255,255,255,0.65)">${jugador.posicion}</text>
+    `;
+  });
+
+  return `
+    <svg viewBox="0 0 440 620" style="max-width: 440px; width: 100%; height: auto; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); background: #2d8a4e;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="profile-stripe-pattern" patternUnits="userSpaceOnUse" width="55" height="620" patternTransform="rotate(0)">
+          <rect width="55" height="620" fill="transparent" />
+          <rect x="0" width="27.5" height="620" fill="rgba(0,0,0,0.06)" />
+        </pattern>
+      </defs>
+      <rect x="0" y="0" width="440" height="620" rx="4" fill="url(#profile-stripe-pattern)" />
+      <g fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2">
+        <rect x="22" y="18" width="396" height="584" rx="2" />
+        <line x1="22" y1="310" x2="418" y2="310" />
+        <circle cx="220" cy="310" r="60" />
+        <circle cx="220" cy="310" r="3" fill="rgba(255,255,255,0.7)" />
+        <rect x="96" y="482" width="248" height="120" />
+        <rect x="155" y="548" width="130" height="54" />
+        <rect x="96" y="18" width="248" height="120" />
+        <rect x="155" y="18" width="130" height="54" />
+        <path d="M 162 482 A 60 60 0 0 0 278 482" stroke-dasharray="4,3" />
+        <path d="M 162 138 A 60 60 0 0 1 278 138" stroke-dasharray="4,3" />
+        <circle cx="220" cy="524" r="3" fill="rgba(255,255,255,0.7)" />
+        <circle cx="220" cy="96" r="3" fill="rgba(255,255,255,0.7)" />
+        <rect x="186" y="602" width="68" height="18" stroke-width="3" />
+        <rect x="186" y="0" width="68" height="18" stroke-width="3" />
+      </g>
+      <g>${playersHTML}</g>
+    </svg>
+  `;
+};
 
 /* ──────────────────────────────────────────────────────────────────
    HOOK en switchTab — xiInit se llama desde switchTab('idealxi')

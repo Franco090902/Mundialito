@@ -1,0 +1,201 @@
+/* ══════════════════════════════════════════════════════════════════
+   ESTILOS PARA MI 11 INICIAL
+   Adaptado al diseño de Mundialito (Dark Theme)
+══════════════════════════════════════════════════════════════════ */
+
+.once-card {
+  background: var(--navy2, #0A1C30);
+  border: 1px solid var(--border2, #122B48);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-ui, sans-serif);
+  color: var(--offwhite, #F4F9FF);
+  margin-top: 30px;
+}
+
+.once-header {
+  background: var(--navy3, #0E2945);
+  border-bottom: 1px solid var(--border, #1C3D60);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.once-title {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--white, #FFFFFF);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.once-formacion-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.once-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3, #9CBDE6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.once-select {
+  background: var(--navy, #05101E);
+  color: var(--white, #FFFFFF);
+  border: 1px solid var(--border, #1C3D60);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+}
+.once-select:focus {
+  border-color: var(--red, #00AA55);
+}
+
+.once-grid {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.once-row {
+  display: grid;
+  grid-template-columns: 40px 140px 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+.once-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border2, #122B48);
+}
+
+@media (max-width: 600px) {
+  .once-row {
+    grid-template-columns: 40px 1fr;
+    grid-template-areas: 
+      "badge label"
+      "input1 input1"
+      "input2 input2";
+  }
+  .once-pos-badge { grid-area: badge; }
+  .once-pos-label { grid-area: label; }
+  .once-nombre    { grid-area: input1; }
+  .once-pais      { grid-area: input2; }
+}
+
+.once-pos-badge {
+  background: var(--navy4, #153B60);
+  color: var(--gold, #FFD700);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+  padding: 4px 0;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.once-pos-label {
+  font-size: 13px;
+  color: var(--text2, #D1E4F9);
+  font-weight: 600;
+}
+
+.once-input {
+  background: var(--navy, #05101E);
+  border: 1px solid var(--border, #1C3D60);
+  color: var(--white, #FFFFFF);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.once-input::placeholder {
+  color: var(--text4, #648DB8);
+}
+.once-input:focus {
+  border-color: var(--red, #00AA55);
+}
+
+.once-footer {
+  background: var(--navy3, #0E2945);
+  border-top: 1px solid var(--border, #1C3D60);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.once-counter {
+  font-size: 12px;
+  color: var(--text3, #9CBDE6);
+  font-weight: 700;
+}
+
+.once-btn-guardar {
+  background: var(--red, #00AA55);
+  color: var(--white, #FFFFFF);
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.once-btn-guardar:hover {
+  filter: brightness(1.1);
+}
+.once-btn-guardar:active {
+  transform: scale(0.98);
+}
+.once-btn-guardar:disabled {
+  background: var(--text4, #648DB8);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.once-msg {
+  flex-basis: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  padding-top: 8px;
+  text-align: right;
+  display: none;
+}
+.once-msg:not(:empty) {
+  display: block;
+}
+.once-msg--error {
+  color: #FF5555;
+}
+.once-msg--success {
+  color: var(--gold, #FFD700);
+}
