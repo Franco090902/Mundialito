@@ -1216,7 +1216,7 @@
       background: linear-gradient(135deg, #0D3560 0%, #0a2a50 50%, #0D3560 100%);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 36px 40px;
+      padding: 16px 20px;
       margin-bottom: 32px;
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1235,7 +1235,7 @@
 
     .hist-stat {
       text-align: center;
-      padding: 24px 20px;
+      padding: 10px 15px;
       border-right: 1px solid var(--border);
     }
 
@@ -1245,7 +1245,7 @@
 
     .hist-stat-num {
       font-family: var(--font-display);
-      font-size: 56px;
+      font-size: 36px;
       color: var(--white);
       line-height: 1;
     }
