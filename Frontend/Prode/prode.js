@@ -1005,7 +1005,18 @@ function renderGroupCard(group) {
         🗑️ Borrar grupo
       </button>
     </div>
-  ` : '';
+  ` : `
+    <div class="group-leave-actions">
+      <button
+        id="btn-salir-grupo-${group.id}"
+        class="btn-salir-comunidad"
+        onclick="prodeSalirGrupo('${group.id}', '${escapeAttr(group.nombre)}')"
+        aria-label="Salir del grupo ${escapeAttr(group.nombre)}"
+      >
+        🚪 Salir de la comunidad
+      </button>
+    </div>
+  `;
 
   return `
     <div class="group-card" id="group-card-${group.id}">
@@ -1395,6 +1406,107 @@ window.prodeDeleteGroup = async function(groupId, groupName) {
   } catch (err) {
     console.error('[Prode] Error borrando grupo:', err);
     showToast(err.message || 'Error al borrar el grupo.', 'error');
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────
+// SALIR DE UN GRUPO (miembro no-admin)
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Permite al usuario autenticado salir de una comunidad de la que
+ * es miembro (pero no administrador).
+ *
+ * Flujo:
+ *   1. Valida que _userId exista (sesión activa).
+ *   2. Muestra confirmación nativa.
+ *   3. Deshabilita el botón para evitar doble clic.
+ *   4. Realiza DELETE en prode_group_members filtrando por
+ *      group_id = groupId y user_id = _userId.
+ *   5. Si tiene éxito, aplica clase CSS .removing a la card
+ *      y la elimina del DOM tras la animación (350 ms).
+ *   6. Si falla, restaura el botón y muestra toast de error.
+ *
+ * @param {string} groupId   — UUID del grupo a abandonar
+ * @param {string} groupName — Nombre del grupo (para el confirm y toast)
+ */
+window.prodeSalirGrupo = async function (groupId, groupName) {
+  // Guardia: requiere sesión activa
+  if (!_userId) {
+    showToast('Debés iniciar sesión para realizar esta acción.', 'error');
+    return;
+  }
+
+  // Confirmación explícita del usuario
+  if (!confirm(`¿Querés salir del grupo "${groupName}"? Podrás volver a unirte con el código de invitación.`)) return;
+
+  const btn = document.getElementById(`btn-salir-grupo-${groupId}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Saliendo...';
+  }
+
+  try {
+    // DELETE a la tabla intermedia, filtrando estrictamente por ambas columnas
+    // para que las RLS de Supabase validen que el usuario solo borra su propia fila.
+    const { error } = await supabase
+      .from('prode_group_members')
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', _userId);
+
+    if (error) throw error;
+
+    // Actualizar el estado interno del módulo
+    _myGroups = _myGroups.filter(g => g.id !== groupId);
+
+    // Animar y remover la card del DOM sin recargar la página
+    const cardEl = document.getElementById(`group-card-${groupId}`);
+    if (cardEl) {
+      cardEl.classList.add('removing');
+      setTimeout(() => {
+        cardEl.remove();
+
+        // Actualizar el contador de grupos en el encabezado
+        const badge = document.querySelector('.groups-count-badge');
+        if (badge) badge.textContent = `${_myGroups.length} grupos`;
+
+        // Si no quedan grupos, mostrar el estado vacío
+        const container = document.getElementById('prode-communities-panel');
+        const remainingCards = container?.querySelectorAll('.group-card') || [];
+        if (remainingCards.length === 0) {
+          const groupsCol = container?.querySelector('.my-groups-header')?.parentElement;
+          if (groupsCol) {
+            const existingEmpty = groupsCol.querySelector('.prode-empty');
+            if (!existingEmpty) {
+              const emptyDiv = document.createElement('div');
+              emptyDiv.className = 'prode-empty';
+              emptyDiv.style.cssText = 'padding: 40px 20px';
+              emptyDiv.innerHTML = `
+                <span class="prode-empty-icon">👥</span>
+                <div class="prode-empty-title">Sin grupos todavía</div>
+                <div class="prode-empty-sub">Creá tu propio grupo o pedile el código a un amigo para unirte.</div>
+              `;
+              // Insertar después del header
+              const header = groupsCol.querySelector('.my-groups-header');
+              if (header) header.insertAdjacentElement('afterend', emptyDiv);
+            }
+          }
+        }
+      }, 350);
+    }
+
+    showToast(`Saliste del grupo "${groupName}" con éxito.`, 'success');
+
+  } catch (err) {
+    console.error('[Prode] Error al salir del grupo:', err);
+    showToast(err.message || 'No se pudo salir del grupo. Intentá de nuevo.', 'error');
+
+    // Restaurar el botón en caso de error
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🚪 Salir de la comunidad';
+    }
   }
 };
 

@@ -711,6 +711,44 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
 .group-admin-btn:hover { border-color: var(--red); color: var(--offwhite); }
 .group-admin-btn.btn--danger:hover { border-color: #ff6680; color: #ff6680; }
 
+/* ── Botón destructivo: Salir de la comunidad (miembros no-admin) ── */
+.group-leave-actions {
+  padding-top: 14px;
+  border-top: 1px solid var(--border2);
+  margin-top: 14px;
+}
+.btn-salir-comunidad {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #D5001C55;
+  color: #ff9999;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-salir-comunidad:hover:not(:disabled) {
+  background: #D5001C22;
+  border-color: #ff6680;
+  color: #ff6680;
+  transform: translateY(-1px);
+}
+.btn-salir-comunidad:active:not(:disabled) { transform: translateY(0); }
+.btn-salir-comunidad:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Ranking global */
 .global-ranking-section { margin-top: 36px; }
 .global-ranking-table {
@@ -766,7 +804,7 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
 .grt-exactos { font-size: 13px; color: var(--text3); text-align: center; }
 .grt-signo   { font-size: 13px; color: var(--text3); text-align: center; }
 
-/* Animación de expulsión */
+/* Animación de salida (expulsión / salir de grupo) */
 @keyframes slideOut {
   from { opacity: 1; transform: translateX(0); }
   to   { opacity: 0; transform: translateX(40px); }
