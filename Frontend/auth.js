@@ -195,14 +195,62 @@ async function cargarPerfil(userId) {
 
 
 // ══════════════════════════════════════════════════════════════════
-// FUNCIÓN 6: Actualizar perfil (username, avatar_url)
+// FUNCIÓN 6: Actualizar perfil (username, avatar_url, once_inicial)
 // ══════════════════════════════════════════════════════════════════
-export async function actualizarPerfil({ username, avatar_url }) {
+/**
+ * Actualiza la fila del usuario en la tabla `profiles`.
+ *
+ * @param {object} params
+ * @param {string}  [params.username]      — Nuevo nombre de usuario
+ * @param {string}  [params.avatar_url]    — Nueva URL del avatar
+ * @param {object|null} [params.once_inicial] — Objeto JSONB con la alineación (ver estructura abajo)
+ *
+ * Estructura de once_inicial:
+ * {
+ *   formacion: "4-3-3",          // esquema táctico (string libre)
+ *   jugadores: [                  // exactamente 11 elementos
+ *     {
+ *       posicion: "GK",           // código de posición: GK|CB|LB|RB|CDM|CM|CAM|LW|RW|SS|ST
+ *       nombre:   "Dibu Martínez",// nombre del jugador (máx. 50 chars)
+ *       pais:     "Argentina"     // nacionalidad opcional
+ *     },
+ *     // ... 10 más
+ *   ],
+ *   actualizado_at: "2026-06-04T13:00:00.000Z"  // ISO timestamp, lo pone esta función
+ * }
+ *
+ * @returns {{ data, error }}
+ */
+export async function actualizarPerfil({ username, avatar_url, once_inicial } = {}) {
   if (!currentUser) return { error: 'No hay sesión activa' };
+
+  // Construir solo los campos que se enviaron (undefined se omite)
+  const payload = { updated_at: new Date().toISOString() };
+
+  if (username   !== undefined) payload.username    = username;
+  if (avatar_url !== undefined) payload.avatar_url  = avatar_url;
+
+  // Validar y adjuntar once_inicial si se pasó
+  if (once_inicial !== undefined) {
+    if (once_inicial !== null) {
+      // Validación básica: debe contener exactamente 11 jugadores
+      if (!Array.isArray(once_inicial.jugadores) || once_inicial.jugadores.length !== 11) {
+        return { data: null, error: 'El once_inicial debe contener exactamente 11 jugadores.' };
+      }
+      // Adjuntar timestamp de actualización dentro del objeto
+      payload.once_inicial = {
+        ...once_inicial,
+        actualizado_at: new Date().toISOString(),
+      };
+    } else {
+      // Permitir borrar la alineación pasando null
+      payload.once_inicial = null;
+    }
+  }
 
   const { data, error } = await supabase
     .from('profiles')
-    .update({ username, avatar_url, updated_at: new Date().toISOString() })
+    .update(payload)
     .eq('id', currentUser.id)
     .select()
     .single();
@@ -210,6 +258,7 @@ export async function actualizarPerfil({ username, avatar_url }) {
   if (!error) currentProfile = data;
   return { data, error };
 }
+
 
 
 // ══════════════════════════════════════════════════════════════════

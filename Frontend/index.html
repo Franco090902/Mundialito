@@ -873,13 +873,17 @@
               </div>
 
               <!-- Acciones -->
-              <div class="xi-actions">
+              <div class="xi-actions" style="flex-wrap: wrap;">
                 <button class="xi-btn-primary" onclick="xiDownload()">
                   <span>⬇</span> DESCARGAR
                 </button>
                 <button class="xi-btn-secondary" onclick="xiReset()">
                   <span>↺</span> RESETEAR
                 </button>
+                <button class="xi-btn-primary" id="btn-save-ideal-profile" onclick="xiSaveToProfile()" style="background: var(--gold); color: black; flex-basis: 100%;">
+                  <span>💾</span> GUARDAR COMO MI 11 INICIAL
+                </button>
+                <div id="xi-profile-msg" style="flex-basis: 100%; font-size: 13px; font-weight: bold; text-align: center; margin-top: 5px; display: none;"></div>
               </div>
 
               <!-- Instrucciones -->
@@ -1065,7 +1069,6 @@
               </div>
 
             </div>
-          </div>
             
             <p class="section-label" style="margin-top: 30px;">🎮 Mis Estadísticas de Juegos</p>
             <div class="perfil-card" style="padding: 20px;">
@@ -1107,6 +1110,15 @@
 
           <!-- Columna Derecha: Configuración de Cuenta & Cambio de Contraseña -->
           <div>
+
+            <!-- Mi 11 Inicial -->
+            <div class="perfil-card" style="padding: 20px; text-align: center; overflow-x: auto;">
+              <div class="perfil-card-title" style="margin-bottom:15px; text-align:left;">⚽ Mi 11 Inicial</div>
+              <div id="perfil-once-inicial-container">
+                <div style="color:var(--text4);font-size:13px;padding:14px 0">Aún no has guardado tu 11 ideal. Ve a la pestaña "Juegos > 11 Ideal" para armarlo.</div>
+              </div>
+            </div>
+
             <!-- Ajustes de Perfil -->
             <div class="perfil-card">
               <div class="perfil-card-title">⚙️ Ajustes de Cuenta</div>
@@ -1328,6 +1340,9 @@
     import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from './auth.js';
     import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from './realtime.js';
     import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
+
+    // Exponer función de perfil para que app.js pueda guardar el 11 inicial
+    window.actualizarPerfil = actualizarPerfil;
 
     // ╔═════════════════════════════════════════════════════
     // EXPONER SUPABASE GLOBALMENTE
@@ -1557,6 +1572,11 @@
         // Inicializar el Prode — módulo vanilla (app.js) como respaldo
         if (typeof window.prodeInit === 'function') window.prodeInit(user.id);
 
+        // Cargar el 11 inicial en el tablero si ya existía
+        if (profile?.once_inicial && typeof window.xiLoadFromProfile === 'function') {
+          window.xiLoadFromProfile(profile.once_inicial);
+        }
+
         // Sincronizar visibilidad de overlays
         const overlayEl = document.getElementById('auth-overlay');
         const appWrapperEl = document.getElementById('app-wrapper');
@@ -1723,6 +1743,16 @@
       } else {
         if (precisionLabel) precisionLabel.textContent = '0%';
         if (precisionBar) precisionBar.style.width = '0%';
+      }
+
+      // D) 11 Inicial en Perfil
+      const onceContainer = document.getElementById('perfil-once-inicial-container');
+      if (onceContainer) {
+        if (profile.once_inicial && typeof window.renderProfilePitchHTML === 'function') {
+          onceContainer.innerHTML = window.renderProfilePitchHTML(profile.once_inicial);
+        } else {
+          onceContainer.innerHTML = '<div style="color:var(--text4);font-size:13px;padding:14px 0">Aún no has guardado tu 11 ideal. Ve a la pestaña "Juegos > 11 Ideal" para armarlo.</div>';
+        }
       }
     }
 
