@@ -333,7 +333,11 @@ function actualizarUILogueado(profile) {
 
   // ── Cargar estadísticas de juegos desde el backend ─────────────────
   if (currentUser) {
-    fetch(`/api/users/${currentUser.id}/profile`)
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:3000' 
+      : 'https://mundialito-hzhf.onrender.com';
+
+    fetch(`${API_BASE_URL}/api/users/${currentUser.id}/profile`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.game_stats) {

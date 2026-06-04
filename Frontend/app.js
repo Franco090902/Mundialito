@@ -381,30 +381,31 @@ function renderHistory() {
     };
 
     const worldCupExtras = {
-      2022: { mascot: "La'eeb 👻", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCr-PMfoZHc7VSTYexCEIcRhwEVYh-Necy7A&s", ball: "Al Rihla ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Adidas_Al_Rihla.jpg/300px-Adidas_Al_Rihla.jpg" },
-      2018: { mascot: "Zabivaka 🐺", mascotImg: "https://www.tudn.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F5b%2Fc5%2F47bca6fa41ffb6a7a3be3853cc49%2Fzabivaka.png&w=1280&q=75", ball: "Telstar 18 ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Telstar_18%2C_2018_FIFA_World_Cup_official_match_ball.jpg/300px-Telstar_18%2C_2018_FIFA_World_Cup_official_match_ball.jpg" },
-      2014: { mascot: "Fuleco 🦔", mascotImg: "https://s.yimg.com/ny/api/res/1.2/raMOxEUJQvEMbTXDYsexoQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTcyOTtjZj13ZWJw/https://media.zenfs.com/es_US/News/es.afp.com/photo_1347906101272-1-0.jpg", ball: "Brazuca ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Brazuca.jpg/300px-Brazuca.jpg" },
-      2010: { mascot: "Zakumi 🐆", mascotImg: "https://visitaxela.wordpress.com/wp-content/uploads/2010/06/zakumi.jpg", ball: "Jabulani ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Jabulani.jpg/300px-Jabulani.jpg" },
-      2006: { mascot: "Goleo VI 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqvYoadAnfFGuXQhfDFGhLZGQ18m4iG5q3pA&s", ball: "Teamgeist ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Teamgeist.jpg/300px-Teamgeist.jpg" },
-      2002: { mascot: "Ato, Kaz & Nik 👽", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPxzAnScqCWGrqdArzgKXj4Y_B_9Wu5uHTWS4z7t9eXQ&s", ball: "Fevernova ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Fevernova.jpg/300px-Fevernova.jpg" },
-      1998: { mascot: "Footix 🐓", mascotImg: "https://img.emisorasunidas.com/upload/2026/05/17161D524C43416D17110F54594947781F16171854434778141516.jpg", ball: "Tricolore ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Adidas_Tricolore.jpg/300px-Adidas_Tricolore.jpg" },
-      1994: { mascot: "Striker 🐶", mascotImg: "https://i.pinimg.com/736x/9a/12/cf/9a12cf867efe7bda136a13afbf3086c2.jpg", ball: "Questra ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Adidas_Questra.jpg/300px-Adidas_Questra.jpg" },
-      1990: { mascot: "Ciao 🪆", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol0711-d3fd1dd3560da5cf8015856039727882-480-0.webp", ball: "Etrusco Unico ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Etrusco_Unico.jpg/300px-Etrusco_Unico.jpg" },
-      1986: { mascot: "Pique 🌶️", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol051-62f73c0b1396e8267815856034166165-640-0.webp", ball: "Azteca ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Azteca-mexico.jpg/300px-Azteca-mexico.jpg" },
-      1982: { mascot: "Naranjito 🍊", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZUirtVmwg5ZQxs-U_dBlh1Vhaqp1xfwb-w&s", ball: "Tango España ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Tango_Espa%C3%B1a_football_ball.jpg/300px-Tango_Espa%C3%B1a_football_ball.jpg" },
-      1978: { mascot: "Gauchito 👦", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc82vVEOIgGkyII6jMVnLvmkHntVU_K2pK4A&s", ball: "Tango ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tango_Rosario.jpg/300px-Tango_Rosario.jpg" },
-      1974: { mascot: "Tip y Tap 👦👦", mascotImg: "https://www.mundiario.com/media/mundiario/images/2018/05/24/2018052417443888580.jpg", ball: "Telstar Durlast ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Adidas_Telstar.jpg/300px-Adidas_Telstar.jpg" },
-      1970: { mascot: "Juanito 👦", mascotImg: "https://www.infobae.com/resizer/v2/RBFBVBU2HFGTLGB5P62V5Y2TTU.jpg?auth=b753e04443767024fe945b5b141fb16e5f4f61439f976c648b11591d7cf306d2&smart=true&width=350&height=467&quality=85", ball: "Telstar ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Adidas_Telstar.jpg/300px-Adidas_Telstar.jpg" },
-      1966: { mascot: "World Cup Willie 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxnG1Xy7Z8M7c3zRIf7TcsUiFraLyaSTr4tw&s", ball: "Challenge 4-Star ⚽", ballImg: "" },
-      1962: { mascot: "N/A", mascotImg: "", ball: "Crack ⚽", ballImg: "" },
-      1958: { mascot: "N/A", mascotImg: "", ball: "Top Star ⚽", ballImg: "" },
-      1954: { mascot: "N/A", mascotImg: "", ball: "Swiss World Champion ⚽", ballImg: "" },
-      1950: { mascot: "N/A", mascotImg: "", ball: "Duplo T ⚽", ballImg: "" },
-      1938: { mascot: "N/A", mascotImg: "", ball: "Allen ⚽", ballImg: "" },
-      1934: { mascot: "N/A", mascotImg: "", ball: "Federale 102 ⚽", ballImg: "" },
-      1930: { mascot: "N/A", mascotImg: "", ball: "T-Model / Tiento ⚽", ballImg: "" }
+      2022: { mascot: "La'eeb 👻", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCr-PMfoZHc7VSTYexCEIcRhwEVYh-Necy7A&s", ball: "Al Rihla ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/2/25/Al-Rihla_%28cropped%29.jpg" },
+      2018: { mascot: "Zabivaka 🐺", mascotImg: "https://www.tudn.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F5b%2Fc5%2F47bca6fa41ffb6a7a3be3853cc49%2Fzabivaka.png&w=1280&q=75", ball: "Telstar 18 ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/50/Adidas_Telstar_18_in_Russia_vs._Argentina.jpg" },
+      2014: { mascot: "Fuleco 🦔", mascotImg: "https://s.yimg.com/ny/api/res/1.2/raMOxEUJQvEMbTXDYsexoQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTcyOTtjZj13ZWJw/https://media.zenfs.com/es_US/News/es.afp.com/photo_1347906101272-1-0.jpg", ball: "Brazuca ⚽", ballImg: "https://www.infobae.com/resizer/v2/QVJTGQEKQZCZRBSZ2BXDBHFAKU?auth=539c29e8b57d382e60a7080f6af1d1f3d06fe553d033e32f80b9dfd10bc7feaa&smart=true&width=1200&height=900&quality=85" },
+      2010: { mascot: "Zakumi 🐆", mascotImg: "https://visitaxela.wordpress.com/wp-content/uploads/2010/06/zakumi.jpg", ball: "Jabulani ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/5/57/Adidas_Jabulani_Official_World_Cup_2010_%284158450149%29.jpg" },
+      2006: { mascot: "Goleo VI 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqvYoadAnfFGuXQhfDFGhLZGQ18m4iG5q3pA&s", ball: "Teamgeist ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeaJnGD3DtySQOMmkTfAz9845Y9unVmjis5A&s" },
+      2002: { mascot: "Ato, Kaz & Nik 👽", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPxzAnScqCWGrqdArzgKXj4Y_B_9Wu5uHTWS4z7t9eXQ&s", ball: "Fevernova ⚽", ballImg: "https://i.ebayimg.com/images/g/iu4AAeSwqLZoqu6l/s-l1200.webp" },
+      1998: { mascot: "Footix 🐓", mascotImg: "https://img.emisorasunidas.com/upload/2026/05/17161D524C43416D17110F54594947781F16171854434778141516.jpg", ball: "Tricolore ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe9ThcYWNP1TksC5yREFyOUY_ByUVa-xOTMQ&s" },
+      1994: { mascot: "Striker 🐶", mascotImg: "https://i.pinimg.com/736x/9a/12/cf/9a12cf867efe7bda136a13afbf3086c2.jpg", ball: "Questra ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678080_20180523105010.jpg" },
+      1990: { mascot: "Ciao 🪆", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol0711-d3fd1dd3560da5cf8015856039727882-480-0.webp", ball: "Etrusco Unico ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuYUPQopKkV7hp_OnYW8Oz9YIigUtx32iOTA&s" },
+      1986: { mascot: "Pique 🌶️", mascotImg: "https://acdn-us.mitiendanube.com/stores/001/069/039/products/futbol051-62f73c0b1396e8267815856034166165-640-0.webp", ball: "Azteca ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTkouJjcM07mBZVXjBrMtkOr5na1p8cL8Mqg&s" },
+      1982: { mascot: "Naranjito 🍊", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZUirtVmwg5ZQxs-U_dBlh1Vhaqp1xfwb-w&s", ball: "Tango España ⚽", ballImg: "https://i.pinimg.com/564x/0a/a9/4f/0aa94f31c6bf757472d47eed684d0e49.jpg" },
+      1978: { mascot: "Gauchito 👦", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc82vVEOIgGkyII6jMVnLvmkHntVU_K2pK4A&s", ball: "Tango ⚽", ballImg: "https://lh6.googleusercontent.com/proxy/YvqCBi5_l5dl9Y_CuK4XL5svhR4MofODCjCB5htVp8R-vSTym-iWGPw32OV4YaroRLXX7izAd4N-ZITxfsZAv0hXaF1nYDVYdN4ROxN2xbIDvXkXy2VZlnWiYFxUy7T0ig" },
+      1974: { mascot: "Tip y Tap 👦👦", mascotImg: "https://www.mundiario.com/media/mundiario/images/2018/05/24/2018052417443888580.jpg", ball: "Telstar Durlast ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Telstar_Durlast.jpg/330px-Telstar_Durlast.jpg" },
+      1970: { mascot: "Juanito 👦", mascotImg: "https://www.infobae.com/resizer/v2/RBFBVBU2HFGTLGB5P62V5Y2TTU.jpg?auth=b753e04443767024fe945b5b141fb16e5f4f61439f976c648b11591d7cf306d2&smart=true&width=350&height=467&quality=85", ball: "Telstar ⚽", ballImg: "https://http2.mlstatic.com/D_NQ_NP_634179-MLA89453347991_082025-O.webp" },
+      1966: { mascot: "World Cup Willie 🦁", mascotImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxnG1Xy7Z8M7c3zRIf7TcsUiFraLyaSTr4tw&s", ball: "Challenge 4-Star ⚽", ballImg: "https://i.etsystatic.com/38427944/r/il/8aa2d8/4366871280/il_fullxfull.4366871280_3stk.jpg" },
+      1962: { mascot: "N/A", mascotImg: "", ball: "Crack ⚽", ballImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbQZHMnsEugCp72n-rvsi4KIlhrvN6hCQKIw&s" },
+      1958: { mascot: "N/A", mascotImg: "", ball: "Top Star ⚽", ballImg: "https://www.sopitas.com/wp-content/uploads/2025/10/balones-mundial-1958.jpg" },
+      1954: { mascot: "N/A", mascotImg: "", ball: "Swiss World Champion ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Balon_mundial_1954.jpg" },
+      1950: { mascot: "N/A", mascotImg: "", ball: "Duplo T ⚽", ballImg: "https://phantom-expansion.unidadeditorial.es/021bff6c0ad3f2e8b8bc095b8952a719/assets/multimedia/imagenes/2022/11/22/16691363486911.jpg" },
+      1938: { mascot: "N/A", mascotImg: "", ball: "Allen ⚽", ballImg: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Balon_mundial_1938.jpg" },
+      1934: { mascot: "N/A", mascotImg: "", ball: "Federale 102 ⚽", ballImg: "https://i.pinimg.com/736x/a5/f5/30/a5f530fa350b3996b4ba96e88078f2fb.jpg" },
+      1930: { mascot: "N/A", mascotImg: "", ball: "T-Model / Tiento ⚽", ballImg: "https://www.rionegro.com.ar/wp-content/uploads/documents/1/0/image_content_9678126_20180523105001.jpg" }
     };
 
+    
     cards.innerHTML = window.EDITIONS.map(e => {
       // Transformar finalist info si runnersUp existe en lugar del viejo arreglo finalists
       const finalistsHtml = e.runnersUp ? `
@@ -3082,7 +3083,7 @@ const HL_METRICS = [
 /* ──────────────────────────────────────────────────────────────────
    CONSTANTES Y ESTADO GLOBAL
 ──────────────────────────────────────────────────────────────────── */
-const HL_MAX_DAILY_ATTEMPTS = 5;
+const HL_MAX_DAILY_ATTEMPTS = Infinity;
 const HL_LS_KEY = 'mundialito_hl_data';
 
 let hlState = {
@@ -3114,9 +3115,8 @@ function hlGetTodayStr() {
 }
 
 function hlGetAttemptsLeft() {
-  const data = hlGetStorage();
-  if (data.date !== hlGetTodayStr()) return HL_MAX_DAILY_ATTEMPTS;
-  return Math.max(0, HL_MAX_DAILY_ATTEMPTS - (data.attempts || 0));
+  // Límite diario desactivado — intentos ilimitados
+  return Infinity;
 }
 
 function hlIncrementAttempt() {
@@ -3238,23 +3238,15 @@ function hlRenderRound() {
 
 function hlUpdateScoreDisplay() {
   document.getElementById('hl-score').textContent = hlState.score;
-  const attLeft = hlGetAttemptsLeft();
-  const dots = Array(HL_MAX_DAILY_ATTEMPTS).fill('●')
-    .map((d, i) => `<span style="color:${i < attLeft ? 'var(--red)' : 'var(--border)'}">●</span>`)
-    .join(' ');
-  document.getElementById('hl-attempts-mini').innerHTML = dots;
+  // Intentos ilimitados — no se muestran los puntos de intentos
+  const miniEl = document.getElementById('hl-attempts-mini');
+  if (miniEl) miniEl.innerHTML = '';
 }
 
 /* ──────────────────────────────────────────────────────────────────
    INICIO DEL JUEGO
 ──────────────────────────────────────────────────────────────────── */
 function hlStartGame() {
-  const attLeft = hlGetAttemptsLeft();
-  if (attLeft <= 0) {
-    alert('¡Ya usaste tus 5 intentos de hoy! Volvé mañana para jugar de nuevo.');
-    return;
-  }
-
   hlIncrementAttempt();
   hlState.score = 0;
   hlState.previousRightEntity = null;
@@ -3341,10 +3333,9 @@ function hlNextRound() {
 /* ──────────────────────────────────────────────────────────────────
    GAME OVER
 ──────────────────────────────────────────────────────────────────── */
-function hlShowGameOver(isVictory = false) {
+async function hlShowGameOver(isVictory = false) {
   const score = hlState.score;
   const isRecord = hlUpdateRecord(score);
-  const attLeft = hlGetAttemptsLeft();
 
   const { currentLeft: L, currentRight: R, currentMetric: M } = hlState;
   const formatVal = (v) => M ? (M.format ? M.format(v) : v.toLocaleString('es-AR')) : v;
@@ -3367,10 +3358,64 @@ function hlShowGameOver(isVictory = false) {
   document.getElementById('hl-go-record-msg').textContent =
     isRecord && score > 0 ? `🏆 ¡NUEVO RÉCORD PERSONAL!` : `Tu récord: ${hlGetRecord()} puntos`;
 
-  document.getElementById('hl-go-attempts-left').textContent =
-    attLeft > 0 ? `Te quedan ${attLeft} intento${attLeft !== 1 ? 's' : ''} hoy` : 'Agotaste tus intentos de hoy. ¡Volvé mañana!';
+  // ── INTEGRACIÓN CON BACKEND ────────────────────────────────────────
+  const attemptsEl = document.getElementById('hl-go-attempts-left');
 
-  document.getElementById('hl-btn-retry').disabled = attLeft <= 0;
+  if (window.isUserAuthenticated && window.isUserAuthenticated()) {
+    // Usuario logueado → guardar puntaje en el servidor
+    if (attemptsEl) {
+      attemptsEl.innerHTML = `<span style="color:var(--gold);font-size:13px;">&#9203; Guardando puntaje...</span>`;
+    }
+    try {
+      const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000' 
+        : 'https://mundialito-hzhf.onrender.com';
+
+      const res = await fetch(`${API_BASE_URL}/api/stats/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game_name: 'higher_lower',
+          score: score,
+          user_id: window.getCurrentUserId()
+        })
+      });
+      if (res.ok) {
+        if (attemptsEl) {
+          attemptsEl.innerHTML = `<span style="color:#4caf50;font-size:13px;display:flex;align-items:center;gap:6px;justify-content:center;">&#10003; Puntaje guardado en tu perfil</span>`;
+        }
+        // Refrescar el widget de ranking para reflejar el nuevo puntaje
+        if (typeof window.refreshGameRanking === 'function') {
+          window.refreshGameRanking('higher_lower');
+        }
+      } else {
+        console.error('[HL] Error al guardar stats:', await res.json().catch(() => ({})));
+        if (attemptsEl) attemptsEl.innerHTML = '';
+      }
+    } catch (err) {
+      console.error('[HL] Error de red al guardar stats:', err);
+      if (attemptsEl) attemptsEl.innerHTML = '';
+    }
+  } else {
+    // Usuario anónimo → mostrar CTA para iniciar sesión
+    if (attemptsEl) {
+      attemptsEl.innerHTML = `
+        <div style="margin-top:10px;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;text-align:center;font-size:13px;color:var(--text2,#ccc);line-height:1.5;">
+          🏆 <strong style="color:var(--gold,#f0c040);">Iniciá sesión para guardar tu récord en el ranking global</strong>
+          <br>
+          <button
+            id="hl-go-login-btn"
+            onclick="document.getElementById('auth-overlay').classList.remove('hidden')"
+            style="margin-top:10px;padding:8px 20px;background:var(--gold,#f0c040);color:#111;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'"
+            onmouseout="this.style.opacity='1'"
+          >Iniciá sesión &#128100;</button>
+        </div>`;
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────
+
+  document.getElementById('hl-btn-retry').disabled = false;
 
   hlShowScreen('gameover');
 }
@@ -3387,13 +3432,12 @@ function hlUpdateHomeScreen() {
   const attLeft = hlGetAttemptsLeft();
   const record = hlGetRecord();
 
-  document.getElementById('hl-attempts-display').textContent =
-    `${attLeft} intento${attLeft !== 1 ? 's' : ''} disponible${attLeft !== 1 ? 's' : ''} hoy`;
+  document.getElementById('hl-attempts-display').textContent = 'Intentos ilimitados';
 
   const startBtn = document.getElementById('hl-btn-start');
   if (startBtn) {
-    startBtn.disabled = attLeft <= 0;
-    startBtn.textContent = attLeft <= 0 ? 'VOLVÉ MAÑANA' : 'JUGAR';
+    startBtn.disabled = false;
+    startBtn.textContent = 'JUGAR';
   }
 
   const recordEl = document.getElementById('hl-start-record');

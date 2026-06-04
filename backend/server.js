@@ -3097,7 +3097,7 @@ app.post('/api/stats/update', async (req, res) => {
 
     const { error: upsertErr } = await supabase
       .from('game_stats')
-      .upsert(upsertData, { onConflict: 'user_id, game_name' });
+      .upsert(upsertData, { onConflict: 'user_id,game_name', ignoreDuplicates: false });
 
     if (upsertErr) throw upsertErr;
 

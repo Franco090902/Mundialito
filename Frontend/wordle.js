@@ -16,7 +16,7 @@ const WL_DICT = {
 
 /* ── Constantes ── */
 const WL_MAX_TRIES = 6;
-const WL_MAX_DAILY = 5;
+const WL_MAX_DAILY = Infinity;
 const WL_STORAGE_KEY = "wf_daily_v2";
 
 /* ── Estado del juego ── */
@@ -154,19 +154,10 @@ function wlPickWord(len) {
 ════════════════════════════════════════ */
 
 function wlCheckLimit(preserveMsg = false) {
-  const played = wlGetGamesPlayed();
+  // Límite diario desactivado — siempre se puede jugar
   const limitEl = document.getElementById("wl-limit-msg");
   const boardEl = document.getElementById("wl-board");
   const kbdEl = document.getElementById("wl-kbd");
-
-  if (played >= WL_MAX_DAILY) {
-    if (limitEl) limitEl.style.display = "block";
-    if (boardEl) boardEl.style.display = "none";
-    if (kbdEl) kbdEl.style.display = "none";
-    if (!preserveMsg) wlSetMsg("", "");
-    return true;
-  }
-
   if (limitEl) limitEl.style.display = "none";
   if (boardEl) boardEl.style.display = "flex";
   if (kbdEl) kbdEl.style.display = "flex";
@@ -174,9 +165,9 @@ function wlCheckLimit(preserveMsg = false) {
 }
 
 function wlUpdateCounter() {
-  const n = wlGetGamesPlayed();
+  // Contador diario desactivado
   const el = document.getElementById("wl-counter");
-  if (el) el.innerHTML = `Partidas hoy: <strong>${n} / ${WL_MAX_DAILY}</strong>`;
+  if (el) el.style.display = "none";
 }
 
 /* ════════════════════════════════════════
@@ -410,7 +401,11 @@ async function wlHandleGameEnd(won) {
   if (window.isUserAuthenticated && window.isUserAuthenticated()) {
     const score = won ? ((WL_MAX_TRIES - wlRow) * 10) : 0;
     try {
-      const res = await fetch('/api/stats/update', {
+      const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000' 
+        : 'https://mundialito-hzhf.onrender.com';
+
+      const res = await fetch(`${API_BASE_URL}/api/stats/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -426,14 +421,18 @@ async function wlHandleGameEnd(won) {
         if (savedEl) {
           savedEl.innerHTML = `<span style="color:#4caf50; font-size:13px; display:flex; align-items:center; gap:6px; justify-content:center;">&#10003; Racha guardada en tu perfil</span>`;
         }
+        // Refrescar el widget de ranking para reflejar la nueva racha
+        if (typeof window.refreshGameRanking === 'function') {
+          window.refreshGameRanking('wordle');
+        }
       }
     } catch(e) {
       console.error('Error guardando stats:', e);
     }
+    // Auto-reinicio solo si el usuario está logueado
+    wlScheduleRestart();
   }
-
-  // Auto-reinicio
-  wlScheduleRestart();
+  // Si no está autenticado, no reinicia automáticamente. Espera interacción con el card.
 }
 
 function wlShowResultCard(won) {
@@ -467,9 +466,14 @@ function wlShowResultCard(won) {
         <div class="wl-card-icon">🏆</div>
         <div class="wl-card-title">Guardá tu racha</div>
         <div class="wl-card-desc">${streakMsg}</div>
-        <button class="wl-card-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">
-          Iniciá sesión 👤
-        </button>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+          <button class="wl-card-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">
+            Iniciá sesión 👤
+          </button>
+          <button class="wl-card-btn" style="background: rgba(255,255,255,0.1); color: var(--text2, #ccc);" onclick="wlStartGame()">
+            Continuar sin iniciar sesión ▶
+          </button>
+        </div>
       </div>
     `;
   }
@@ -491,9 +495,6 @@ function wlUpdateStreakDisplay() {
 }
 
 function wlScheduleRestart() {
-  // No reiniciar si ya llegó al límite
-  if (wlGetGamesPlayed() >= WL_MAX_DAILY) return;
-
   let secs = 3;
   const msgEl = document.getElementById('wl-restart-countdown');
   if (msgEl) {
@@ -513,9 +514,7 @@ function wlScheduleRestart() {
     }
     if (secs <= 0) {
       clearInterval(interval);
-      if (wlGetGamesPlayed() < WL_MAX_DAILY) {
-        wlStartGame();
-      }
+      wlStartGame();
     }
   }, 1000);
 }

@@ -227,5 +227,5 @@ CREATE TABLE public.game_stats (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT game_stats_pkey PRIMARY KEY (user_id, game_name),
-  CONSTRAINT game_stats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE
+  CONSTRAINT game_stats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
