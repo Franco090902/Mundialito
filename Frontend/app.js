@@ -632,21 +632,75 @@ function debounce(fn, delay) {
   };
 }
 
+// ─────────────────────────────────────
+// Array constante: 48 países clasificados al Mundial 2026
+// Extraídos directamente de los grupos A–L definidos en window.GROUPS
+// ─────────────────────────────────────
+const PAISES_MUNDIAL_2026 = [
+  // Grupo A
+  "México", "Sudáfrica", "Corea del Sur", "Chequia",
+  // Grupo B
+  "Canadá", "Suiza", "Qatar", "Bosnia-Herzegovina",
+  // Grupo C
+  "Brasil", "Marruecos", "Escocia", "Haití",
+  // Grupo D
+  "EEUU", "Paraguay", "Australia", "Turquía",
+  // Grupo E
+  "Alemania", "Ecuador", "Costa de Marfil", "Curazao",
+  // Grupo F
+  "Países Bajos", "Japón", "Túnez", "Suecia",
+  // Grupo G
+  "Bélgica", "Irán", "Egipto", "Nueva Zelanda",
+  // Grupo H
+  "España", "Uruguay", "Arabia Saudita", "Cabo Verde",
+  // Grupo I
+  "Francia", "Senegal", "Noruega", "Irak",
+  // Grupo J
+  "Argentina", "Argelia", "Austria", "Jordania",
+  // Grupo K
+  "Portugal", "Colombia", "Uzbekistán", "R.D. Congo",
+  // Grupo L
+  "Inglaterra", "Croacia", "Ghana", "Panamá"
+].sort((a, b) => a.localeCompare(b, 'es'));
+
 // 1. Carga los países en los selectores correspondientes
 window.cargarFiltrosDinamicos = async function () {
   try {
-    // A) Países para el filtro de Noticias (Todos los posibles del Mundial 2026)
+    // A) Países para el filtro de Noticias
+    // Se puebla dinámicamente desde PAISES_MUNDIAL_2026 (48 clasificados al Mundial 2026).
+    // Si window.GROUPS ya está cargado, se extrae desde ahí para garantizar sincronía;
+    // en caso contrario se usa el array constante como fallback.
     const selectNoticias = document.getElementById('filtro-noticias');
     if (selectNoticias) {
-      const paisesMundial = [
-        "Alemania", "Arabia Saudita", "Argelia", "Argentina", "Australia", "Bélgica", "Brasil", "Camerún", "Canadá", "Colombia", "Corea del Sur", "Costa Rica", "Costa de Marfil", "Croacia", "Dinamarca", "Ecuador", "Egipto", "Emiratos Árabes Unidos", "España", "Estados Unidos", "Francia", "Gales", "Ghana", "Honduras", "Inglaterra", "Irán", "Italia", "Jamaica", "Japón", "Marruecos", "México", "Nigeria", "Nueva Zelanda", "Países Bajos", "Panamá", "Perú", "Polonia", "Portugal", "Qatar", "Senegal", "Serbia", "Suecia", "Suiza", "Turquía", "Túnez", "Ucrania", "Uruguay", "Venezuela"
-      ];
+      // Limpiar opciones previas (excepto la primera opción "Todos")
+      while (selectNoticias.options.length > 1) {
+        selectNoticias.remove(1);
+      }
+
+      // Intentar derivar los países desde window.GROUPS para mantener sincronía automática
+      let paisesMundial = PAISES_MUNDIAL_2026;
+      if (window.GROUPS && Object.keys(window.GROUPS).length > 0) {
+        const fromGroups = [];
+        Object.values(window.GROUPS).forEach(grupo => {
+          if (Array.isArray(grupo.teams)) {
+            grupo.teams.forEach(equipo => {
+              if (!fromGroups.includes(equipo)) fromGroups.push(equipo);
+            });
+          }
+        });
+        if (fromGroups.length === 48) {
+          paisesMundial = fromGroups.sort((a, b) => a.localeCompare(b, 'es'));
+        }
+      }
+
+      const fragment = document.createDocumentFragment();
       paisesMundial.forEach(pais => {
         const opt = document.createElement('option');
         opt.value = pais;
         opt.textContent = `📍 ${pais}`;
-        selectNoticias.appendChild(opt);
+        fragment.appendChild(opt);
       });
+      selectNoticias.appendChild(fragment);
     }
 
     // B) Países para el filtro de la Tienda (Solo los que tienen productos activos)
