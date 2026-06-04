@@ -811,11 +811,92 @@ async function loadCommunities() {
     ]);
 
     _myGroups = groups;
-    renderCommunities(groups, globalRanking);
+    
+    // Obtener grupos públicos a los que NO pertenezco
+    const myGroupIds = groups.map(g => g.id);
+    const publicGroups = await fetchGruposPublicos(_userId, myGroupIds);
+
+    renderCommunities(groups, globalRanking, publicGroups);
   } catch (err) {
     console.error('[Prode] Error cargando comunidades:', err);
   }
 }
+
+// ──────────────────────────────────────────────────────────────────
+// FETCH: Grupos públicos a los que NO pertenezco
+// ──────────────────────────────────────────────────────────────────
+async function fetchGruposPublicos(userId, myGroupIds) {
+  let query = supabase
+    .from('prode_groups')
+    .select('id, nombre, admin_id, created_at')
+    .eq('es_publico', true);
+
+  if (myGroupIds && myGroupIds.length > 0) {
+    query = query.not('id', 'in', `(${myGroupIds.join(',')})`);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('[Prode] Error cargando grupos públicos:', error);
+    return [];
+  }
+  return data || [];
+}
+
+// ──────────────────────────────────────────────────────────────────
+// RENDER: Grupos públicos disponibles
+// ──────────────────────────────────────────────────────────────────
+function renderGruposPublicos(grupos) {
+  if (!grupos || grupos.length === 0) return '';
+
+  const cardsHtml = grupos.map(g => `
+    <div class="group-card" style="margin-bottom: 12px; padding: 15px; background: var(--navy2);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:bold; font-size:15px; color:var(--text1);">${escapeAttr(g.nombre)}</div>
+          <div style="font-size:11px; color:var(--text4); margin-top:4px;">🌐 Comunidad Pública</div>
+        </div>
+        <button class="community-btn btn--primary" style="padding:6px 12px; font-size:12px; width:auto;" onclick="unirseGrupoPublico('${g.id}', '${escapeAttr(g.nombre)}')">Unirse</button>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="public-groups-section" style="margin-top: 30px; margin-bottom: 30px;">
+      <p class="section-label">Grupos a los que podés unirte</p>
+      ${cardsHtml}
+    </div>
+  `;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// HANDLER: Unirse a un grupo público
+// ──────────────────────────────────────────────────────────────────
+window.unirseGrupoPublico = async function(groupId, groupName) {
+  if (!confirm(`¿Querés unirte a la comunidad "${groupName}"?`)) return;
+
+  try {
+    const { error } = await supabase
+      .from('prode_group_members')
+      .insert({ group_id: groupId, user_id: _userId });
+
+    if (error) {
+      if (error.code === '23505') {
+        alert('Ya sos miembro de este grupo.');
+      } else {
+        alert('Error al unirte: ' + error.message);
+      }
+      return;
+    }
+    
+    // Éxito: recargar panel sin recargar la página entera
+    alert(`¡Te uniste a ${groupName} con éxito!`);
+    loadCommunities();
+    
+  } catch(e) {
+    console.error('[Prode] Error en unirseGrupoPublico', e);
+  }
+};
 
 // ──────────────────────────────────────────────────────────────────
 // FETCH: Grupos del usuario
@@ -874,7 +955,7 @@ async function fetchGlobalRanking(start = 0, limit = RANKING_LIMIT) {
 // ──────────────────────────────────────────────────────────────────
 // RENDER: Panel de comunidades completo
 // ──────────────────────────────────────────────────────────────────
-async function renderCommunities(groups, globalRanking) {
+async function renderCommunities(groups, globalRanking, publicGroups) {
   const container = document.getElementById('prode-communities-panel');
   if (!container) return;
 
@@ -928,6 +1009,9 @@ async function renderCommunities(groups, globalRanking) {
           <div class="prode-empty-sub">Creá tu propio grupo o pedile el código a un amigo para unirte.</div>
         </div>
       ` : groupsWithMembers.map(g => renderGroupCard(g)).join('')}
+
+      <!-- Grupos a los que podés unirte -->
+      ${renderGruposPublicos(publicGroups)}
 
       <!-- Ranking global -->
       <div class="global-ranking-section">
