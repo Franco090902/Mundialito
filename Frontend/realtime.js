@@ -321,7 +321,128 @@ export async function votar(partidoId, opcion) {
 
 
 // ══════════════════════════════════════════════════════════════════
-// SECCIÓN C: PARTIDO EN TIEMPO REAL (Supabase Realtime para goles/minutos)
+// SECCIÓN C: VOTOS MVP (Jugador del Partido)
+// ══════════════════════════════════════════════════════════════════
+
+let mvpChannel = null;
+
+export async function initMVPVotos(partidoId) {
+  if (mvpChannel) {
+    await supabase.removeChannel(mvpChannel);
+    mvpChannel = null;
+  }
+
+  await actualizarPorcentajesMVP(partidoId);
+  await marcarVotoMVPActual(partidoId);
+
+  mvpChannel = supabase
+    .channel(`mvp:${partidoId}`)
+    .on(
+      'postgres_changes',
+      {
+        event:  '*',
+        schema: 'public',
+        table:  'mvp_votes',
+        filter: `partido_id=eq.${partidoId}`,
+      },
+      async () => {
+        await actualizarPorcentajesMVP(partidoId);
+      }
+    )
+    .subscribe();
+}
+
+async function actualizarPorcentajesMVP(partidoId) {
+  const { data, error } = await supabase
+    .rpc('get_mvp_vote_stats', { p_partido_id: partidoId });
+
+  if (error) { console.error('Error stats MVP:', error.message); return; }
+
+  // data = { total: X, jugadores: { "Messi": 50, "Mbappe": 25, ... } }
+  const total = data?.total || 0;
+  const jugadores = data?.jugadores || {};
+
+  // Ordenar los jugadores por porcentaje descendente (top 3)
+  const topJugadores = Object.entries(jugadores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  // Buscar todos los contenedores de resultados MVP de este partido
+  const resultsContainers = document.querySelectorAll(`.mvp-results-container[data-partido-id="${partidoId}"]`);
+  
+  resultsContainers.forEach(container => {
+    if (topJugadores.length === 0) {
+      container.innerHTML = '<div style="color:var(--text4); font-size:12px; text-align:center;">Aún no hay votos. ¡Sé el primero en votar!</div>';
+    } else {
+      container.innerHTML = topJugadores.map(([jugador, pct]) => `
+        <div style="display:flex; flex-direction:column; gap: 3px; margin-bottom: 8px;">
+          <div style="display:flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+            <span>${escapeHtml(jugador)}</span>
+            <span style="color: var(--gold)">${pct}%</span>
+          </div>
+          <div style="height: 6px; background: var(--navy2); border-radius: 3px; overflow: hidden; border: 1px solid var(--border1);">
+            <div style="height: 100%; background: linear-gradient(90deg, var(--gold), #ffb700); width: ${pct}%; transition: width 0.4s ease-out;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+  });
+
+  const totalEls = document.querySelectorAll(`.mvp-votos-total[data-partido-id="${partidoId}"]`);
+  totalEls.forEach(el => el.textContent = `${total} votos`);
+}
+
+async function marcarVotoMVPActual(partidoId) {
+  if (!currentUser) return;
+
+  const { data } = await supabase
+    .from('mvp_votes')
+    .select('jugador')
+    .eq('partido_id', partidoId)
+    .eq('user_id', currentUser.id)
+    .single();
+
+  if (data?.jugador) {
+    document.querySelectorAll('[data-mvp-btn]').forEach(btn => {
+      btn.classList.toggle('voted', btn.dataset.mvpBtnValue === data.jugador);
+    });
+  }
+}
+
+export async function votarMVP(partidoId, jugador) {
+  if (!currentUser) {
+    document.getElementById('modal-auth')?.classList.add('active');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('mvp_votes')
+    .upsert(
+      {
+        partido_id: partidoId,
+        user_id:    currentUser.id,
+        jugador:    jugador,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'partido_id,user_id' }
+    );
+
+  if (error) {
+    console.error('Error al votar MVP:', error.message);
+    return;
+  }
+}
+
+// Función expuesta al scope global para el onclick desde el HTML
+window.votarMVPDesdeSelect = function(partidoId, selectId) {
+  const select = document.getElementById(selectId);
+  if (!select || !select.value) return;
+  votarMVP(partidoId, select.value);
+};
+
+
+// ══════════════════════════════════════════════════════════════════
+// SECCIÓN D: PARTIDO EN TIEMPO REAL (Supabase Realtime para goles/minutos)
 // ══════════════════════════════════════════════════════════════════
 //
 // ARQUITECTURA:
@@ -584,6 +705,7 @@ export async function initPartidoView(partidoId, estadoPartido) {
   // Votos solo si el partido está en curso
   if (estadoPartido === 'en_curso') {
     await initVotosEnVivo(partidoId);
+    await initMVPVotos(partidoId);
   }
 
   // Suscribirse a actualizaciones del marcador
@@ -593,6 +715,7 @@ export async function initPartidoView(partidoId, estadoPartido) {
     // Si el partido pasó a "en_curso", activar los votos
     if (partidoActualizado.estado === 'en_curso') {
       initVotosEnVivo(partidoId);
+      initMVPVotos(partidoId);
     }
   });
 
@@ -681,6 +804,24 @@ export function initEventosRealtime() {
     const partidoId = btn.dataset.partidoId;
     const opcion    = btn.dataset.votoBtnValue;
     if (partidoId && opcion) votar(partidoId, opcion);
+  });
+
+  // ── Botones de voto MVP ──────────────────────────────────────────
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mvp-btn]');
+    if (!btn) return;
+    
+    const partidoId = btn.dataset.partidoId;
+    let jugador = btn.dataset.mvpBtnValue;
+
+    // Si mvpBtnValue es "select", busca el valor en el select relacionado
+    if (jugador === 'select') {
+      const selectId = btn.dataset.mvpSelectId;
+      const select = document.getElementById(selectId);
+      if (select) jugador = select.value;
+    }
+
+    if (partidoId && jugador) votarMVP(partidoId, jugador);
   });
 
   // ── Enviar mensaje de chat ────────────────────────────────────────

@@ -1045,12 +1045,34 @@ function renderLivePanel(partidos) {
           <div class="team-name">${p.equipo_visitante}</div>
         </div>
       </div>
+      
+      <!-- Widget MVP Inicio -->
+      <div style="margin-top:8px; padding: 12px; background: var(--navy2); border-radius: 6px; border: 1px solid var(--border1);">
+        <h4 style="margin: 0 0 10px 0; color: var(--text2); font-size: 12px; text-align: center;">⭐ MVP del Partido</h4>
+        <div style="display:flex; gap: 8px;">
+          <select id="mvp-select-inicio-${p.id}" style="flex:1; padding: 4px; border-radius: 4px; border: 1px solid var(--border2); background: var(--navy1); color: white; font-size:12px;">
+             ${p.estadisticas?.alineacion_local ? `<optgroup label="${p.equipo_local}">${p.estadisticas.alineacion_local.map(j => `<option value="${j}">${j}</option>`).join('')}</optgroup>` : `<option value="Figura de ${p.equipo_local}">Figura de ${p.equipo_local}</option>`}
+             ${p.estadisticas?.alineacion_visitante ? `<optgroup label="${p.equipo_visitante}">${p.estadisticas.alineacion_visitante.map(j => `<option value="${j}">${j}</option>`).join('')}</optgroup>` : `<option value="Figura de ${p.equipo_visitante}">Figura de ${p.equipo_visitante}</option>`}
+          </select>
+          <button class="btn-token" data-mvp-btn data-mvp-btn-value="select" data-mvp-select-id="mvp-select-inicio-${p.id}" data-partido-id="${p.id}" style="padding: 4px 8px; font-size: 11px;">Votar</button>
+        </div>
+        <div class="mvp-results-container" data-partido-id="${p.id}" style="margin-top: 10px; display:flex; flex-direction:column; gap:5px;">
+          <div style="color:var(--text4); font-size:12px; text-align:center;">Cargando votos...</div>
+        </div>
+      </div>
+      
     </div>`).join('');
 
-  // Inicializar encuestas para cada partido en vivo (async, no bloquea el UI)
+  // Inicializar encuestas y MVP para cada partido en vivo (async, no bloquea el UI)
   if (window._encuestasModule) {
     window._encuestasModule.inicializarEncuestasEnVivo(partidos);
   }
+  
+  partidos.forEach(p => {
+    if (typeof window.initMVPVotos === 'function') {
+      window.initMVPVotos(p.id);
+    }
+  });
 }
 
 // ══════════════════════════════════════
@@ -1163,6 +1185,29 @@ window.abrirDetallePartido = async function (matchId) {
       </div>`;
     content.innerHTML += statsHtml;
 
+    const mvpHtml = `
+      <div style="margin-top:20px; padding: 15px; background: var(--navy1); border-radius: 8px; border: 1px solid var(--border2);">
+        <h4 style="margin: 0 0 15px 0; color: var(--text1); font-size: 15px; text-align: center;">⭐ Jugador del Partido (MVP)</h4>
+        
+        <div style="display:flex; gap: 8px; margin-bottom: 15px;">
+          <select id="mvp-select-modal-${p.id}" style="flex:1; padding: 6px; border-radius: 4px; border: 1px solid var(--border2); background: var(--navy2); color: white; font-size:13px;">
+             ${p.estadisticas?.alineacion_local ? `<optgroup label="${p.equipo_local}">${p.estadisticas.alineacion_local.map(j => `<option value="${j}">${j}</option>`).join('')}</optgroup>` : `<option value="Figura de ${p.equipo_local}">Figura de ${p.equipo_local}</option>`}
+             ${p.estadisticas?.alineacion_visitante ? `<optgroup label="${p.equipo_visitante}">${p.estadisticas.alineacion_visitante.map(j => `<option value="${j}">${j}</option>`).join('')}</optgroup>` : `<option value="Figura de ${p.equipo_visitante}">Figura de ${p.equipo_visitante}</option>`}
+          </select>
+          <button class="btn-token" data-mvp-btn data-mvp-btn-value="select" data-mvp-select-id="mvp-select-modal-${p.id}" data-partido-id="${p.id}" style="padding: 6px 12px; font-size: 12px;">Votar</button>
+        </div>
+
+        <div class="mvp-results-container" data-partido-id="${p.id}" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="color:var(--text4); font-size:12px; text-align:center;">Cargando votos...</div>
+        </div>
+
+        <div style="text-align: center; margin-top: 15px; color: var(--text3); font-size: 12px; padding-top: 10px; border-top: 1px solid var(--border1);">
+          <span class="mvp-votos-total" data-partido-id="${p.id}" style="font-weight: bold; color: var(--text2);">0 votos</span> en total
+        </div>
+      </div>
+    `;
+    content.innerHTML += mvpHtml;
+
     content.innerHTML += `
       <div style="margin-top:25px;">
         <h4 style="margin: 0 0 15px 0; color: var(--text1); font-size: 16px;">🛒 Productos Relacionados</h4>
@@ -1197,6 +1242,11 @@ window.abrirDetallePartido = async function (matchId) {
       }
     } catch (e) {
       document.getElementById('md-productos-grid').innerHTML = '<p style="color: var(--red); font-size: 13px; grid-column: 1 / -1;">Error cargando productos.</p>';
+    }
+
+    // Inicializar listeners de realtime para MVP, live_votes y chat
+    if (typeof window.initPartidoView === 'function') {
+      window.initPartidoView(p.id, p.estado);
     }
 
   } catch (e) {

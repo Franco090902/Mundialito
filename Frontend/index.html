@@ -1338,11 +1338,13 @@
   <script type="module">
     // Importamos las funciones exactas de tu auth.js
     import { supabase, iniciarSesionGoogle, iniciarSesionEmail, registrarse, cerrarSesion, recuperarContrasena, actualizarContrasena, actualizarPerfil, subirAvatar } from './auth.js';
-    import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo } from './realtime.js';
+    import { initPartidoView, initEventosRealtime, suscribirseAPartidosEnVivo, initMVPVotos } from './realtime.js';
     import { initProde, switchSubTab as prodeSubTab } from './Prode/prode.js';
 
     // Exponer función de perfil para que app.js pueda guardar el 11 inicial
     window.actualizarPerfil = actualizarPerfil;
+    window.initPartidoView = initPartidoView;
+    window.initMVPVotos = initMVPVotos;
 
     // ╔═════════════════════════════════════════════════════
     // EXPONER SUPABASE GLOBALMENTE
