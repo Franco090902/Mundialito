@@ -618,7 +618,7 @@ setInterval(() => {
 
 
 // Define tu URL base de Render (la que te dará Render cuando crees el Web Service)
-const BACKEND_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const BACKEND_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
   ? 'http://localhost:3000'
   : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
 const API_URL = `${BACKEND_BASE_URL}/api`;
@@ -1312,25 +1312,59 @@ window.cerrarPerfilEquipo = function () {
 // ══════════════════════════════════════
 // INICIALIZACIÓN
 // ══════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Funciones de renderizado estáticas
   buildTicker();
   renderGroups('A');
   renderFixtures();
   renderScorers();
   renderCards();
 
-  window.cargarFiltrosDinamicos();
+  window.cargarFiltrosDinamicos().catch(console.error);
   window.cargarNoticias('');
   window.cargarProductos('');
 
-  // Intentar cargar datos reales desde la API
-  await cargarFixtureDesdeAPI();
-  await cargarScorersDesdeAPI();
-  await cargarCardsDesdeAPI();
-  await cargarPartidosEnVivo();
+  // 2. Función Failsafe para asegurar que el loader desaparezca
+  function hideLoader() {
+    const loaderIds = ['loader', 'loading', 'loading-screen', 'loader-overlay', 'spinner'];
+    loaderIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'none';
+        el.classList.add('hidden'); // Soporte para clases CSS
+      }
+    });
+    // También buscar por clases comunes por si acaso
+    document.querySelectorAll('.loader, .loading, .spinner-container').forEach(el => {
+      el.style.display = 'none';
+    });
+  }
+
+  // 3. Plan B absoluto: Failsafe Timeout a los 5 segundos
+  const failsafeTimer = setTimeout(() => {
+    console.warn("Failsafe activado: forzando cierre del loader por timeout.");
+    hideLoader();
+  }, 5000);
+
+  // 4. Llamadas a la API en PARALELO
+  Promise.allSettled([
+    (typeof cargarFixtureDesdeAPI === 'function' ? cargarFixtureDesdeAPI() : Promise.resolve()),
+    (typeof cargarScorersDesdeAPI === 'function' ? cargarScorersDesdeAPI() : Promise.resolve()),
+    (typeof cargarCardsDesdeAPI === 'function' ? cargarCardsDesdeAPI() : Promise.resolve()),
+    (typeof cargarPartidosEnVivo === 'function' ? cargarPartidosEnVivo() : Promise.resolve())
+  ])
+  .finally(() => {
+    // Se oculta inmediatamente al resolverse (o fallar) todas las llamadas
+    clearTimeout(failsafeTimer); // Cancelamos el timer si terminó antes de los 5s
+    hideLoader();
+  });
 
   // Refrescar partidos en vivo cada 60 segundos como fallback
-  setInterval(cargarPartidosEnVivo, 60000);
+  setInterval(() => {
+    if (typeof cargarPartidosEnVivo === 'function') {
+      cargarPartidosEnVivo().catch(console.error);
+    }
+  }, 60000);
 });
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1364,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Variables de estado del chatbot ────────────────────────────────
 // Detecta automáticamente si usa local o Render
-const CHATBOT_BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const CHATBOT_BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
   ? 'http://localhost:3000'
   : 'https://mundialito-hzhf.onrender.com'; // 👈 Tu URL de Render
 
