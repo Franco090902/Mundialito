@@ -1,7 +1,19 @@
 /* ══════════════════════════════════════════════════════════════════
    ranking.js — Widgets de ranking global para Wordle y Higher/Lower
+
+   Propósito:
+     Renderiza tablas de ranking de minijuegos (Wordle y Higher/Lower)
+     dentro de contenedores HTML. Soporta paginación, refresh manual
+     y clic en fila para ver el perfil público del jugador.
+
+   Flujo de datos:
+     1. Al cargar la página → DOMContentLoaded → createRankingWidget()
+     2. Cada widget hace fetch al backend: GET /api/stats/ranking/:game
+     3. El backend responde con { success, ranking: [], total }
+     4. Se renderizan las filas con avatar, nombre y estadísticas
+
    IMPORTANTE: game_name debe coincidir exactamente con lo que
-   guarda /api/stats/update → 'wordle' y 'higher_lower'
+   guarda /api/stats/update → 'wordle' y 'higher_lower' (con guión bajo)
 ══════════════════════════════════════════════════════════════════ */
 
 /* ──────────────────────────────────────────────────────────────────
@@ -15,9 +27,11 @@
      - title       : texto para el encabezado del widget
 ──────────────────────────────────────────────────────────────────── */
 export function createRankingWidget(containerId, gameName, title) {
+  // Buscar el elemento contenedor en el DOM por su id
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) return; // Si no existe el contenedor, no hacer nada
 
+  // Determinar si es Wordle para ajustar columnas y texto del widget
   const isWordle = gameName === 'wordle';
 
   /* ── Columnas según el juego ── */
@@ -83,14 +97,16 @@ export function createRankingWidget(containerId, gameName, title) {
     </div>
   `;
 
+  // Estado de paginación: offset actual, cantidad por página y total de registros
   let currentOffset = 0;
-  const limit = 10;
-  let totalRows = 0;
+  const limit = 10;   // Mostrar 10 jugadores por página
+  let totalRows = 0;  // Total de filas en la BD (para saber si hay más páginas)
 
-  const tableBody    = container.querySelector('.ranking-table-body');
-  const btnMore      = container.querySelector('.btn-ranking-more');
-  const btnLess      = container.querySelector('.btn-ranking-less');
-  const btnRefresh   = container.querySelector('.btn-ranking-refresh');
+  // Referencias a los elementos internos del widget para manipularlos dinámicamente
+  const tableBody    = container.querySelector('.ranking-table-body'); // Tbody de la tabla
+  const btnMore      = container.querySelector('.btn-ranking-more');   // Botón "Siguiente"
+  const btnLess      = container.querySelector('.btn-ranking-less');   // Botón "Anterior"
+  const btnRefresh   = container.querySelector('.btn-ranking-refresh'); // Botón de refrescar
 
   /* ── Actualizar estado de los botones de paginación ── */
   function updateButtons() {
@@ -98,15 +114,17 @@ export function createRankingWidget(containerId, gameName, title) {
     btnLess.style.display = (currentOffset > 0) ? 'inline-block' : 'none';
   }
 
-  /* ── Render de una página del ranking ── */
+  /* ── Fetch y render de una página del ranking desde el backend ── */
   async function fetchRanking() {
     tableBody.innerHTML = `<tr><td colspan="${isWordle ? 4 : 3}" style="${emptyStyle}">⏳ Cargando...</td></tr>`;
 
     try {
+      // Detectar si estamos en desarrollo local o en producción para apuntar al servidor correcto
       const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? 'http://localhost:3000' 
         : 'https://mundialito-hzhf.onrender.com';
 
+      // Pedir la página actual del ranking al backend con limit y offset para paginación
       const res  = await fetch(`${API_BASE_URL}/api/stats/ranking/${gameName}?limit=${limit}&offset=${currentOffset}`);
       const data = await res.json();
 
@@ -131,9 +149,11 @@ export function createRankingWidget(containerId, gameName, title) {
         return;
       }
 
+      // Obtener el id del usuario logueado para resaltar su fila en el ranking
       const currentUserId = window.getCurrentUserId ? window.getCurrentUserId() : null;
 
       rows.forEach((row, index) => {
+        // Calcular la posición global real (offset + posición dentro de la página)
         const pos = currentOffset + index + 1;
         const isMe = currentUserId && row.user_id === currentUserId;
 
@@ -164,6 +184,8 @@ export function createRankingWidget(containerId, gameName, title) {
 
         const tr = document.createElement('tr');
         tr.className = 'ranking-row';
+        // Estilos inline: resaltar la fila del usuario logueado con fondo dorado tenue
+        // La animación escalonada (animation-delay) hace que las filas aparezcan una tras otra
         tr.style.cssText = `
           border-bottom: 1px solid rgba(255,255,255,0.05);
           cursor: pointer;
@@ -173,7 +195,9 @@ export function createRankingWidget(containerId, gameName, title) {
           animation-delay: ${index * 40}ms;
         `;
         tr.title = 'Ver perfil público';
+        // Al hacer clic en una fila, abrir el perfil público del jugador
         tr.onclick = () => window.openPublicProfile && window.openPublicProfile(row.user_id);
+        // Efectos hover: cambiar fondo al pasar el mouse sobre la fila
         tr.onmouseenter = () => { tr.style.background = isMe ? 'rgba(240,192,64,0.14)' : 'rgba(255,255,255,0.04)'; };
         tr.onmouseleave = () => { tr.style.background = isMe ? 'rgba(240,192,64,0.08)' : ''; };
 
@@ -207,15 +231,15 @@ export function createRankingWidget(containerId, gameName, title) {
     }
   }
 
-  /* ── Paginación ── */
+  /* ── Paginación: avanzar y retroceder de a 10 jugadores ── */
   btnMore.addEventListener('click', () => {
-    currentOffset += limit;
+    currentOffset += limit; // Avanzar al siguiente bloque de jugadores
     fetchRanking();
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); // Scroll al widget
   });
 
   btnLess.addEventListener('click', () => {
-    currentOffset = Math.max(0, currentOffset - limit);
+    currentOffset = Math.max(0, currentOffset - limit); // Retroceder (sin bajar de 0)
     fetchRanking();
     container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -245,9 +269,12 @@ const btnStyle   = 'padding:7px 16px; font-size:12px; margin:0; border-radius:8p
 /* ──────────────────────────────────────────────────────────────────
    Animación de entrada para las filas
 ──────────────────────────────────────────────────────────────────── */
+// Inyectar los keyframes de animación una sola vez en el <head>
+// (se comprueba si ya existen para no duplicarlos si se llama createRankingWidget varias veces)
 if (!document.getElementById('ranking-keyframes')) {
   const style = document.createElement('style');
   style.id = 'ranking-keyframes';
+  // Animación de entrada: las filas aparecen deslizándose desde abajo con fade in
   style.textContent = `
     @keyframes rankFadeIn {
       from { opacity: 0; transform: translateY(8px); }
@@ -281,13 +308,15 @@ document.addEventListener('DOMContentLoaded', () => {
      window.refreshGameRanking('higher_lower');
 ──────────────────────────────────────────────────────────────────── */
 window.refreshGameRanking = function(gameName) {
+  // Mapear el nombre del juego al id del contenedor donde está montado el widget
   const idMap = {
     'wordle':        'wordle-ranking-container',
     'higher_lower':  'higherlower-ranking-container',
   };
   const containerId = idMap[gameName];
-  if (!containerId) return;
+  if (!containerId) return; // Nombre de juego inválido, ignorar
   const container = document.getElementById(containerId);
+  // Llamar a la función de refresh que el widget expone en el elemento DOM
   if (container && typeof container._refreshRanking === 'function') {
     container._refreshRanking();
   }

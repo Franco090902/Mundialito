@@ -54,11 +54,12 @@ export function renderOncePicker(onceSaved = null) {
     `<option value="${f}" ${f === formacionActual ? 'selected' : ''}>${f}</option>`
   ).join('');
 
-  // ── Filas de los 11 jugadores ──────────────────────────────────
+  // Generar el HTML de cada posición del once:
+  // Si el usuario ya guardó su 11, prellenamos los inputs con los valores guardados.
   const jugadoresHtml = POSICIONES.map((pos, i) => {
-    const jugadorGuardado = onceSaved?.jugadores?.[i];
-    const nombreVal = jugadorGuardado?.nombre ?? '';
-    const paisVal   = jugadorGuardado?.pais   ?? '';
+    const jugadorGuardado = onceSaved?.jugadores?.[i]; // Intentar recuperar jugador guardado
+    const nombreVal = jugadorGuardado?.nombre ?? '';    // Nombre guardado o vacío
+    const paisVal   = jugadorGuardado?.pais   ?? '';    // País guardado o vacío
     return `
       <div class="once-row" data-index="${i}">
         <span class="once-pos-badge">${pos.codigo}</span>
@@ -87,6 +88,7 @@ export function renderOncePicker(onceSaved = null) {
       </div>`;
   }).join('');
 
+  // Inyectar el HTML completo del formulario en el contenedor del DOM
   container.innerHTML = `
     <div class="once-card">
       <div class="once-header">
@@ -114,7 +116,7 @@ export function renderOncePicker(onceSaved = null) {
       </div>
     </div>`;
 
-  // ── Bind de eventos ────────────────────────────────────────────
+  // Conectar los eventos del formulario (botón guardar, contador de jugadores)
   bindOnceEvents();
 }
 
@@ -213,15 +215,16 @@ async function guardarOnce() {
 // ──────────────────────────────────────────────────────────────────
 
 function bindOnceEvents() {
-  // Botón guardar
+  // Conectar el botón "Guardar 11" a la función que valida y persiste en Supabase
   document.getElementById('btn-guardar-once')
     ?.addEventListener('click', guardarOnce);
 
-  // Actualizar contador al tipear
+  // Actualizar el contador de jugadores completados cada vez que el usuario escribe
   document.querySelectorAll('.once-nombre').forEach(input => {
     input.addEventListener('input', () => {
       const once = leerFormulario();
       const counterEl = document.getElementById('once-counter');
+      // Re-calcular cuántos inputs tienen nombre y actualizar el texto del contador
       if (counterEl) counterEl.textContent = `${contarCompletos(once.jugadores)} / 11 jugadores completados`;
     });
   });

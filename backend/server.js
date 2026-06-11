@@ -60,19 +60,24 @@ const LIVE_LEAGUE_ID = TEST_MODE ? LIBERTADORES_AF_ID : WC_AF_ID;
 
 // ──────────────────────────────────────────────────────────────────
 // CACHE EN MEMORIA — evitar exceder 10 req/min de Football-Data
+// Cada clave del cache guarda: data (la respuesta de la API) y ts (timestamp).
+// Si los datos tienen menos de CACHE_TTL ms de antiguedad, se reutilizan sin
+// hacer otra petición a la API externa.
 // ──────────────────────────────────────────────────────────────────
 const cache = {
-  fixture: { data: null, ts: 0 },
-  standings: { data: null, ts: 0 },
-  scorers: { data: null, ts: 0 },
-  live: { data: null, ts: 0 },
+  fixture: { data: null, ts: 0 },   // Caché del fixture completo del torneo
+  standings: { data: null, ts: 0 }, // Caché de las tablas de posiciones
+  scorers: { data: null, ts: 0 },   // Caché de los goleadores
+  live: { data: null, ts: 0 },      // Caché de los datos en vivo
 };
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos en milisegundos
 
+// Retorna los datos cacheados si aún son válidos, null si expiraron
 function getCached(key) {
   if (cache[key].data && (Date.now() - cache[key].ts < CACHE_TTL)) return cache[key].data;
   return null;
 }
+// Guarda nueva data en el cache con el timestamp actual
 function setCache(key, data) {
   cache[key] = { data, ts: Date.now() };
 }
@@ -148,17 +153,19 @@ function translateTeam(name) {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// HELPER: mapear estado de Football-Data a nuestro formato
+// HELPER: mapear estado de Football-Data a nuestro formato interno
+// Football-Data usa strings en inglés (SCHEDULED, IN_PLAY, etc.)
+// Nuestro sistema usa: 'programado' | 'en_curso' | 'finalizado' | 'suspendido' | 'cancelado'
 // ──────────────────────────────────────────────────────────────────
 function mapearEstado(status) {
   const map = {
-    'SCHEDULED': 'programado', 'TIMED': 'programado',
-    'IN_PLAY': 'en_curso', 'PAUSED': 'en_curso',
-    'FINISHED': 'finalizado',
-    'POSTPONED': 'suspendido', 'SUSPENDED': 'suspendido',
-    'CANCELLED': 'cancelado', 'AWARDED': 'finalizado',
+    'SCHEDULED': 'programado', 'TIMED': 'programado',       // Partido aún no empezó
+    'IN_PLAY': 'en_curso', 'PAUSED': 'en_curso',            // Partido en curso (incluye entretiempo)
+    'FINISHED': 'finalizado',                                // Partido terminado
+    'POSTPONED': 'suspendido', 'SUSPENDED': 'suspendido',   // Partido postergado o suspendido
+    'CANCELLED': 'cancelado', 'AWARDED': 'finalizado',      // Partido cancelado o validado
   };
-  return map[status] || 'programado';
+  return map[status] || 'programado'; // Default: programado si el estado es desconocido
 }
 
 
@@ -180,8 +187,10 @@ async function actualizarFixture() {
 
     const activeEdicion = TEST_MODE ? 'libertadores_2026' : 'mundial_2026';
 
-    // 1. Consultar partidos de Supabase para cruzar y preservar estado/goles/estadísticas
-    let dbMatchesMap = new Map();
+    // 1. Consultar los partidos ya guardados en Supabase para poder cruzar IDs
+    //    y PRESERVAR el estado/goles que ya teníamos (para no pisarlos con datos desactualizados
+    //    que vengan de Football-Data si el partido ya empezó en nuestra BD).
+    let dbMatchesMap = new Map(); // Mapa: id_football_data -> fila de la BD
     try {
       const { data: dbMatches } = await supabase
         .from('partidos')
@@ -553,7 +562,9 @@ async function actualizarEnVivoMaster() {
 
     console.log(`   📋 Partidos activos/próximos en BD para ${activeEdicion.toUpperCase()}: ${activeMatches.length}`);
 
-    // 2. Auto-inicio de partidos programados cuya fecha ya pasó
+    // 2. Auto-inicio de partidos programados cuya fecha de inicio ya pasó
+    //    Si la API externa no detectó aún el inicio, lo iniciamos nosotros en BD.
+    //    Esto evita que el marcador quede en "programado" cuando el partido ya empezó.
     const toStart = activeMatches.filter(m => m.estado === 'programado' && new Date(m.fecha_utc) <= now);
     for (const p of toStart) {
       const { error: startErr } = await supabase
@@ -578,7 +589,9 @@ async function actualizarEnVivoMaster() {
       }
     }
 
-    // 3. Filtro de Seguridad: Zombie Match Safety Net
+    // 3. ZOMBIE MATCH SAFETY NET: Si un partido lleva más de 3.5 horas como "en_curso"
+    //    probablemente la API no notificó el final. Lo marcamos como finalizado automáticamente.
+    //    Esto previene que partidos queden “en vivo” de forma indefinida en la UI.
     const enCurso = activeMatches.filter(m => m.estado === 'en_curso');
     for (const p of enCurso) {
       const hoursSinceStart = (Date.now() - new Date(p.fecha_utc).getTime()) / (1000 * 60 * 60);
@@ -719,7 +732,8 @@ async function actualizarEnVivoMaster() {
       sofascoreSuccess = false;
     }
 
-    // 5. Fallback a API-Football (si Sofascore falló o no se pudo completar)
+    // 5. FALLBACK: si Sofascore falló por bloqueo o error, usamos API-Football
+    //    como fuente de datos alternativa (tiene límite de 100 req/día).
     if (!sofascoreSuccess) {
       console.log(`   🚨 [FALLBACK] Iniciando actualización con API-Football...`);
       await actualizarEnVivo();

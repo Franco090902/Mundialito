@@ -879,18 +879,24 @@ function escapeHtml(str) {
 
 // ──────────────────────────────────────────────────────────────────
 // HELPER: Refrescar data global desde API Node y Supabase
+// Se llama cuando Realtime detecta un cambio en partidos, posiciones,
+// goleadores o tarjetas para que la UI siempre muestre datos frescos.
+// fetchingData actua como semáforo para evitar llamadas paralelas.
 // ──────────────────────────────────────────────────────────────────
 let fetchingData = false;
 async function recargarDataGlobal() {
+  // Evitar ejecuciones simultáneas si el fetch anterior aún no terminó
   if (fetchingData) return;
   fetchingData = true;
   try {
+    // Recargar fixture (calendario de partidos) y goleadores desde la API Node
     if (window.cargarFixtureDesdeAPI) await window.cargarFixtureDesdeAPI();
     if (window.cargarScorersDesdeAPI) await window.cargarScorersDesdeAPI();
     
-    // Cargar tarjetas directo desde Supabase
+    // Cargar tarjetas directo desde Supabase (sin pasar por el Node worker)
     const { data: tarjetas, error } = await supabase.from('tarjetas').select('*').order('amarillas', { ascending: false }).limit(20);
     if (tarjetas) {
+       // Mapear al formato que usa la UI (window.CARDS)
        window.CARDS = tarjetas.map(t => ({
           name: t.nombre,
           team: t.equipo_short || t.equipo,
@@ -900,7 +906,7 @@ async function recargarDataGlobal() {
        }));
     }
     
-    // Re-renderizar si las pestañas están activas
+    // Re-renderizar solo el panel que está activo en pantalla (para no hacer trabajo innecesario)
     if (document.getElementById('panel-groups')?.classList.contains('active')) {
        const primerGrupo = Object.keys(window.GROUPS)[0];
        if (primerGrupo && window.renderGroups) window.renderGroups(primerGrupo);
@@ -917,41 +923,48 @@ async function recargarDataGlobal() {
   } catch (err) {
     console.error('Error recargando data global:', err);
   } finally {
-    fetchingData = false;
+    fetchingData = false; // Liberar el semáforo en cualquier caso
   }
 }
 
 // ──────────────────────────────────────────────────────────────────
 // INICIALIZACIÓN GLOBAL
+// Se ejecuta una sola vez cuando el DOM está listo.
+// Conecta todos los módulos de Realtime con el estado de la página.
 // ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  // Registrar listeners de click en botones de voto, prode y chat
   initEventosRealtime();
 
-  // Suscribirse a todos los partidos en curso para el ticker/dashboard
+  // Suscribirse a cambios en partidos en_curso para actualizar el marcador en vivo
+  // y el ticker (barra de resultados en tiempo real en la parte superior de la UI)
   suscribirseAPartidosEnVivo((partidoActualizado) => {
     if (typeof window.cargarPartidosEnVivo === 'function') {
       window.cargarPartidosEnVivo();
     }
-    // Actualizar el ticker y las tarjetas de partidos en vivo
+    // Actualizar el marcador de la card del partido directamente en el DOM
     const card = document.querySelector(`[data-partido-id="${partidoActualizado.id}"]`);
     if (!card) return;
 
+    // Actualizar el texto del marcador en la card (ej: "2 - 1")
     const golesEl = card.querySelector('[data-live-score]');
     if (golesEl) {
       golesEl.textContent = `${partidoActualizado.goles_local ?? 0} - ${partidoActualizado.goles_visitante ?? 0}`;
     }
 
+    // Actualizar el minuto de juego en la card
     const minEl = card.querySelector('[data-live-minute]');
     if (minEl && partidoActualizado.minuto) {
       minEl.textContent = `${partidoActualizado.minuto}'`;
     }
   });
 
-  // Suscribirse a cambios en tablas secundarias (Posiciones, Goleadores, Tarjetas)
+  // Suscribirse a cambios en las tablas secundarias de la BD (Posiciones, Goleadores, Tarjetas)
+  // Un solo canal agrupa todos los eventos para no saturar de conexiones a Supabase Realtime
   supabase.channel('public:db_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'partidos' }, () => {
        console.log('🔄 Cambio en partidos detectado via Realtime');
-       recargarDataGlobal();
+       recargarDataGlobal(); // Re-renderizar el panel activo
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'posiciones' }, () => {
        console.log('🔄 Cambio en posiciones detectado via Realtime');
@@ -966,10 +979,10 @@ document.addEventListener('DOMContentLoaded', async () => {
        recargarDataGlobal();
     })
     .subscribe((status) => {
-       console.log('📡 Realtime global status:', status);
+       console.log('📡 Realtime global status:', status); // 'SUBSCRIBED' cuando está listo
     });
 
-  // Cargar ranking si estamos en el panel del prode
+  // Renderizar el ranking del prode si el contenedor existe en esta página
   if (document.getElementById('ranking-container')) {
     await renderRanking();
   }

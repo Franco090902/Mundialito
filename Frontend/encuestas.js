@@ -15,12 +15,12 @@
 
 import { supabase, currentUser } from './auth.js';
 
-// ── Estado global ──────────────────────────────────────────────
-const pollingIntervals = new Map(); // partidoId → intervalId
-const realtimeChannels = new Map(); // partidoId → channel
-const ultimoVoto       = new Map(); // encuestaId → timestamp (cooldown)
-const estadoExpandido  = new Map(); // partidoId → boolean (collapsed/expanded)
-const COOLDOWN_MS      = 10_000;    // 10 segundos entre votos por encuesta
+// ── Estado global del módulo ────────────────────────────────────────────────
+const pollingIntervals = new Map(); // partidoId → intervalId   (para poder limpiar luego)
+const realtimeChannels = new Map(); // partidoId → channel      (para desuscribirse luego)
+const ultimoVoto       = new Map(); // encuestaId → timestamp   (cooldown anti-spam)
+const estadoExpandido  = new Map(); // partidoId → boolean      (estado visual del panel)
+const COOLDOWN_MS      = 10_000;    // Tiempo mínimo entre votos por la misma encuesta (ms)
 
 // ── Íconos por tipo de encuesta ────────────────────────────────
 const TIPO_ICON = {
@@ -77,12 +77,16 @@ function getTemplates(teamA, teamB) {
   };
 }
 
-// ── Selección de tipos de encuesta según el minuto ────────────
+// ── Selección de tipos de encuesta según el minuto del partido ────────────────────
+// El objetivo es mostrar preguntas más relevantes según el momento del partido:
+//   - Inicio (0–30'): ¿Quién ganará?, primer cambio, tarjetas
+//   - Mediados (31–60'): posesión, faltas, ganador
+//   - Final (61'+): próximo gol, tipo de gol, tarjeta roja
 function seleccionarTipos(minuto) {
   const min = parseInt(minuto) || 0;
-  if (min <= 30)  return ['winner', 'first_sub', 'cards_range'];
-  if (min <= 60)  return ['possession', 'fouls_range', 'winner'];
-  return ['next_scorer', 'goal_type', 'direct_card'];
+  if (min <= 30)  return ['winner', 'first_sub', 'cards_range'];  // Inicio del partido
+  if (min <= 60)  return ['possession', 'fouls_range', 'winner']; // Segundo tiempo
+  return ['next_scorer', 'goal_type', 'direct_card'];              // Tramo final
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -123,6 +127,7 @@ async function generarEncuestasParaPartido(partido) {
 
   if (error) {
     console.warn(`[Encuestas] Error generando: ${error.message}`);
+    // Advertencia especial: si RLS bloquea el INSERT, sugerir la correción SQL al desarrollador
     if (error.message && error.message.includes('row-level security')) {
       console.error('[Encuestas] ❌ RLS bloqueó el INSERT. Ejecutá en Supabase SQL Editor:\n' +
         "DROP POLICY IF EXISTS \"encuestas_insert_authenticated\" ON public.encuestas;\n" +
@@ -414,12 +419,13 @@ window.votarEncuesta = async function (encuestaId, opcionIndex, partidoId) {
   const card = document.getElementById(`encuesta-card-${encuestaId}`);
   if (card?.querySelector('.encuesta-opcion.voted')) return;
 
-  // Actualización optimista en UI (antes de confirmar en Supabase)
+  // Actualización optimista: marcar visualmente el voto ANTES de confirmar en Supabase.
+  // Si el INSERT falla, se revierte. Esto hace que la app se sienta instantánea.
   const opcionEl = card?.querySelectorAll('.encuesta-opcion')[opcionIndex];
   if (opcionEl) {
-    opcionEl.classList.add('voted');
-    opcionEl.classList.add('disabled');
-    // Deshabilitar todas las opciones
+    opcionEl.classList.add('voted');      // Resaltar la opción elegida
+    opcionEl.classList.add('disabled');   // Bloquear el botón para no votar de nuevo
+    // Deshabilitar todas las opciones restantes de esta encuesta
     card.querySelectorAll('.encuesta-opcion').forEach(el => el.classList.add('disabled'));
   }
 
@@ -488,11 +494,11 @@ function suscribirseAEncuestasPartido(partidoId, teamA, teamB) {
         event:  '*',
         schema: 'public',
         table:  'encuestas_votos',
-        // No podemos filtrar por partido_id directamente aquí (es encuesta_id)
-        // pero el polling complementa esto
       },
       async () => {
-        // Actualizar porcentajes al recibir cualquier cambio de votos
+        // Actualizar porcentajes al recibir cualquier cambio de votos en Realtime
+        // Nota: no filtramos por partido_id porque encuestas_votos solo tiene encuesta_id.
+        // El polling cada 7s sirve como refuerzo en caso de que Realtime no entregue el evento.
         await actualizarEncuestasDOM(partidoId, teamA, teamB);
       }
     )
