@@ -900,80 +900,147 @@ async function actualizarTarjetas() {
     const currentSeason = 2026;
     const tournamentId = TEST_MODE ? 384 : 16; // 384: Libertadores, 16: Mundial
     let rows = [];
-    let sofascoreSuccess = false;
+    let providerSuccess = false;
 
-    console.log(`   📡 Intentando actualizar tarjetas mediante Sofascore (Torneo: ${tournamentId}, Año: ${currentSeason})...`);
-    try {
-      const urlSeasons = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/seasons`;
-      const resSeasons = await safeSofascoreGet(urlSeasons);
-      const seasons = resSeasons.data?.seasons || [];
-      const activeSeason = seasons.find(s => s.year === String(currentSeason)) || seasons[0];
+    // 1. Si es el Mundial y tenemos la API Key, intentamos con la API de Zafronix
+    if (tournamentId === 16 && process.env.ZAFRONIX_API_KEY) {
+      console.log(`   📡 Intentando actualizar tarjetas mediante Zafronix API (Mundial 2026)...`);
+      try {
+        const key = process.env.ZAFRONIX_API_KEY;
+        const baseUrl = 'https://api.zafronix.com/fifa/worldcup/v1';
 
-      if (activeSeason) {
-        console.log(`      🏆 Temporada de Sofascore seleccionada: ${activeSeason.name} (ID: ${activeSeason.id})`);
-        const urlStats = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics`;
-        
-        // Consultar líderes de amarillas y rojas en paralelo para no perder a los jugadores expulsados
-        const [resStatsYellow, resStatsRed] = await Promise.all([
-          safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-yellowCards&group=card&type=overall"),
-          safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-redCards&group=card&type=overall").catch(() => ({ data: { results: [] } }))
-        ]);
+        // Obtener banderas de los equipos para mapear como escudos
+        const responseTeams = await axios.get(`${baseUrl}/tournaments/2026`, {
+          headers: { 'X-API-Key': key }
+        });
+        const teamsMap = {};
+        (responseTeams.data.teams || []).forEach(t => {
+          teamsMap[t.name.trim()] = t.flag?.flagUrl || null;
+        });
 
-        const playersYellow = resStatsYellow.data?.results || [];
-        const playersRed = resStatsRed.data?.results || [];
+        // Obtener los partidos y procesar las tarjetas
+        const responseMatches = await axios.get(`${baseUrl}/matches?year=2026`, {
+          headers: { 'X-API-Key': key }
+        });
+        const matches = responseMatches.data.data || [];
 
-        // Si llegamos hasta aquí, consideramos que la consulta de Sofascore es exitosa (incluso si da 0 resultados porque no empezó el torneo)
-        sofascoreSuccess = true;
+        const cardsMap = new Map();
+        matches.forEach(m => {
+          const cards = m.cards || [];
+          const homeTeam = m.homeTeam?.trim();
+          const awayTeam = m.awayTeam?.trim();
 
-        // Combinar ambas listas de forma única por ID de jugador
-        const playersMap = new Map();
-        playersYellow.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
-        playersRed.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
+          cards.forEach(c => {
+            const playerName = c.player?.trim();
+            const teamEnglish = c.team === 'home' ? homeTeam : awayTeam;
+            const teamSpanish = translateTeam(teamEnglish);
+            const color = c.color || 'yellow';
 
-        const players = Array.from(playersMap.values());
-
-        if (players.length > 0) {
-          console.log(`      Encontrados ${players.length} líderes únicos de tarjetas en Sofascore. Obteniendo estadísticas individuales...`);
-          const cardsMap = new Map();
-
-          // Consultar las estadísticas individuales en paralelo con safeSofascoreGet (que tiene throttling)
-          await Promise.all(players.map(async (item) => {
-            const p = item.player;
-            const t = item.team;
-            if (!p || !t) return;
-            try {
-              const urlPlayerStats = `https://api.sofascore.com/api/v1/player/${p.id}/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics/overall`;
-              const resPlayerStats = await safeSofascoreGet(urlPlayerStats);
-              const stats = resPlayerStats.data?.statistics || {};
-              const id = `${p.name}-${t.name}`;
+            const id = `${playerName}-${teamSpanish}`;
+            if (!cardsMap.has(id)) {
               cardsMap.set(id, {
                 id,
-                nombre: p.name,
-                equipo: t.name,
-                equipo_short: t.name,
-                escudo: `https://api.sofascore.com/api/v1/team/${t.id}/image`,
-                amarillas: stats.yellowCards || 0,
-                rojas: stats.redCards || 0,
+                nombre: playerName,
+                equipo: teamSpanish,
+                equipo_short: teamSpanish,
+                escudo: teamsMap[teamEnglish] || null,
+                amarillas: 0,
+                rojas: 0,
                 updated_at: new Date().toISOString()
               });
-            } catch (err) {
-              console.warn(`      ⚠️ Error al obtener estadísticas del jugador ${p.name}:`, err.message);
             }
-          }));
 
-          rows = Array.from(cardsMap.values());
-          if (rows.length > 0) {
-            sofascoreSuccess = true;
-            console.log(`      ✅ Sofascore compiló ${rows.length} líderes de tarjetas con éxito.`);
-          }
+            const current = cardsMap.get(id);
+            if (color === 'yellow') {
+              current.amarillas += 1;
+            } else if (['red', 'second_yellow', 'indirect_red'].includes(color)) {
+              current.rojas += 1;
+            }
+          });
+        });
+
+        rows = Array.from(cardsMap.values());
+        if (rows.length > 0) {
+          providerSuccess = true;
+          console.log(`      ✅ Zafronix compiló ${rows.length} líderes de tarjetas con éxito.`);
         }
+      } catch (zafErr) {
+        console.warn(`   ⚠️ Falló la obtención de tarjetas mediante Zafronix:`, zafErr.message);
       }
-    } catch (sofaErr) {
-      console.warn(`   ⚠️ Falló la obtención de tarjetas mediante Sofascore:`, sofaErr.message);
     }
 
-    // FALLBACK A API-FOOTBALL (si Sofascore no se completó)
-    if (!sofascoreSuccess) {
+    // 2. Fallback / Alternativa a Sofascore
+    if (!providerSuccess) {
+      console.log(`   📡 Intentando actualizar tarjetas mediante Sofascore (Torneo: ${tournamentId}, Año: ${currentSeason})...`);
+      try {
+        const urlSeasons = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/seasons`;
+        const resSeasons = await safeSofascoreGet(urlSeasons);
+        const seasons = resSeasons.data?.seasons || [];
+        const activeSeason = seasons.find(s => s.year === String(currentSeason)) || seasons[0];
+
+        if (activeSeason) {
+          console.log(`      🏆 Temporada de Sofascore seleccionada: ${activeSeason.name} (ID: ${activeSeason.id})`);
+          const urlStats = `https://api.sofascore.com/api/v1/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics`;
+          
+          // Consultar líderes de amarillas y rojas en paralelo para no perder a los jugadores expulsados
+          const [resStatsYellow, resStatsRed] = await Promise.all([
+            safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-yellowCards&group=card&type=overall"),
+            safeSofascoreGet(urlStats + "?limit=20&offset=0&order=-redCards&group=card&type=overall").catch(() => ({ data: { results: [] } }))
+          ]);
+
+          const playersYellow = resStatsYellow.data?.results || [];
+          const playersRed = resStatsRed.data?.results || [];
+
+          // Combinar ambas listas de forma única por ID de jugador
+          const playersMap = new Map();
+          playersYellow.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
+          playersRed.forEach(item => { if (item.player?.id) playersMap.set(item.player.id, item); });
+
+          const players = Array.from(playersMap.values());
+
+          if (players.length > 0) {
+            console.log(`      Encontrados ${players.length} líderes únicos de tarjetas en Sofascore. Obteniendo estadísticas individuales...`);
+            const cardsMap = new Map();
+
+            // Consultar las estadísticas individuales en paralelo con safeSofascoreGet (que tiene throttling)
+            await Promise.all(players.map(async (item) => {
+              const p = item.player;
+              const t = item.team;
+              if (!p || !t) return;
+              try {
+                const urlPlayerStats = `https://api.sofascore.com/api/v1/player/${p.id}/unique-tournament/${tournamentId}/season/${activeSeason.id}/statistics/overall`;
+                const resPlayerStats = await safeSofascoreGet(urlPlayerStats);
+                const stats = resPlayerStats.data?.statistics || {};
+                const id = `${p.name}-${t.name}`;
+                cardsMap.set(id, {
+                  id,
+                  nombre: p.name,
+                  equipo: t.name,
+                  equipo_short: t.name,
+                  escudo: `https://api.sofascore.com/api/v1/team/${t.id}/image`,
+                  amarillas: stats.yellowCards || 0,
+                  rojas: stats.redCards || 0,
+                  updated_at: new Date().toISOString()
+                });
+              } catch (err) {
+                console.warn(`      ⚠️ Error al obtener estadísticas del jugador ${p.name}:`, err.message);
+              }
+            }));
+
+            rows = Array.from(cardsMap.values());
+            if (rows.length > 0) {
+              providerSuccess = true;
+              console.log(`      ✅ Sofascore compiló ${rows.length} líderes de tarjetas con éxito.`);
+            }
+          }
+        }
+      } catch (sofaErr) {
+        console.warn(`   ⚠️ Falló la obtención de tarjetas mediante Sofascore:`, sofaErr.message);
+      }
+    }
+
+    // 3. FALLBACK A API-FOOTBALL (si no se completaron Zafronix ni Sofascore)
+    if (!providerSuccess) {
       console.log('   📡 Cambiando a fallback de API-Football...');
       const [yellow, red] = await Promise.all([
         apiFootball.get('/players/topyellowcards', { params: { league: LIVE_LEAGUE_ID, season: currentSeason } }).catch(() => ({ data: { response: [] } })),
@@ -989,7 +1056,7 @@ async function actualizarTarjetas() {
         console.warn('   ⚠️ Fallback de API-Football también falló por límite de cuota. Se conservan las tarjetas actuales en BD.');
         if (hasYellowErrors) console.warn('      Detalle amarillas:', yellowErrors);
         if (hasRedErrors) console.warn('      Detalle rojas:', redErrors);
-        // No insertamos datos falsos: conservamos lo que haya en la BD (datos reales previos o vacío)
+        // No insertamos datos vacíos: conservamos lo que haya en la BD (datos reales previos o vacío)
         return;
       }
 
