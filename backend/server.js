@@ -618,7 +618,7 @@ async function actualizarEnVivoMaster() {
       return;
     }
 
-    // 4. Intentar actualización con Sofascore (Principal, Ilimitado, Gratis)
+    // 4. Intentar actualización con Sofascore
     console.log(`   📡 Intentando actualizar ${partidosAActualizar.length} partido(s) mediante Sofascore...`);
     let sofascoreSuccess = false;
     try {
@@ -675,12 +675,33 @@ async function actualizarEnVivoMaster() {
           const golesL = isHomeMatchedDirectly ? (ssMatch.homeScore?.current ?? 0) : (ssMatch.awayScore?.current ?? 0);
           const golesV = isHomeMatchedDirectly ? (ssMatch.awayScore?.current ?? 0) : (ssMatch.homeScore?.current ?? 0);
 
+          // Calcular el minuto de forma robusta
+          let calculatedMin = 1;
+          const statusDescParsed = parseInt(ssMatch.statusDescription);
+          if (!isNaN(statusDescParsed) && statusDescParsed > 0) {
+            calculatedMin = Math.min(90, statusDescParsed);
+          } else if (ssMatch.time?.currentPeriodStartTimestamp) {
+            const elapsed = Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60);
+            if (ssMatch.status?.description === '2nd half' || ssMatch.lastPeriod === 'period2' || ssMatch.status?.code === 7) {
+              calculatedMin = Math.max(46, Math.min(90, 45 + elapsed));
+            } else {
+              calculatedMin = Math.max(1, Math.min(45, elapsed));
+            }
+          } else {
+            const elapsed = Math.floor((Date.now() - new Date(partido.fecha_utc).getTime()) / 60000);
+            if (elapsed <= 45) {
+              calculatedMin = Math.max(1, elapsed);
+            } else if (elapsed <= 60) {
+              calculatedMin = 45;
+            } else {
+              calculatedMin = Math.max(46, Math.min(90, elapsed - 15));
+            }
+          }
+
           const updateData = {
             goles_local: golesL,
             goles_visitante: golesV,
-            minuto: ssMatch.time?.currentPeriodStartTimestamp
-              ? Math.max(1, Math.min(90, Math.floor((Date.now() / 1000 - ssMatch.time.currentPeriodStartTimestamp) / 60)))
-              : (parseInt(ssMatch.statusDescription) || ssMatch.status?.description || 1),
+            minuto: calculatedMin,
             updated_at: new Date().toISOString(),
             estadisticas: { ...(partido.estadisticas || {}), sofascore_id: ssMatch.id }
           };
@@ -720,7 +741,29 @@ async function actualizarEnVivoMaster() {
             matchesUpdated++;
           }
         } else {
-          console.log(`      ⚠️ Partido no encontrado en Sofascore esta fecha: ${partido.equipo_local} vs ${partido.equipo_visitante}`);
+          console.log(`      ⚠️ Partido no encontrado en Sofascore esta fecha: ${partido.equipo_local} vs ${partido.equipo_visitante}. Calculando minuto dinámico...`);
+          // Fallback a minuto dinámico si el partido no se encuentra en Sofascore
+          const elapsed = Math.floor((Date.now() - new Date(partido.fecha_utc).getTime()) / 60000);
+          let calculatedMin = 1;
+          if (elapsed <= 45) {
+            calculatedMin = Math.max(1, elapsed);
+          } else if (elapsed <= 60) {
+            calculatedMin = 45;
+          } else {
+            calculatedMin = Math.max(46, Math.min(90, elapsed - 15));
+          }
+
+          if (calculatedMin > (partido.minuto || 0)) {
+            const { error: updErr } = await supabase
+              .from('partidos')
+              .update({ minuto: calculatedMin, updated_at: new Date().toISOString() })
+              .eq('id', partido.id);
+            if (updErr) {
+              console.error(`      ❌ Error al actualizar minuto dinámico para ${partido.id}:`, updErr.message);
+            } else {
+              console.log(`      ⏱️ [MINUTO DINÁMICO] ${partido.equipo_local} vs ${partido.equipo_visitante}: minuto ${calculatedMin}'`);
+            }
+          }
         }
       }
 
@@ -737,6 +780,27 @@ async function actualizarEnVivoMaster() {
     if (!sofascoreSuccess) {
       console.log(`   🚨 [FALLBACK] Iniciando actualización con API-Football...`);
       await actualizarEnVivo();
+      
+      console.log(`   ⏱️ [FALLBACK MINUTO] Actualizando minutos dinámicos para los partidos en curso...`);
+      for (const partido of partidosAActualizar) {
+        const elapsed = Math.floor((Date.now() - new Date(partido.fecha_utc).getTime()) / 60000);
+        let calculatedMin = 1;
+        if (elapsed <= 45) {
+          calculatedMin = Math.max(1, elapsed);
+        } else if (elapsed <= 60) {
+          calculatedMin = 45;
+        } else {
+          calculatedMin = Math.max(46, Math.min(90, elapsed - 15));
+        }
+
+        if (calculatedMin > (partido.minuto || 0)) {
+          await supabase
+            .from('partidos')
+            .update({ minuto: calculatedMin, updated_at: new Date().toISOString() })
+            .eq('id', partido.id);
+          console.log(`      ⏱️ [FALLBACK MINUTO] ${partido.equipo_local} vs ${partido.equipo_visitante}: minuto ${calculatedMin}'`);
+        }
+      }
     }
 
   } catch (masterErr) {
@@ -829,8 +893,9 @@ async function actualizarGoleadores() {
 async function actualizarTarjetas() {
   console.log('\n🟨 [TARJETAS] Actualizando tarjetas...');
   try {
-    // Primero limpiamos la tabla en Supabase para evitar datos residuales de otros torneos/temporadas
-    await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
+    // Primero, consultamos las tarjetas actuales en la base de datos para ver si ya tenemos datos guardados
+    const { data: dbCards, error: dbErr } = await supabase.from('tarjetas').select('id');
+    const dbCardsCount = dbCards ? dbCards.length : 0;
 
     const currentSeason = 2026;
     const tournamentId = TEST_MODE ? 384 : 16; // 384: Libertadores, 16: Mundial
@@ -921,9 +986,10 @@ async function actualizarTarjetas() {
       const hasRedErrors = redErrors && Object.keys(redErrors).length > 0;
 
       if (hasYellowErrors || hasRedErrors) {
-        console.warn('   ⚠️ Fallback de API-Football también falló por límite de cuota. Se conservan las tarjetas actuales.');
+        console.warn('   ⚠️ Fallback de API-Football también falló por límite de cuota. Se conservan las tarjetas actuales en BD.');
         if (hasYellowErrors) console.warn('      Detalle amarillas:', yellowErrors);
         if (hasRedErrors) console.warn('      Detalle rojas:', redErrors);
+        // No insertamos datos falsos: conservamos lo que haya en la BD (datos reales previos o vacío)
         return;
       }
 
@@ -960,6 +1026,8 @@ async function actualizarTarjetas() {
     }
 
     if (rows.length > 0) {
+      // Solo limpiamos y actualizamos si tenemos datos nuevos
+      await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
       const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
       if (error) throw error;
       console.log(`   ✅ ${rows.length} registros de tarjetas actualizados con éxito en la base de datos.`);
@@ -1081,23 +1149,22 @@ async function safeSofascoreGet(url, customTimeout = 8000) {
       console.warn(`      ⚠️ [SOFASCORE ERROR] Status ${status || 'desconocido'} en intento ${i + 1} para: ${url}. Detalle: ${err.message}`);
       
       // Fallback a curl si hay error de conexión/TLS o bloqueo (403, 400, etc.)
+      // Ejecutamos curl de manera limpia (sin los headers de navegador que activan Cloudflare/403 Challenge)
       console.log(`      📡 [CURL FALLBACK] Intentando obtener datos con curl...`);
       try {
         const data = await new Promise((resolve, reject) => {
           const { exec } = require('child_process');
-          let headerArgs = '';
-          Object.entries(headers).forEach(([k, v]) => {
-            headerArgs += ` -H "${k}: ${v}"`;
-          });
-          
           // Adaptar el comando según la plataforma (Windows usa curl.exe --ssl-no-revoke, Linux/Render usa curl estándar)
           const curlBin = process.platform === 'win32' ? 'curl.exe --ssl-no-revoke' : 'curl';
-          const cmd = `${curlBin} -s ${headerArgs} "${url}"`;
+          const cmd = `${curlBin} -s "${url}"`;
           
           exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
             if (error) return reject(error);
             try {
               const json = JSON.parse(stdout);
+              if (json && json.error && (json.error.code === 403 || json.error.reason === 'challenge')) {
+                return reject(new Error(`Sofascore API returned 403 error: ${json.error.message || json.error.reason || 'Forbidden'}`));
+              }
               resolve(json);
             } catch (e) {
               reject(new Error(`Failed to parse curl response: ${stdout.substring(0, 100)}`));
@@ -1222,9 +1289,9 @@ async function poblarEstadisticasSofascore() {
     for (const [fecha, partidosFecha] of Object.entries(porFecha)) {
       try {
         // Traer todos los eventos de esa fecha
-        const { data: ssData } = await axios.get(
+        const { data: ssData } = await safeSofascoreGet(
           `https://api.sofascore.com/api/v1/sport/football/scheduled-events/${fecha}`,
-          { headers: SOFASCORE_HEADERS, timeout: 10000 }
+          10000
         );
         const events = ssData.events || [];
 
@@ -1247,15 +1314,18 @@ async function poblarEstadisticasSofascore() {
           await delay(2000);
 
           try {
-            const { data: statsData } = await axios.get(
+            const { data: statsData } = await safeSofascoreGet(
               `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
-              { headers: SOFASCORE_HEADERS, timeout: 10000 }
+              10000
             );
 
             let estadisticas = parseSofascoreStats(statsData) || {};
             const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
             if (goles) estadisticas.goles_detalle = goles;
             else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
+
+            // Guardar el sofascore_id en estadisticas
+            estadisticas.sofascore_id = ssMatch.id;
 
             if (Object.keys(estadisticas).length > 0) {
               const finalStats = { ...(partido.estadisticas || {}), ...estadisticas };
@@ -1264,32 +1334,7 @@ async function poblarEstadisticasSofascore() {
               console.log(`   ✅ ${partido.equipo_local} vs ${partido.equipo_visitante} → Stats/Goles actualizados`);
             }
           } catch (statsErr) {
-            if (statsErr.response?.status === 403) {
-              console.warn('   ⏳ Rate limit alcanzado, esperando 10 segundos...');
-              await delay(10000);
-              // Reintentar una vez
-              try {
-                const { data: retry } = await axios.get(
-                  `https://api.sofascore.com/api/v1/event/${ssMatch.id}/statistics`,
-                  { headers: SOFASCORE_HEADERS, timeout: 10000 }
-                );
-                let estadisticas = parseSofascoreStats(retry) || {};
-                const goles = await fetchSofascoreGoals(ssMatch.id, partido.equipo_local, partido.equipo_visitante);
-                if (goles) estadisticas.goles_detalle = goles;
-                else if (estadisticas.goles_detalle === undefined) estadisticas.goles_detalle = [];
-
-                if (Object.keys(estadisticas).length > 0) {
-                  const finalStats = { ...(partido.estadisticas || {}), ...estadisticas };
-                  await supabase.from('partidos').update({ estadisticas: finalStats }).eq('id', partido.id);
-                  encontrados++;
-                  console.log(`   ✅ (reintento) ${partido.equipo_local} vs ${partido.equipo_visitante} → Stats/Goles actualizados`);
-                }
-              } catch (retryErr) {
-                console.warn(`   ⚠️ Falló reintento para ${partido.equipo_local} vs ${partido.equipo_visitante}`);
-              }
-            } else {
-              console.warn(`   ⚠️ Error stats ${partido.equipo_local} vs ${partido.equipo_visitante}: ${statsErr.message}`);
-            }
+            console.warn(`   ⚠️ Error stats ${partido.equipo_local} vs ${partido.equipo_visitante}: ${statsErr.message}`);
           }
         }
 
@@ -1297,12 +1342,7 @@ async function poblarEstadisticasSofascore() {
         await delay(1500);
 
       } catch (dateErr) {
-        if (dateErr.response?.status === 403) {
-          console.warn(`   ⏳ Rate limit en fecha ${fecha}, esperando 15 segundos...`);
-          await delay(15000);
-        } else {
-          console.warn(`   ⚠️ Error buscando fecha ${fecha}: ${dateErr.message}`);
-        }
+        console.warn(`   ⚠️ Error buscando fecha ${fecha}: ${dateErr.message}`);
       }
     }
 
@@ -1314,9 +1354,9 @@ async function poblarEstadisticasSofascore() {
 }
 
 // Ejecutar batch 15 segundos después del inicio (dar tiempo al fixture)
-// setTimeout(poblarEstadisticasSofascore, 15000);
+setTimeout(poblarEstadisticasSofascore, 15000);
 // Repetir cada 2 horas para capturar nuevos partidos finalizados
-// cron.schedule('10 */2 * * *', poblarEstadisticasSofascore);
+cron.schedule('10 */2 * * *', poblarEstadisticasSofascore);
 
 // ══════════════════════════════════════════════════════════════════
 // LIVE: Actualizar partidos en curso desde Sofascore (reemplaza API-Football)
@@ -1507,6 +1547,54 @@ app.get('/api/escudo/:id', async (req, res) => {
       });
     } catch (curlErr) {
       console.error(`❌ [IMAGE PROXY CRITICAL ERROR] Falló fallback para ID ${teamId}:`, curlErr.message);
+      res.status(404).send('Not Found');
+    }
+  }
+});
+
+// Proxy para fotos de jugadores de Sofascore para evadir protección de hotlinking (403 Forbidden)
+app.get('/api/foto-jugador/:id', async (req, res) => {
+  const playerId = req.params.id;
+  const url = `https://api.sofascore.com/api/v1/player/${playerId}/image`;
+  
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Referer': 'https://www.sofascore.com/',
+    'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+  };
+
+  try {
+    const https = require('https');
+    const agent = new https.Agent({ rejectUnauthorized: false, keepAlive: false });
+    const response = await axios.get(url, {
+      headers,
+      responseType: 'arraybuffer',
+      timeout: 6000,
+      httpsAgent: agent
+    });
+    
+    res.setHeader('Content-Type', response.headers['content-type'] || 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cachear por 1 día
+    res.send(response.data);
+  } catch (err) {
+    console.warn(`⚠️ [PLAYER PROXY] Axios falló para jugador ${playerId}: ${err.message}. Intentando fallback de curl...`);
+    
+    try {
+      const { exec } = require('child_process');
+      const curlBin = process.platform === 'win32' ? 'curl.exe --ssl-no-revoke' : 'curl';
+      const cmd = `${curlBin} -s "${url}"`;
+      
+      exec(cmd, { encoding: 'buffer', maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+        if (error || !stdout || stdout.length === 0) {
+          console.error(`❌ [PLAYER PROXY CURL ERROR] Falló curl para jugador ${playerId}:`, error?.message || 'Empty buffer');
+          return res.status(404).send('Not Found');
+        }
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(stdout);
+      });
+    } catch (curlErr) {
+      console.error(`❌ [PLAYER PROXY CRITICAL ERROR] Falló fallback para jugador ${playerId}:`, curlErr.message);
       res.status(404).send('Not Found');
     }
   }
@@ -1859,16 +1947,26 @@ app.get('/api/scorers', async (req, res) => {
 
     if (error) throw error;
 
-    const scorers = (data || []).map(s => ({
-      nombre: s.nombre,
-      equipo: translateTeam(s.equipo),
-      equipo_short: translateTeam(s.equipo_short),
-      escudo: s.escudo,
-      goles: s.goles || 0,
-      asistencias: s.asistencias || 0,
-      penales: s.penales || 0,
-      partidos: s.partidos || 0,
-    }));
+    const scorers = (data || []).map(s => {
+      let escudo = s.escudo;
+      if (escudo && escudo.includes('sofascore.com') && escudo.includes('/team/')) {
+        const parts = escudo.split('/team/');
+        const teamId = parts[1]?.split('/')[0];
+        if (teamId) {
+          escudo = `${req.protocol}://${req.get('host')}/api/escudo/${teamId}`;
+        }
+      }
+      return {
+        nombre: s.nombre,
+        equipo: translateTeam(s.equipo),
+        equipo_short: translateTeam(s.equipo_short),
+        escudo: escudo,
+        goles: s.goles || 0,
+        asistencias: s.asistencias || 0,
+        penales: s.penales || 0,
+        partidos: s.partidos || 0,
+      };
+    });
 
     res.json(scorers);
   } catch (err) {
@@ -1896,7 +1994,7 @@ app.get('/api/tarjetas', async (req, res) => {
         const parts = escudo.split('/team/');
         const teamId = parts[1]?.split('/')[0];
         if (teamId) {
-          escudo = `http://localhost:3000/api/escudo/${teamId}`;
+          escudo = `${req.protocol}://${req.get('host')}/api/escudo/${teamId}`;
         }
       }
       return { 
@@ -1911,6 +2009,44 @@ app.get('/api/tarjetas', async (req, res) => {
   } catch (err) {
     console.error('Error /api/tarjetas:', err.message);
     res.json([]);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ENDPOINT: SYNC DE TARJETAS DESDE EL FRONTEND
+// El navegador del usuario puede acceder a Sofascore sin bloqueo 403.
+// El frontend hace la petición a Sofascore, obtiene los datos reales
+// de tarjetas, y los envía aquí para guardarlos en Supabase.
+// ══════════════════════════════════════════════════════════════════
+app.post('/api/tarjetas/sync', async (req, res) => {
+  try {
+    const { tarjetas } = req.body;
+    if (!tarjetas || !Array.isArray(tarjetas) || tarjetas.length === 0) {
+      return res.status(400).json({ error: 'Se requiere un array de tarjetas' });
+    }
+
+    console.log(`\n🟨 [TARJETAS SYNC] Recibidas ${tarjetas.length} tarjetas desde el frontend...`);
+
+    const rows = tarjetas.map(t => ({
+      id: `${t.nombre}-${t.equipo}`,
+      nombre: t.nombre,
+      equipo: t.equipo,
+      equipo_short: t.equipo_short || t.equipo,
+      escudo: t.escudo || null,
+      amarillas: parseInt(t.amarillas) || 0,
+      rojas: parseInt(t.rojas) || 0,
+      updated_at: new Date().toISOString()
+    }));
+
+    await supabase.from('tarjetas').delete().neq('id', 'borrar_todo');
+    const { error } = await supabase.from('tarjetas').upsert(rows, { onConflict: 'id' });
+    if (error) throw error;
+
+    console.log(`   ✅ ${rows.length} tarjetas REALES sincronizadas desde el frontend.`);
+    res.json({ ok: true, count: rows.length });
+  } catch (err) {
+    console.error('   ❌ Error en /api/tarjetas/sync:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -2167,6 +2303,34 @@ app.get('/api/historia', async (req, res) => {
 const equipoCache = {};
 const EQUIPO_CACHE_TTL = 60 * 60 * 1000; // 1 hora
 
+let footballDataTeamsCache = null;
+let footballDataTeamsCacheTs = 0;
+
+async function getFootballDataTeamId(teamNameEn) {
+  const normName = teamNameEn.toLowerCase().trim();
+  // Refresh cache if older than 24 hours
+  if (!footballDataTeamsCache || (Date.now() - footballDataTeamsCacheTs > 24 * 60 * 60 * 1000)) {
+    try {
+      console.log("   📡 [FOOTBALL-DATA] Refreshing WC teams list cache...");
+      const { data } = await footballData.get('/competitions/WC/teams');
+      const map = {};
+      if (data.teams) {
+        data.teams.forEach(t => {
+          map[t.name.toLowerCase().trim()] = t.id;
+          if (t.tla) map[t.tla.toLowerCase().trim()] = t.id;
+        });
+      }
+      footballDataTeamsCache = map;
+      footballDataTeamsCacheTs = Date.now();
+    } catch (err) {
+      console.warn("   ⚠️ Error fetching teams list from football-data:", err.message);
+      if (footballDataTeamsCache) return footballDataTeamsCache[normName] || null;
+      throw err;
+    }
+  }
+  return footballDataTeamsCache[normName] || null;
+}
+
 app.get('/api/equipo/:nombre', async (req, res) => {
   let { nombre } = req.params;
   nombre = nombre.trim();
@@ -2182,22 +2346,22 @@ app.get('/api/equipo/:nombre', async (req, res) => {
     }
   }
 
-  // Mapeo a inglés si es necesario para api-football y consultas de Supabase
-  const mapNombresEn = {
-    'alemania': 'Germany', 'francia': 'France', 'españa': 'Spain',
-    'inglaterra': 'England', 'países bajos': 'Netherlands', 'paises bajos': 'Netherlands',
-    'italia': 'Italy', 'japón': 'Japan', 'japon': 'Japan', 'marruecos': 'Morocco',
-    'croacia': 'Croatia', 'bélgica': 'Belgium', 'belgica': 'Belgium', 'suiza': 'Switzerland',
-    'estados unidos': 'USA', 'eeuu': 'USA', 'corea del sur': 'South Korea',
-    'arabia saudita': 'Saudi Arabia', 'camerún': 'Cameroon', 'camerun': 'Cameroon',
-    'canadá': 'Canada', 'canada': 'Canada', 'costa de marfil': 'Ivory Coast',
-    'dinamarca': 'Denmark', 'egipto': 'Egypt', 'emiratos árabes unidos': 'United Arab Emirates',
-    'gales': 'Wales', 'irán': 'Iran', 'iran': 'Iran', 'méxico': 'Mexico', 'mexico': 'Mexico',
-    'nueva zelanda': 'New Zealand', 'panamá': 'Panama', 'panama': 'Panama', 'perú': 'Peru', 'peru': 'Peru',
-    'polonia': 'Poland', 'senegal': 'Senegal', 'serbia': 'Serbia', 'suecia': 'Sweden',
-    'turquía': 'Turkey', 'turquia': 'Turkey', 'túnez': 'Tunisia', 'tunez': 'Tunisia',
-    'ucrania': 'Ukraine', 'brasil': 'Brazil', 'escocia': 'Scotland', 'irlanda': 'Ireland'
-  };
+  // Mapear dinámicamente de castellano a inglés a partir de TRADUCCION_EQUIPOS
+  const mapNombresEn = {};
+  Object.entries(TRADUCCION_EQUIPOS).forEach(([en, es]) => {
+    mapNombresEn[es.toLowerCase()] = en;
+    const cleanEs = es.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    mapNombresEn[cleanEs] = en;
+    mapNombresEn[en.toLowerCase()] = en;
+  });
+  // Alias y adaptaciones adicionales
+  mapNombresEn['eeuu'] = 'USA';
+  mapNombresEn['estados unidos'] = 'USA';
+  mapNombresEn['corea del sur'] = 'South Korea';
+  mapNombresEn['corea republica'] = 'Korea Republic';
+  mapNombresEn['republica de corea'] = 'Korea Republic';
+  mapNombresEn['república de corea'] = 'Korea Republic';
+  
   const nombreEn = mapNombresEn[nombre.toLowerCase()] || nombre;
 
   try {
@@ -2273,8 +2437,8 @@ app.get('/api/equipo/:nombre', async (req, res) => {
               const playersRes = await safeSofascoreGet(`https://api.sofascore.com/api/v1/team/${sofascoreTeamId}/players`);
               const sofascoreSquad = playersRes.data?.players || [];
               
-              if (sofascoreSquad.length === 26) {
-                console.log(`      ✅ [SQUAD DEFINITIVO DETECTADO] Sofascore tiene la lista oficial de 26 para ${teamInfo.team.name}. Mapeando convocados...`);
+              if (sofascoreSquad.length > 0) {
+                console.log(`      ` + `✅ [SQUAD DETECTADO] Sofascore tiene la lista de ${sofascoreSquad.length} para ${teamInfo.team.name}. Mapeando convocados...`);
                 
                 const mapPosition = (pos) => {
                   const posMap = { 'G': 'Goalkeeper', 'D': 'Defender', 'M': 'Midfielder', 'F': 'Attacker' };
@@ -2299,11 +2463,11 @@ app.get('/api/equipo/:nombre', async (req, res) => {
                     age: age,
                     number: p.shirtNumber || parseInt(p.jerseyNumber) || null,
                     position: mapPosition(p.position),
-                    photo: `https://api.sofascore.com/api/v1/player/${p.id}/image`
+                    photo: `${req.protocol}://${req.get('host')}/api/foto-jugador/${p.id}`
                   };
                 });
               } else {
-                console.log(`      ⚠️ [SQUAD NO DEFINITIVO] Sofascore tiene ${sofascoreSquad.length} jugadores para ${teamInfo.team.name}. Manteniendo prelista actual.`);
+                console.log(`      ` + `⚠️ [SQUAD VACÍO] Sofascore no retornó jugadores para ${teamInfo.team.name}. Manteniendo prelista actual.`);
               }
             }
           } catch (sofaSquadErr) {
@@ -2395,7 +2559,7 @@ app.get('/api/equipo/:nombre', async (req, res) => {
           const { data: squadData } = await safeSofascoreGet(playersUrl, 8000);
           const players = squadData.players || [];
           
-          if (players.length === 26) {
+          if (players.length > 0) {
             sofascoreSquad = players.map(p => {
               let posStr = 'Midfielder';
               if (p.player.position === 'G') posStr = 'Goalkeeper';
@@ -2411,13 +2575,13 @@ app.get('/api/equipo/:nombre', async (req, res) => {
               return {
                 name: p.player.name,
                 position: posStr,
-                photo: `https://api.sofascore.com/api/v1/player/${p.player.id}/image`,
+                photo: `${req.protocol}://${req.get('host')}/api/foto-jugador/${p.player.id}`,
                 age: age
               };
             });
             console.log(`   ✅ Plantel de ${sofascoreSquad.length} jugadores cargado exitosamente desde Sofascore`);
           } else {
-            console.log(`   ⚠️ [SQUAD NO DEFINITIVO] Sofascore tiene ${players.length} jugadores para ${nombreEn}. Se requiere lista oficial de 26.`);
+            console.log(`   ⚠️ [SQUAD VACÍO] Sofascore no retornó jugadores para ${nombreEn}.`);
             sofascoreSquad = [];
           }
         } else {
@@ -2429,6 +2593,46 @@ app.get('/api/equipo/:nombre', async (req, res) => {
           console.warn(`      Status:`, sofaSquadErr.response.status);
           console.warn(`      Headers:`, JSON.stringify(sofaSquadErr.response.headers));
           console.warn(`      Body:`, JSON.stringify(sofaSquadErr.response.data));
+        }
+      }
+
+      // Fallback a football-data.org si Sofascore falló o no retornó jugadores
+      if (sofascoreSquad.length === 0) {
+        try {
+          console.log(`   📡 [FALLBACK] Intentando obtener plantel desde football-data.org para ${nombreEn}...`);
+          const fdTeamId = await getFootballDataTeamId(nombreEn);
+          if (fdTeamId) {
+            console.log(`   ✅ Equipo encontrado en football-data.org (ID: ${fdTeamId})`);
+            const { data: fdTeamData } = await footballData.get(`/teams/${fdTeamId}`);
+            const fdSquad = fdTeamData.squad || [];
+            if (fdSquad.length > 0) {
+              const mapPosition = (pos) => {
+                if (!pos) return 'Midfielder';
+                pos = pos.toLowerCase();
+                if (pos.includes('goalkeeper')) return 'Goalkeeper';
+                if (pos.includes('defence') || pos.includes('defender')) return 'Defender';
+                if (pos.includes('midfield') || pos.includes('midfielder')) return 'Midfielder';
+                if (pos.includes('offence') || pos.includes('attacker') || pos.includes('forward')) return 'Attacker';
+                return 'Midfielder';
+              };
+              sofascoreSquad = fdSquad.map(p => {
+                let age = null;
+                if (p.dateOfBirth) {
+                  const dob = new Date(p.dateOfBirth);
+                  age = Math.floor((Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+                }
+                return {
+                  name: p.name,
+                  position: mapPosition(p.position),
+                  photo: "", // Vacío activa iniciales en frontend
+                  age: age
+                };
+              });
+              console.log(`   ✅ Plantel de ${sofascoreSquad.length} jugadores cargado desde football-data.org`);
+            }
+          }
+        } catch (fdErr) {
+          console.warn("   ⚠️ Error al obtener squad de football-data.org:", fdErr.message);
         }
       }
 
@@ -2452,6 +2656,29 @@ app.get('/api/equipo/:nombre', async (req, res) => {
       if (responseData.info) {
         responseData.info.name = translateTeam(responseData.info.name);
         responseData.info.country = translateTeam(responseData.info.country);
+
+        // Proxy de escudo si es URL de Sofascore
+        let logoUrl = responseData.info.logo;
+        if (logoUrl && logoUrl.includes('sofascore.com') && logoUrl.includes('/team/')) {
+          const parts = logoUrl.split('/team/');
+          const teamId = parts[1]?.split('/')[0];
+          if (teamId) {
+            responseData.info.logo = `${req.protocol}://${req.get('host')}/api/escudo/${teamId}`;
+          }
+        }
+      }
+      if (responseData.squad) {
+        responseData.squad = responseData.squad.map(p => {
+          let photo = p.photo;
+          if (photo && photo.includes('sofascore.com') && photo.includes('/player/')) {
+            const parts = photo.split('/player/');
+            const playerId = parts[1]?.split('/')[0];
+            if (playerId) {
+              photo = `${req.protocol}://${req.get('host')}/api/foto-jugador/${playerId}`;
+            }
+          }
+          return { ...p, photo };
+        });
       }
       const translateMatchTeams = (m) => {
         if (m.teams?.home) m.teams.home.name = translateTeam(m.teams.home.name);

@@ -21,6 +21,8 @@ function safeSofascoreGet(url) {
     exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
       if (error) return reject(error);
       try {
+        console.log('--- RAW CURL OUTPUT ---');
+        console.log(stdout);
         const json = JSON.parse(stdout);
         resolve(json);
       } catch (e) {
@@ -34,27 +36,6 @@ async function run() {
   try {
     console.log('Searching for Argentina on Sofascore...');
     const searchRes = await safeSofascoreGet('https://api.sofascore.com/api/v1/search/all?q=Argentina');
-    const teams = searchRes.results?.filter(r => r.type === 'team') || [];
-    console.log(`Found ${teams.length} teams.`);
-    const argTeam = teams.find(t => t.entity?.national) || teams[0];
-    if (!argTeam) {
-      console.log('Argentina team not found.');
-      return;
-    }
-    
-    const teamId = argTeam.entity.id;
-    console.log(`Argentina Sofascore Team ID: ${teamId} (${argTeam.entity.name})`);
-    
-    console.log(`Fetching squad for team ${teamId} from Sofascore...`);
-    const squadRes = await safeSofascoreGet(`https://api.sofascore.com/api/v1/team/${teamId}/players`);
-    const players = squadRes.players || [];
-    console.log(`Total players in Sofascore squad: ${players.length}`);
-    
-    // Check first few players
-    players.slice(0, 10).forEach(p => {
-      console.log(`- ${p.player.name} (${p.player.position})`);
-    });
-    
   } catch (err) {
     console.error('Failed:', err.message);
   }

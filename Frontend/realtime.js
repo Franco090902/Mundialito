@@ -893,17 +893,9 @@ async function recargarDataGlobal() {
     if (window.cargarFixtureDesdeAPI) await window.cargarFixtureDesdeAPI();
     if (window.cargarScorersDesdeAPI) await window.cargarScorersDesdeAPI();
     
-    // Cargar tarjetas directo desde Supabase (sin pasar por el Node worker)
-    const { data: tarjetas, error } = await supabase.from('tarjetas').select('*').order('amarillas', { ascending: false }).limit(20);
-    if (tarjetas) {
-       // Mapear al formato que usa la UI (window.CARDS)
-       window.CARDS = tarjetas.map(t => ({
-          name: t.nombre,
-          team: t.equipo_short || t.equipo,
-          flag: t.escudo ? `<img src="${t.escudo}" style="width:20px;height:20px;object-fit:contain;border-radius:2px">` : '🏳️',
-          yellow: t.amarillas,
-          red: t.rojas
-       }));
+    // Cargar tarjetas desde la API Node (que hace sorting correcto de amarillas/rojas y proxy de escudos)
+    if (window.cargarCardsDesdeAPI) {
+       await window.cargarCardsDesdeAPI();
     }
     
     // Re-renderizar solo el panel que está activo en pantalla (para no hacer trabajo innecesario)
@@ -920,11 +912,24 @@ async function recargarDataGlobal() {
     if (document.getElementById('panel-cards')?.classList.contains('active') && window.renderCards) {
        window.renderCards();
     }
+    if (window.renderLiveCards) {
+       window.renderLiveCards();
+    }
   } catch (err) {
     console.error('Error recargando data global:', err);
   } finally {
     fetchingData = false; // Liberar el semáforo en cualquier caso
   }
+}
+
+let recargarDataGlobalTimeout = null;
+function debouncedRecargarDataGlobal() {
+  if (recargarDataGlobalTimeout) {
+    clearTimeout(recargarDataGlobalTimeout);
+  }
+  recargarDataGlobalTimeout = setTimeout(() => {
+    recargarDataGlobal();
+  }, 2000);
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -964,19 +969,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   supabase.channel('public:db_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'partidos' }, () => {
        console.log('🔄 Cambio en partidos detectado via Realtime');
-       recargarDataGlobal(); // Re-renderizar el panel activo
+       debouncedRecargarDataGlobal(); // Re-renderizar el panel activo
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'posiciones' }, () => {
        console.log('🔄 Cambio en posiciones detectado via Realtime');
-       recargarDataGlobal();
+       debouncedRecargarDataGlobal();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'goleadores' }, () => {
        console.log('🔄 Cambio en goleadores detectado via Realtime');
-       recargarDataGlobal();
+       debouncedRecargarDataGlobal();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tarjetas' }, () => {
        console.log('🔄 Cambio en tarjetas detectado via Realtime');
-       recargarDataGlobal();
+       debouncedRecargarDataGlobal();
     })
     .subscribe((status) => {
        console.log('📡 Realtime global status:', status); // 'SUBSCRIBED' cuando está listo

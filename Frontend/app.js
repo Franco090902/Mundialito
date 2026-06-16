@@ -621,6 +621,43 @@ function renderLiveScorers() {
 }
 
 /* ─────────────────────────────────────
+   SIDEBAR: últimas tarjetas (líderes de tarjetas)
+   ───────────────────────────────────── */
+function renderLiveCards() {
+  const container = document.getElementById('liveCards');
+  if (!container) return;
+  if (!window.CARDS || window.CARDS.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:15px;color:var(--text4);font-size:13px">Sin datos aún</div>';
+    return;
+  }
+  
+  // Obtener los que tengan más tarjetas (roja = 3 pts, amarilla = 1 pt)
+  const sortedCards = [...window.CARDS]
+    .filter(c => c.yellow > 0 || c.red > 0)
+    .sort((a, b) => ((b.red || 0) * 3 + (b.yellow || 0)) - ((a.red || 0) * 3 + (a.yellow || 0)));
+
+  container.innerHTML = sortedCards.slice(0, 5).map((c, i) => {
+    let cardBadges = '';
+    if (c.red > 0) {
+      cardBadges += Array(c.red).fill('<span class="cr" style="display:inline-block;width:10px;height:14px;background:#ff3860;border-radius:2px;margin-left:2px"></span>').join('');
+    }
+    if (c.yellow > 0) {
+      cardBadges += Array(c.yellow).fill('<span class="cy" style="display:inline-block;width:10px;height:14px;background:#ffd12c;border-radius:2px;margin-left:2px"></span>').join('');
+    }
+    return `
+      <div class="srow" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-light); font-size:13px;">
+        <span class="srow-rank" style="color:var(--text4); width:20px; font-weight:bold;">${i + 1}</span>
+        <span class="srow-flag" style="margin-right:8px;">${c.flag || (c.escudo ? `<img src="${c.escudo}" style="width:18px;height:18px;object-fit:contain">` : '🏳️')}</span>
+        <div style="flex:1">
+          <div class="srow-name" style="font-weight:bold; color:var(--text2);">${c.name}</div>
+          <div class="srow-sub" style="font-size:11px; color:var(--text4);">${c.team}</div>
+        </div>
+        <div class="cd-cards" style="display:flex; align-items:center; gap:2px;">${cardBadges}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────
    TIEMPO REAL: minutos del partido
 ───────────────────────────────────── */
 const liveMinutes = [{ id: 'live1-min', min: 67, max: 90 }, { id: 'live2-min', min: 23, max: 90 }];
@@ -933,6 +970,7 @@ async function cargarCardsDesdeAPI() {
     if (!data.length) {
       window.CARDS = [];
       renderCards();
+      renderLiveCards();
       return;
     }
     window.CARDS = data.map(c => ({
@@ -941,9 +979,12 @@ async function cargarCardsDesdeAPI() {
       escudo: c.escudo,
     }));
     renderCards();
+    renderLiveCards();
     console.log('✅ Tarjetas cargadas:', data.length);
   } catch (e) { console.warn('⚠️ Tarjetas no disponibles:', e.message); }
 }
+window.cargarCardsDesdeAPI = cargarCardsDesdeAPI;
+window.renderLiveCards = renderLiveCards;
 
 async function cargarPartidosEnVivo() {
   try {
@@ -1054,8 +1095,8 @@ function renderLivePanel(partidos) {
           <div class="team-name">${p.equipo_local}</div>
         </div>
         <div class="score-block">
-          <div class="score-main">${p.goles_local}<span class="score-sep">–</span>${p.goles_visitante}</div>
-          <div class="min-badge"><span class="min-dot"></span><span class="min-text">${p.minuto}'</span></div>
+          <div class="score-main" data-live-score>${p.goles_local}<span class="score-sep">–</span>${p.goles_visitante}</div>
+          <div class="min-badge"><span class="min-dot"></span><span class="min-text" data-live-minute>${p.minuto}'</span></div>
         </div>
         <div class="team-block away">
           ${p.escudo_visitante ? `<img src="${p.escudo_visitante}" style="width:28px;height:28px;margin-bottom:4px" onerror="this.style.display='none'">` : ''}
@@ -1366,21 +1407,36 @@ window.abrirPerfilEquipo = async function (teamName) {
     const squadByPos = { 'Goalkeeper': [], 'Defender': [], 'Midfielder': [], 'Attacker': [] };
     squad.forEach(p => { if (squadByPos[p.position]) squadByPos[p.position].push(p); });
 
+    const getInitials = (name) => {
+      if (!name) return 'PJ';
+      const parts = name.trim().split(' ');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    };
+
     const renderPlayers = (players, title) => {
       if (players.length === 0) return '';
       return `
         <div style="margin-bottom: 15px;">
           <div style="font-size:12px; font-weight:bold; color:var(--text4); margin-bottom:8px; text-transform:uppercase;">${title}</div>
           <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:8px;">
-            ${players.map(p => `
-              <div style="background:var(--navy3); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; align-items:center; gap:10px;">
-                <img src="${p.photo}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--navy2);" onerror="this.style.display='none'">
-                <div>
-                  <div style="font-size:12px; color:var(--text2); font-weight:bold; line-height:1.2;">${p.name}</div>
-                  ${p.age ? `<div style="font-size:10px; color:var(--text4);">${p.age} años</div>` : ''}
+            ${players.map(p => {
+              const initials = getInitials(p.name);
+              return `
+                <div style="background:var(--navy3); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; align-items:center; gap:10px;">
+                  <div style="width:30px; height:30px; border-radius:50%; background:var(--navy2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold; color:var(--gold); border:1px solid var(--border); overflow:hidden; flex-shrink:0;">
+                    ${p.photo ? `<img src="${p.photo}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
+                    <span style="${p.photo ? 'display:none;' : 'display:block;'}">${initials}</span>
+                  </div>
+                  <div>
+                    <div style="font-size:12px; color:var(--text2); font-weight:bold; line-height:1.2;">${p.name}</div>
+                    ${p.age ? `<div style="font-size:10px; color:var(--text4);">${p.age} años</div>` : ''}
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         </div>
       `;
@@ -1440,6 +1496,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFixtures();
   renderScorers();
   renderCards();
+  renderLiveCards();
 
   window.cargarFiltrosDinamicos().catch(console.error);
   window.cargarNoticias('');

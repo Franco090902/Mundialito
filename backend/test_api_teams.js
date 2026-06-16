@@ -9,13 +9,17 @@ const apiFootball = axios.create({
   timeout: 10000,
 });
 
-async function run() {
+async function testTeam(name) {
   try {
-    const { data } = await apiFootball.get('/teams', { params: { league: 13, season: 2024 } });
-    console.log(`Entire response:`, JSON.stringify(data, null, 2));
+    const { data } = await apiFootball.get('/teams', { params: { search: name } });
+    console.log(`Search for "${name}":`, JSON.stringify(data, null, 2));
   } catch (err) {
-    console.error(`Failed:`, err.message);
+    console.error(`Failed for ${name}:`, err.message);
   }
+}
+
+async function run() {
+  await testTeam("Mexico");
 }
 
 run();
